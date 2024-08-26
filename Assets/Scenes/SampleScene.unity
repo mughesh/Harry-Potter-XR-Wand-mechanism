@@ -608,7 +608,7 @@ PrefabInstance:
     - target: {fileID: 77271694881048976, guid: b02a901cc97b8c34a910e3e012b1e207,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.445
+      value: 1.03
       objectReference: {fileID: 0}
     - target: {fileID: 77271694881048976, guid: b02a901cc97b8c34a910e3e012b1e207,
         type: 3}
@@ -941,8 +941,8 @@ Transform:
   m_GameObject: {fileID: 724269120}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.18884963, y: 1.0410335, z: 1.338}
-  m_LocalScale: {x: 2.19, y: 0.68, z: 1}
+  m_LocalPosition: {x: -0.18884963, y: 0.49, z: 1.338}
+  m_LocalScale: {x: 2.19, y: 0.92, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -973,12 +973,12 @@ PrefabInstance:
     - target: {fileID: 2474354108576904111, guid: fe40da5737e6347438959eab135f0470,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.19
+      value: -0.84
       objectReference: {fileID: 0}
     - target: {fileID: 2474354108576904111, guid: fe40da5737e6347438959eab135f0470,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.715
+      value: 1.19
       objectReference: {fileID: 0}
     - target: {fileID: 2474354108576904111, guid: fe40da5737e6347438959eab135f0470,
         type: 3}
@@ -1603,6 +1603,10 @@ GameObject:
   - component: {fileID: 1135815430}
   - component: {fileID: 1135815429}
   - component: {fileID: 1135815432}
+  - component: {fileID: 1135815434}
+  - component: {fileID: 1135815433}
+  - component: {fileID: 1135815435}
+  - component: {fileID: 1135815436}
   m_Layer: 0
   m_Name: XR Origin (XR Rig)
   m_TagString: Untagged
@@ -1684,6 +1688,119 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.09, z: 0}
+--- !u!114 &1135815433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135815428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf296fc962d7184ab14ad1841598d5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_System: {fileID: 1135815434}
+  m_MoveSpeed: 1
+  m_EnableStrafe: 1
+  m_EnableFly: 0
+  m_UseGravity: 1
+  m_GravityApplicationMode: 1
+  m_ForwardSource: {fileID: 0}
+  m_LeftHandMoveAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Left Hand Move
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: 70fda968-d67e-4178-988c-76dec33c7660
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 6972639530819350904, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
+  m_RightHandMoveAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Right Hand Move
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: 5fb731c6-df9f-4503-8982-85ce71eb77f3
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -8198699208435500284, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
+--- !u!114 &1135815434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135815428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03a5df2202a8b96488c744be3bd0c33e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Timeout: 10
+  m_XROrigin: {fileID: 1135815430}
+--- !u!114 &1135815435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135815428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 919e39492806b334982b6b84c90dd927, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_System: {fileID: 1135815434}
+  m_TurnSpeed: 60
+  m_LeftHandTurnAction:
+    m_UseReference: 0
+    m_Action:
+      m_Name: Left Hand Turn
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: cb653fe8-8f50-413e-952d-d44a32268fe7
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: 0}
+  m_RightHandTurnAction:
+    m_UseReference: 1
+    m_Action:
+      m_Name: Right Hand Turn
+      m_Type: 0
+      m_ExpectedControlType: Vector2
+      m_Id: 910c6252-6124-41f1-ad58-d4417a20ae1b
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+    m_Reference: {fileID: -6493913391331992944, guid: c348712bda248c246b8c49b3db54643f,
+      type: 3}
+--- !u!114 &1135815436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1135815428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af6bf904e410ee8479f9093d8830d1f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LocomotionProvider: {fileID: 1135815433}
+  m_MinHeight: 0
+  m_MaxHeight: Infinity
 --- !u!1 &1193698164 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 745722453906658090, guid: b02a901cc97b8c34a910e3e012b1e207,
