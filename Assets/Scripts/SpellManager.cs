@@ -10,13 +10,13 @@ public class SpellManager : MonoBehaviour
         wandController.OnSpellCast.AddListener(CastSpell);
     }
 
-    void PrepareSpell(string spellName)
+    public void PrepareSpell(string spellName)
     {
         Debug.Log($"Preparing spell: {spellName}");
         // Here you could add visual effects to the wand, play a sound, etc.
     }
 
-    void CastSpell(string spellName)
+    public void CastSpell(string spellName)
     {
         switch (spellName)
         {
@@ -35,19 +35,19 @@ public class SpellManager : MonoBehaviour
         }
     }
 
-    void CastLumos()
+    public void CastLumos()
     {
         Debug.Log("Casting Lumos!");
         // Implement Lumos effect (e.g., create a light source)
     }
 
-    void CastReducto()
+    public void CastReducto()
     {
         Debug.Log("Casting Reducto!");
         // Implement Reducto effect (e.g., destroy a target object)
     }
 
-    void CastIncendio()
+    public void CastIncendio()
     {
         Debug.Log("Casting Incendio!");
         // Implement Incendio effect (e.g., create fire particles)
