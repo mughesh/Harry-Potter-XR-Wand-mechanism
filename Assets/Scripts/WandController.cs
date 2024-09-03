@@ -4,12 +4,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class WandController : MonoBehaviour
 {
-    public GameObject defaultProjectilePrefab;
     public Transform spawnPoint;
-    public float fireSpeed = 20f;
-
-    private bool isSpellActive = false;
-    private string activeSpell = "";
 
     [System.Serializable]
     public class SpellEvent : UnityEvent<string> { }
@@ -20,8 +15,8 @@ public class WandController : MonoBehaviour
     public SpellEvent OnTriggerReleased = new SpellEvent();
 
     private XRGrabInteractable grabbable;
-
     private bool isTriggerHeld = false;
+    private string currentSpell = "Default";
 
     void Start()
     {
@@ -32,57 +27,30 @@ public class WandController : MonoBehaviour
 
     void Update()
     {
-        // Check for trigger hold
-        if (isTriggerHeld && isSpellActive)
+        if (isTriggerHeld)
         {
-            OnTriggerHeld.Invoke(activeSpell);
+            OnTriggerHeld.Invoke(currentSpell);
         }
     }
 
     private void HandleTriggerPressed(ActivateEventArgs args)
     {
         isTriggerHeld = true;
-
-        if (isSpellActive)
-        {
-            OnTriggerPressed.Invoke(activeSpell);
-        }
-        else
-        {
-            DefaultFire();
-        }
+        OnTriggerPressed.Invoke(currentSpell);
     }
 
     private void HandleTriggerReleased(DeactivateEventArgs args)
     {
-        if (isSpellActive)
-        {
-            OnTriggerReleased.Invoke(activeSpell);
-        }
-
         isTriggerHeld = false;
-    }
-
-    private void DefaultFire()
-    {
-        GameObject spawnedProjectile = Instantiate(defaultProjectilePrefab, spawnPoint.position, spawnPoint.rotation);
-        spawnedProjectile.GetComponent<Rigidbody>().velocity = spawnPoint.forward * fireSpeed;
-        Destroy(spawnedProjectile, 5f);
+        OnTriggerReleased.Invoke(currentSpell);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Spell"))
         {
-            string spellName = other.gameObject.name;
-            SelectSpell(spellName);
+            currentSpell = other.gameObject.name;
+            OnSpellSelected.Invoke(currentSpell);
         }
-    }
-
-    private void SelectSpell(string spellName)
-    {
-        isSpellActive = true;
-        activeSpell = spellName;
-        OnSpellSelected.Invoke(spellName);
     }
 }

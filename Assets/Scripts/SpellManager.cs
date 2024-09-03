@@ -4,8 +4,10 @@ using System.Collections;
 public class SpellManager : MonoBehaviour
 {
     public WandController wandController;
+    public GameObject baseSpellProjectilePrefab;
     public GameObject lumousFx;
 
+    private string currentSpell = "Default";
     private Coroutine lumosCoroutine;
 
     void Start()
@@ -18,6 +20,7 @@ public class SpellManager : MonoBehaviour
 
     public void PrepareSpell(string spellName)
     {
+        currentSpell = spellName;
         Debug.Log($"Preparing spell: {spellName}");
         // Add visual effects to the wand, play a sound, etc.
     }
@@ -32,17 +35,50 @@ public class SpellManager : MonoBehaviour
                     lumosCoroutine = StartCoroutine(LumosEffect());
                 }
                 break;
-            case "Reducto":
-                CastReducto();
-                break;
-            case "Incendio":
-                CastIncendio();
-                break;
             default:
-                Debug.LogWarning($"Unknown spell: {spellName}");
+                LaunchSpellProjectile(spellName);
                 break;
         }
     }
+
+    private void LaunchSpellProjectile(string spellName)
+    {
+        GameObject projectileObj = Instantiate(baseSpellProjectilePrefab, wandController.spawnPoint.position, wandController.spawnPoint.rotation);
+        SpellProjectile projectile = projectileObj.GetComponent<SpellProjectile>();
+        SpellEffects spellEffects = projectileObj.GetComponent<SpellEffects>();
+
+        if (projectile != null)
+        {
+            projectile.Initialize(wandController.spawnPoint);
+            projectile.OnSpellHit += HandleSpellHit;
+        }
+
+        if (spellEffects != null)
+        {
+            spellEffects.ApplySpellEffect(spellName);
+        }
+    }
+
+    private void HandleSpellHit(Collision collision)
+    {
+        // Handle spell-specific effects on hit
+        switch (currentSpell)
+        {
+            case "Default":
+                // Handle default spell hit
+                break;
+            case "Reducto":
+                // Handle Reducto hit effect
+                break;
+            case "Incendio":
+                // Handle Incendio hit effect
+                break;
+            // Add more cases for other spells
+        }
+    }
+
+    // ... (rest of the SpellManager code remains the same)
+
 
     public void HoldSpell(string spellName)
     {
@@ -63,6 +99,7 @@ public class SpellManager : MonoBehaviour
                 lumosCoroutine = null;
             }
             lumousFx.SetActive(false);
+            Debug.Log("Lumos spell released");
         }
     }
 
@@ -84,17 +121,5 @@ public class SpellManager : MonoBehaviour
         }
 
         lumousFx.transform.localScale = targetScale;
-    }
-
-    public void CastReducto()
-    {
-        Debug.Log("Casting Reducto!");
-        // Implement Reducto effect (e.g., destroy a target object)
-    }
-
-    public void CastIncendio()
-    {
-        Debug.Log("Casting Incendio!");
-        // Implement Incendio effect (e.g., create fire particles)
     }
 }
