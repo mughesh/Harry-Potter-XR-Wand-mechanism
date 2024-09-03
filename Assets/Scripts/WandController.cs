@@ -15,27 +15,52 @@ public class WandController : MonoBehaviour
     public class SpellEvent : UnityEvent<string> { }
 
     public SpellEvent OnSpellSelected = new SpellEvent();
-    public SpellEvent OnSpellCast = new SpellEvent();
+    public SpellEvent OnTriggerPressed = new SpellEvent();
+    public SpellEvent OnTriggerHeld = new SpellEvent();
+    public SpellEvent OnTriggerReleased = new SpellEvent();
 
     private XRGrabInteractable grabbable;
+
+    private bool isTriggerHeld = false;
 
     void Start()
     {
         grabbable = GetComponent<XRGrabInteractable>();
-        grabbable.activated.AddListener(FireWand);
+        grabbable.activated.AddListener(HandleTriggerPressed);
+        grabbable.deactivated.AddListener(HandleTriggerReleased);
     }
 
-    private void FireWand(ActivateEventArgs args)
+    void Update()
     {
+        // Check for trigger hold
+        if (isTriggerHeld && isSpellActive)
+        {
+            OnTriggerHeld.Invoke(activeSpell);
+        }
+    }
+
+    private void HandleTriggerPressed(ActivateEventArgs args)
+    {
+        isTriggerHeld = true;
+
         if (isSpellActive)
         {
-            OnSpellCast.Invoke(activeSpell);
-            isSpellActive = false;
+            OnTriggerPressed.Invoke(activeSpell);
         }
         else
         {
             DefaultFire();
         }
+    }
+
+    private void HandleTriggerReleased(DeactivateEventArgs args)
+    {
+        if (isSpellActive)
+        {
+            OnTriggerReleased.Invoke(activeSpell);
+        }
+
+        isTriggerHeld = false;
     }
 
     private void DefaultFire()
