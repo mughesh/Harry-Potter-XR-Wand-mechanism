@@ -53,4 +53,13 @@ public class WandController : MonoBehaviour
             OnSpellSelected.Invoke(currentSpell);
         }
     }
+
+    void OnDrawGizmos()
+    {
+        if (spawnPoint != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawRay(spawnPoint.position, spawnPoint.forward * 0.5f);
+        }
+    }
 }

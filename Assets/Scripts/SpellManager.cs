@@ -35,6 +35,9 @@ public class SpellManager : MonoBehaviour
                     lumosCoroutine = StartCoroutine(LumosEffect());
                 }
                 break;
+            case "Reducto":
+                LaunchSpellProjectile(spellName);
+                break;
             default:
                 LaunchSpellProjectile(spellName);
                 break;
@@ -50,6 +53,7 @@ public class SpellManager : MonoBehaviour
         if (projectile != null)
         {
             projectile.Initialize(wandController.spawnPoint);
+            Debug.Log($"Launched spell: {spellName}");
             projectile.OnSpellHit += HandleSpellHit;
         }
 
