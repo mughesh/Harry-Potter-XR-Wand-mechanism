@@ -1,22 +1,29 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Rendering.Universal;
 
 public class SpellManager : MonoBehaviour
 {
     public WandController wandController;
-    public List<GameObject> spellProjectiles;
-    private GameObject activeProjectile;
-    public GameObject lumousFx;
+    public Dictionary<string, GameObject> spellProjectiles;
+    public List<GameObject> spellProjectileList;
     private Coroutine lumosCoroutine;
+    private GameObject activeLumosFx;
 
     void Start()
-    {
+    {   
+        spellProjectiles = new Dictionary<string, GameObject>
+        {
+            {"Default", spellProjectileList[0]},    
+            {"Lumos", spellProjectileList[1]},
+            {"Reducto", spellProjectileList[2]},
+            {"Incendio", spellProjectileList[3]}
+        };
         wandController.OnSpellSelected.AddListener(PrepareSpell);
         wandController.OnTriggerPressed.AddListener(CastSpell);
         wandController.OnTriggerHeld.AddListener(HoldSpell);
         wandController.OnTriggerReleased.AddListener(ReleaseSpell);
-        activeProjectile = spellProjectiles[wandController.currentSpell];
     }
 
     public void PrepareSpell(string spellName)
@@ -28,41 +35,32 @@ public class SpellManager : MonoBehaviour
     public void CastSpell(string spellName)
     {
         Debug.Log($"Casting spell: {spellName}");
-        switch (spellName)
+        if (spellProjectiles.TryGetValue(spellName, out GameObject spellProjectile))
         {
-            case "Default":
-                LaunchSpellProjectile(spellName);
-                Debug.Log("Casting primary spell");
-                break;
-
-            case "Lumos":
+            if (spellName == "Lumos")
+            {
                 if (lumosCoroutine == null)
                 {
-                    lumosCoroutine = StartCoroutine(LumosEffect());
+                    lumosCoroutine = StartCoroutine(LumosEffect(spellProjectile));
                 }
                 Debug.Log("Casting Lumos spell");
-                break;
-
-            case "Reducto":
-                LaunchSpellProjectile(spellName);
-                Debug.Log("Casting Reducto spell");
-                break;
-
-            case "Incendio":
-                LaunchSpellProjectile(spellName);
-                Debug.Log("Casting Incendio spell");
-                break;
-
-            default:
-                LaunchSpellProjectile(spellName);
-                Debug.Log("Casting default spell");
-                break;
+            }
+            else
+            {
+                LaunchSpellProjectile(spellName, spellProjectile);
+                Debug.Log($"Casting {spellName} spell");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Spell {spellName} not found in dictionary. Casting default spell.");
+            LaunchSpellProjectile("Default", spellProjectiles["Default"]);
         }
     }
 
-    private void LaunchSpellProjectile(string spellName)
+    private void LaunchSpellProjectile(string spellName, GameObject projectilePrefab)
     {
-        GameObject projectileObj = Instantiate(baseSpellProjectilePrefab, wandController.spawnPoint.position, wandController.spawnPoint.rotation);
+        GameObject projectileObj = Instantiate(projectilePrefab, wandController.spawnPoint.position, wandController.spawnPoint.rotation);
         SpellProjectile projectile = projectileObj.GetComponent<SpellProjectile>();
         SpellEffects spellEffects = projectileObj.GetComponent<SpellEffects>();
         if (projectile != null)
@@ -79,28 +77,35 @@ public class SpellManager : MonoBehaviour
 
     private void HandleSpellHit(Collision collision)
     {
-        // Handle spell-specific effects on hit
-        switch (wandController.currentSpell)
+        string currentSpell = wandController.currentSpell;
+        if (spellProjectiles.ContainsKey(currentSpell))
         {
-            case "Default":
-                // Handle default spell hit
-                break;
-            case "Reducto":
-                // Handle Reducto hit effect
-                break;
-            case "Incendio":
-                // Handle Incendio hit effect
-                break;
-            // Add more cases for other spells
+            switch (currentSpell)
+            {
+                case "Default":
+                    // Handle default spell hit
+                    break;
+                case "Reducto":
+                    // Handle Reducto hit effect
+                    break;
+                case "Incendio":
+                    // Handle Incendio hit effect
+                    break;
+                // Add more cases for other spells if needed
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Spell {currentSpell} not found in dictionary during hit handling.");
         }
     }
 
     public void HoldSpell(string spellName)
     {
-        if (spellName == "Lumos")
+        if (spellName == "Lumos" && activeLumosFx != null)
         {
             // Keep the Lumos light active
-            lumousFx.SetActive(true);
+            activeLumosFx.SetActive(true);
         }
     }
 
@@ -113,25 +118,32 @@ public class SpellManager : MonoBehaviour
                 StopCoroutine(lumosCoroutine);
                 lumosCoroutine = null;
             }
-            lumousFx.SetActive(false);
+            if (activeLumosFx != null)
+            {
+                Destroy(activeLumosFx);
+                activeLumosFx = null;
+            }
             Debug.Log("Lumos spell released");
         }
     }
 
-    private IEnumerator LumosEffect()
+    private IEnumerator LumosEffect(GameObject lumosPrefab)
     {
-        lumousFx.SetActive(true);
-        // Scaling effect (or any other effect you want)
+        // Instantiate the Lumos effect at the spawn point
+        activeLumosFx = Instantiate(lumosPrefab, wandController.spawnPoint.position, wandController.spawnPoint.rotation, wandController.spawnPoint);
+        activeLumosFx.SetActive(true);
+
+        // Scaling effect
         float duration = 0.5f;
         Vector3 initialScale = Vector3.zero;
         Vector3 targetScale = new Vector3(0.03f, 0.03f, 0.03f);
         float elapsed = 0f;
         while (elapsed < duration)
         {
-            lumousFx.transform.localScale = Vector3.Lerp(initialScale, targetScale, elapsed / duration);
+            activeLumosFx.transform.localScale = Vector3.Lerp(initialScale, targetScale, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
         }
-        lumousFx.transform.localScale = targetScale;
+        activeLumosFx.transform.localScale = targetScale;
     }
 }

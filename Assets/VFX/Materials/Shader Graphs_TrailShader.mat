@@ -10,7 +10,7 @@ Material:
   m_Name: Shader Graphs_TrailShader
   m_Shader: {fileID: -6465566751694194690, guid: 4baa7261aa56a36409a6bc3616a8a9d9,
     type: 3}
-  m_Parent: {fileID: 2100000, guid: fce576093cf72e44693830430c8ae10d, type: 2}
+  m_Parent: {fileID: 2100000, guid: c6efb5adcf3b3de4385b57db9ecc3b46, type: 2}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _ALPHATEST_ON
