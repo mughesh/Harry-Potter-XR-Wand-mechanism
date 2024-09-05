@@ -16,7 +16,8 @@ public class WandController : MonoBehaviour
 
     private XRGrabInteractable grabbable;
     private bool isTriggerHeld = false;
-    private string currentSpell = "Default";
+    public string currentSpell = "Default";
+    private string selectedSpell = "";
 
     void Start()
     {
@@ -30,29 +31,49 @@ public class WandController : MonoBehaviour
         if (isTriggerHeld)
         {
             OnTriggerHeld.Invoke(currentSpell);
+           // Debug.Log($"UPDATE METHOD Spell held: {currentSpell}");
         }
     }
 
     private void HandleTriggerPressed(ActivateEventArgs args)
     {
         isTriggerHeld = true;
-        OnTriggerPressed.Invoke(currentSpell);
+        if (selectedSpell != "")
+        {
+            currentSpell = selectedSpell;
+            OnTriggerPressed.Invoke(currentSpell);
+        }
+        else
+        {
+            OnTriggerPressed.Invoke("Default");
+        }
     }
 
     private void HandleTriggerReleased(DeactivateEventArgs args)
     {
         isTriggerHeld = false;
         OnTriggerReleased.Invoke(currentSpell);
+        currentSpell = "Default";
+        selectedSpell = "";
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Spell"))
         {
-            currentSpell = other.gameObject.name;
-            OnSpellSelected.Invoke(currentSpell);
+            selectedSpell = other.gameObject.name;
+            OnSpellSelected.Invoke(selectedSpell);
+            //Debug.Log($"TRIGGER STAY Spell selected: {selectedSpell}");
         }
     }
+
+    // private void OnTriggerExit(Collider other)
+    // {
+    //     if (other.CompareTag("Spell") && other.gameObject.name == selectedSpell)
+    //     {
+    //         selectedSpell = "";
+    //     }
+    // }
 
     void OnDrawGizmos()
     {
