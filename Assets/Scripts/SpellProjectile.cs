@@ -24,14 +24,14 @@ public class SpellProjectile : MonoBehaviour
         if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
         {
             endPoint = hit.point;
-            Debug.Log($"Raycast hit: {hit.collider.name} at distance {hit.distance}");
-            Debug.DrawLine(wandTip.position, hit.point, Color.red, 5f);
+            //Debug.Log($"Raycast hit: {hit.collider.name} at distance {hit.distance}");
+            //Debug.DrawLine(wandTip.position, hit.point, Color.red, 5f);
         }
         else
         {
             endPoint = wandTip.position + wandTip.forward * maxDistance;
-            Debug.Log($"Raycast did not hit anything, using max distance: {maxDistance}");
-            Debug.DrawLine(wandTip.position, endPoint, Color.blue, 5f);
+            //Debug.Log($"Raycast did not hit anything, using max distance: {maxDistance}");
+           // Debug.DrawLine(wandTip.position, endPoint, Color.blue, 5f);
         }
 
         Vector3 midPoint = (startPoint + endPoint) / 2f;
@@ -46,7 +46,7 @@ public class SpellProjectile : MonoBehaviour
         // Calculate the length of the journey
         journeyLength = EstimateJourneyLength();
 
-        Debug.Log($"Projectile initialized. Start: {startPoint}, End: {endPoint}, Control: {controlPoint}, Journey Length: {journeyLength}");
+        //Debug.Log($"Projectile initialized. Start: {startPoint}, End: {endPoint}, Control: {controlPoint}, Journey Length: {journeyLength}");
     }
 
     void Update()

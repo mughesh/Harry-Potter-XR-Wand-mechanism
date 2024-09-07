@@ -81,6 +81,7 @@ public class WandController : MonoBehaviour
         else
         {
             OnTriggerPressed.Invoke(currentSpell);
+            //currentSpell = "Default";
         }
     }
 

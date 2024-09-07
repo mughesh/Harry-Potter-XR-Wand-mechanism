@@ -78,10 +78,12 @@ public class SpellManager : MonoBehaviour
                 {
                     lumosCoroutine = StartCoroutine(LumosEffect(spellProjectile));
                 }
+                              
             }
             else
             {
                 LaunchSpellProjectile(spellName, spellProjectile);
+                ResetToDefaultSpell();
             }
         }
         else
@@ -152,6 +154,7 @@ public void ReleaseSpell(string spellName)
             {
                 StopCoroutine(lumosCoroutine);
                 lumosCoroutine = null;
+                ResetToDefaultSpell();
             }
             if (activeLumosFx != null)
             {
@@ -159,6 +162,13 @@ public void ReleaseSpell(string spellName)
                 activeLumosFx = null;
             }
         }
+    }
+
+    private void ResetToDefaultSpell()
+    {
+        wandController.currentSpell = "Default";
+        wandController.OnSpellSelected.Invoke("Default");
+        Debug.Log("Reset to default spell after casting.");
     }
 
     private IEnumerator LumosEffect(GameObject lumosPrefab)
