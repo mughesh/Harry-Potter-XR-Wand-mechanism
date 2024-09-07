@@ -10,6 +10,8 @@ public class SpellManager : MonoBehaviour
     public List<GameObject> spellProjectileList;
     private Coroutine lumosCoroutine;
     private GameObject activeLumosFx;
+    public GameObject spellDescriptionPrefab;
+    private GameObject activeSpellDescription;
 
     void Start()
     {   
@@ -20,10 +22,43 @@ public class SpellManager : MonoBehaviour
             {"Reducto", spellProjectileList[2]},
             {"Incendio", spellProjectileList[3]}
         };
+        wandController.OnSpellAimed.AddListener(ShowSpellDescription);
         wandController.OnSpellSelected.AddListener(PrepareSpell);
         wandController.OnTriggerPressed.AddListener(CastSpell);
         wandController.OnTriggerHeld.AddListener(HoldSpell);
         wandController.OnTriggerReleased.AddListener(ReleaseSpell);
+    }
+
+    public void ShowSpellDescription(string spellName)
+    {
+        if (activeSpellDescription != null)
+        {
+            Destroy(activeSpellDescription);
+        }
+
+        if (!string.IsNullOrEmpty(spellName))
+        {
+            activeSpellDescription = Instantiate(spellDescriptionPrefab, wandController.transform.position + wandController.transform.up * 0.2f, Quaternion.identity);
+            activeSpellDescription.GetComponent<TextMesh>().text = GetSpellDescription(spellName);
+        }
+    }
+
+    private string GetSpellDescription(string spellName)
+    {
+        switch (spellName)
+        {
+            case "Lumos": 
+                return "Creates light";
+                
+            case "Reducto": 
+                return "Breaks objects";
+
+            case "Incendio": 
+                return "Creates fire";
+
+            default: 
+                return "Unknown spell";
+        }
     }
 
     public void PrepareSpell(string spellName)
@@ -32,7 +67,7 @@ public class SpellManager : MonoBehaviour
         // Add visual effects to the wand, play a sound, etc.
     }
 
-    public void CastSpell(string spellName)
+   public void CastSpell(string spellName)
     {
         Debug.Log($"Casting spell: {spellName}");
         if (spellProjectiles.TryGetValue(spellName, out GameObject spellProjectile))
@@ -43,12 +78,10 @@ public class SpellManager : MonoBehaviour
                 {
                     lumosCoroutine = StartCoroutine(LumosEffect(spellProjectile));
                 }
-                Debug.Log("Casting Lumos spell");
             }
             else
             {
                 LaunchSpellProjectile(spellName, spellProjectile);
-                Debug.Log($"Casting {spellName} spell");
             }
         }
         else
@@ -57,6 +90,8 @@ public class SpellManager : MonoBehaviour
             LaunchSpellProjectile("Default", spellProjectiles["Default"]);
         }
     }
+
+    
 
     private void LaunchSpellProjectile(string spellName, GameObject projectilePrefab)
     {
@@ -109,7 +144,7 @@ public class SpellManager : MonoBehaviour
         }
     }
 
-    public void ReleaseSpell(string spellName)
+public void ReleaseSpell(string spellName)
     {
         if (spellName == "Lumos")
         {
@@ -123,7 +158,6 @@ public class SpellManager : MonoBehaviour
                 Destroy(activeLumosFx);
                 activeLumosFx = null;
             }
-            Debug.Log("Lumos spell released");
         }
     }
 
