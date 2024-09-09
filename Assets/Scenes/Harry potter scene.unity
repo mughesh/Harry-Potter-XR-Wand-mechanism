@@ -96,8 +96,10 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
-  m_LightingSettings: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: eca00b160a03e824aad2f3d1355938b3,
+    type: 2}
+  m_LightingSettings: {fileID: 4890085278179872738, guid: 52d098da638d1c84080b4796d464b446,
+    type: 2}
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -2753,7 +2755,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultEffect: {fileID: 5862347515620611513, guid: e56f9c852fda2c742983bfe0342b6150,
     type: 3}
-  reductoEffect: {fileID: 5862347515620611513, guid: 625174f716a4db244a4fcf84307f6ffe,
+  reductoEffect: {fileID: 1673258858432533846, guid: 2d51aa7daa36c854bbd342b883dcf470,
     type: 3}
   incendioEffect: {fileID: 0}
 --- !u!4 &1208005710
@@ -2865,8 +2867,8 @@ MonoBehaviour:
   spellProjectileList:
   - {fileID: 6861772040425079919, guid: e56f9c852fda2c742983bfe0342b6150, type: 3}
   - {fileID: 1473315823336790856, guid: 4930f4bc0ceb7c8458812fc0b587bead, type: 3}
-  - {fileID: 6861772040425079919, guid: f6c7490d878a8b741bac554c9baa598b, type: 3}
-  - {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964, type: 3}
+  - {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470, type: 3}
+  - {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470, type: 3}
   spellDescriptionPrefab: {fileID: 0}
 --- !u!4 &1379762974
 Transform:
@@ -3612,7 +3614,7 @@ GameObject:
   - component: {fileID: 1771228455}
   - component: {fileID: 1771228454}
   m_Layer: 0
-  m_Name: Reduto
+  m_Name: Reducto
   m_TagString: Spell
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

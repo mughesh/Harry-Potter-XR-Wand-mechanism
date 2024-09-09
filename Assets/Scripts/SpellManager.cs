@@ -83,7 +83,7 @@ public class SpellManager : MonoBehaviour
             else
             {
                 LaunchSpellProjectile(spellName, spellProjectile);
-                ResetToDefaultSpell();
+                //ResetToDefaultSpell();
             }
         }
         else
