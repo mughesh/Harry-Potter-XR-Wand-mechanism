@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.XR.Interaction.Toolkit;
 
 public class WandController : MonoBehaviour
@@ -8,18 +7,16 @@ public class WandController : MonoBehaviour
     public float maxAimDistance = 10f;
     public GameObject crosshairPrefab;
 
-    [System.Serializable]
-    public class SpellEvent : UnityEvent<string> { }
-
-    public SpellEvent OnSpellAimed = new SpellEvent();
-    public SpellEvent OnSpellSelected = new SpellEvent();
-    public SpellEvent OnTriggerPressed = new SpellEvent();
-    public SpellEvent OnTriggerHeld = new SpellEvent();
-    public SpellEvent OnTriggerReleased = new SpellEvent();
+    public delegate void SpellEventHandler(string spellName);
+    public event SpellEventHandler OnSpellAimed;
+    public event SpellEventHandler OnSpellSelected;
+    public event SpellEventHandler OnTriggerPressed;
+    public event SpellEventHandler OnTriggerHeld;
+    public event SpellEventHandler OnTriggerReleased;
 
     private XRGrabInteractable grabbable;
     private bool isTriggerHeld = false;
-    public string currentSpell = "Default";
+    private string currentSpell = "Default";
     private string aimedSpell = "";
     private GameObject crosshair;
 
@@ -39,7 +36,7 @@ public class WandController : MonoBehaviour
 
         if (isTriggerHeld)
         {
-            OnTriggerHeld.Invoke(currentSpell);
+            OnTriggerHeld?.Invoke(currentSpell);
         }
     }
 
@@ -54,19 +51,19 @@ public class WandController : MonoBehaviour
             if (hit.collider.CompareTag("Spell"))
             {
                 aimedSpell = hit.collider.gameObject.name;
-                OnSpellAimed.Invoke(aimedSpell);
+                OnSpellAimed?.Invoke(aimedSpell);
             }
             else
             {
                 aimedSpell = "";
-                OnSpellAimed.Invoke("");
+                OnSpellAimed?.Invoke("");
             }
         }
         else
         {
             crosshair.SetActive(false);
             aimedSpell = "";
-            OnSpellAimed.Invoke("");
+            OnSpellAimed?.Invoke("");
         }
     }
 
@@ -76,27 +73,19 @@ public class WandController : MonoBehaviour
         if (aimedSpell != "")
         {
             currentSpell = aimedSpell;
-            OnSpellSelected.Invoke(currentSpell);
+            OnSpellSelected?.Invoke(currentSpell);
+            Debug.Log("Selected " + currentSpell);
         }
         else
         {
-            OnTriggerPressed.Invoke(currentSpell);
-            //currentSpell = "Default";
+            OnTriggerPressed?.Invoke(currentSpell);
+            //Debug.Log("Pressed " + currentSpell);
         }
     }
 
     private void HandleTriggerReleased(DeactivateEventArgs args)
     {
         isTriggerHeld = false;
-        OnTriggerReleased.Invoke(currentSpell);
-    }
-
-    void OnDrawGizmos()
-    {
-        if (spawnPoint != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawRay(spawnPoint.position, spawnPoint.forward * maxAimDistance);
-        }
+        OnTriggerReleased?.Invoke(currentSpell);
     }
 }

@@ -5,8 +5,8 @@ public class SpellProjectile : MonoBehaviour
 {
     public float speed = 10f;
     public float maxDistance = 100f;
-    public float curveHeight = 0.5f; // Reduced from 1f to 0.5f
-    public float curveVariation = 0.2f; // New variable to control randomness
+    public float curveHeight = 0.5f;
+    public float curveVariation = 0.2f;
 
     private Vector3 startPoint;
     private Vector3 endPoint;
@@ -14,7 +14,7 @@ public class SpellProjectile : MonoBehaviour
     private float startTime;
     private float journeyLength;
 
-    public event Action<Collision> OnSpellHit;
+    public event Action<RaycastHit> OnSpellHit;
 
     public void Initialize(Transform wandTip)
     {
@@ -24,29 +24,20 @@ public class SpellProjectile : MonoBehaviour
         if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
         {
             endPoint = hit.point;
-            //Debug.Log($"Raycast hit: {hit.collider.name} at distance {hit.distance}");
-            //Debug.DrawLine(wandTip.position, hit.point, Color.red, 5f);
         }
         else
         {
             endPoint = wandTip.position + wandTip.forward * maxDistance;
-            //Debug.Log($"Raycast did not hit anything, using max distance: {maxDistance}");
-           // Debug.DrawLine(wandTip.position, endPoint, Color.blue, 5f);
         }
 
         Vector3 midPoint = (startPoint + endPoint) / 2f;
         Vector3 upDirection = Vector3.Cross(wandTip.right, (endPoint - startPoint).normalized).normalized;
         controlPoint = midPoint + upDirection * curveHeight;
         
-        // Add some controlled randomness to the control point
         controlPoint += UnityEngine.Random.insideUnitSphere * curveVariation;
 
         startTime = Time.time;
-
-        // Calculate the length of the journey
         journeyLength = EstimateJourneyLength();
-
-        //Debug.Log($"Projectile initialized. Start: {startPoint}, End: {endPoint}, Control: {controlPoint}, Journey Length: {journeyLength}");
     }
 
     void Update()
@@ -62,7 +53,6 @@ public class SpellProjectile : MonoBehaviour
 
         transform.position = CalculatePosition(fractionOfJourney);
 
-        // Orient the projectile along its path
         if (fractionOfJourney < 0.99f)
         {
             Vector3 nextPosition = CalculatePosition(fractionOfJourney + 0.01f);
@@ -92,9 +82,13 @@ public class SpellProjectile : MonoBehaviour
         return length;
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        OnSpellHit?.Invoke(collision);
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, 0.1f))
+        {
+            OnSpellHit?.Invoke(hit);
+        }
         Destroy(gameObject);
     }
 }
