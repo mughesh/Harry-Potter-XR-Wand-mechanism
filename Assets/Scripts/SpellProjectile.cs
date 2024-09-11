@@ -3,8 +3,6 @@ using System;
 
 public class SpellProjectile : MonoBehaviour
 {
-    public float speed = 10f;
-    public float maxDistance = 100f;
     public float curveHeight = 0.5f;
     public float curveVariation = 0.2f;
 
@@ -13,27 +11,28 @@ public class SpellProjectile : MonoBehaviour
     private Vector3 controlPoint;
     private float startTime;
     private float journeyLength;
+    private float speed;
 
-    public event Action<RaycastHit> OnSpellHit;
+    public event Action<RaycastHit> OnProjectileHit;
 
-    public void Initialize(Transform wandTip)
+    public void Initialize(Transform spawnPoint, float projectileSpeed, float maxDistance)
     {
-        startPoint = wandTip.position;
+        speed = projectileSpeed;
+        startPoint = spawnPoint.position;
         
         RaycastHit hit;
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        if (Physics.Raycast(spawnPoint.position, spawnPoint.forward, out hit, maxDistance))
         {
             endPoint = hit.point;
         }
         else
         {
-            endPoint = wandTip.position + wandTip.forward * maxDistance;
+            endPoint = spawnPoint.position + spawnPoint.forward * maxDistance;
         }
 
         Vector3 midPoint = (startPoint + endPoint) / 2f;
-        Vector3 upDirection = Vector3.Cross(wandTip.right, (endPoint - startPoint).normalized).normalized;
+        Vector3 upDirection = Vector3.Cross(spawnPoint.right, (endPoint - startPoint).normalized).normalized;
         controlPoint = midPoint + upDirection * curveHeight;
-        
         controlPoint += UnityEngine.Random.insideUnitSphere * curveVariation;
 
         startTime = Time.time;
@@ -51,13 +50,24 @@ public class SpellProjectile : MonoBehaviour
             return;
         }
 
-        transform.position = CalculatePosition(fractionOfJourney);
+        Vector3 newPosition = CalculatePosition(fractionOfJourney);
+        
+        if (float.IsNaN(newPosition.x) || float.IsNaN(newPosition.y) || float.IsNaN(newPosition.z))
+        {
+            Debug.LogWarning("Invalid position calculated. Destroying projectile.");
+            Destroy(gameObject);
+            return;
+        }
+
+        transform.position = newPosition;
 
         if (fractionOfJourney < 0.99f)
         {
             Vector3 nextPosition = CalculatePosition(fractionOfJourney + 0.01f);
             transform.LookAt(nextPosition);
         }
+
+        CheckCollision();
     }
 
     private Vector3 CalculatePosition(float t)
@@ -82,13 +92,13 @@ public class SpellProjectile : MonoBehaviour
         return length;
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void CheckCollision()
     {
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, 0.1f))
+        if (Physics.Raycast(transform.position, transform.forward, out hit, speed * Time.deltaTime))
         {
-            OnSpellHit?.Invoke(hit);
+            OnProjectileHit?.Invoke(hit);
+            Destroy(gameObject);
         }
-        Destroy(gameObject);
     }
 }

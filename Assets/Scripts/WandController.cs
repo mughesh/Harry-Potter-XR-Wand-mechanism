@@ -7,37 +7,27 @@ public class WandController : MonoBehaviour
     public float maxAimDistance = 10f;
     public GameObject crosshairPrefab;
 
-    public delegate void SpellEventHandler(string spellName);
-    public event SpellEventHandler OnSpellAimed;
-    public event SpellEventHandler OnSpellSelected;
-    public event SpellEventHandler OnTriggerPressed;
-    public event SpellEventHandler OnTriggerHeld;
-    public event SpellEventHandler OnTriggerReleased;
-
     private XRGrabInteractable grabbable;
-    private bool isTriggerHeld = false;
-    private string currentSpell = "Default";
-    private string aimedSpell = "";
     private GameObject crosshair;
+    private SpellManager spellManager;
 
     void Start()
     {
         grabbable = GetComponent<XRGrabInteractable>();
         grabbable.activated.AddListener(HandleTriggerPressed);
         grabbable.deactivated.AddListener(HandleTriggerReleased);
+        grabbable.selectEntered.AddListener(HandleGrabbed);
+        grabbable.selectExited.AddListener(HandleReleased);
 
         crosshair = Instantiate(crosshairPrefab, spawnPoint.position, Quaternion.identity);
         crosshair.SetActive(false);
+
+        spellManager = FindObjectOfType<SpellManager>();
     }
 
     void Update()
     {
         UpdateAim();
-
-        if (isTriggerHeld)
-        {
-            OnTriggerHeld?.Invoke(currentSpell);
-        }
     }
 
     private void UpdateAim()
@@ -47,45 +37,32 @@ public class WandController : MonoBehaviour
         {
             crosshair.SetActive(true);
             crosshair.transform.position = hit.point;
-
-            if (hit.collider.CompareTag("Spell"))
-            {
-                aimedSpell = hit.collider.gameObject.name;
-                OnSpellAimed?.Invoke(aimedSpell);
-            }
-            else
-            {
-                aimedSpell = "";
-                OnSpellAimed?.Invoke("");
-            }
+            spellManager.AimAt(hit.collider.gameObject);
         }
         else
         {
             crosshair.SetActive(false);
-            aimedSpell = "";
-            OnSpellAimed?.Invoke("");
+            spellManager.AimAt(null);
         }
     }
 
     private void HandleTriggerPressed(ActivateEventArgs args)
     {
-        isTriggerHeld = true;
-        if (aimedSpell != "")
-        {
-            currentSpell = aimedSpell;
-            OnSpellSelected?.Invoke(currentSpell);
-            Debug.Log("Selected " + currentSpell);
-        }
-        else
-        {
-            OnTriggerPressed?.Invoke(currentSpell);
-            //Debug.Log("Pressed " + currentSpell);
-        }
+        spellManager.TriggerPressed();
     }
 
     private void HandleTriggerReleased(DeactivateEventArgs args)
     {
-        isTriggerHeld = false;
-        OnTriggerReleased?.Invoke(currentSpell);
+        spellManager.TriggerReleased();
+    }
+
+    private void HandleGrabbed(SelectEnterEventArgs args)
+    {
+        spellManager.WandGrabbed();
+    }
+
+    private void HandleReleased(SelectExitEventArgs args)
+    {
+        spellManager.WandReleased();
     }
 }

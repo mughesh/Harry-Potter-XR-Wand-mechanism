@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class IncendioSpell : BaseSpell
+public class ReductoSpell : BaseSpell
 {
     public float projectileSpeed = 10f;
     public float maxDistance = 100f;

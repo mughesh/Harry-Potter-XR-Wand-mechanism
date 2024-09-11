@@ -8,70 +8,79 @@ public class SpellManager : MonoBehaviour
 
     private Dictionary<string, BaseSpell> spells = new Dictionary<string, BaseSpell>();
     private BaseSpell currentSpell;
+    private GameObject aimedObject;
 
     void Start()
     {
-        Debug.Log("SpellManager: Start method called");
         InitializeSpells();
-
-        wandController.OnSpellAimed += HandleSpellAimed;
-        wandController.OnSpellSelected += HandleSpellSelected;
-        wandController.OnTriggerPressed += HandleTriggerPressed;
-        wandController.OnTriggerHeld += HandleTriggerHeld;
-        wandController.OnTriggerReleased += HandleTriggerReleased;
     }
 
     private void InitializeSpells()
     {
-        Debug.Log("SpellManager: InitializeSpells called");
-        //spells["Lumos"] = gameObject.AddComponent<LumosSpell>();
-        //spells["Reducto"] = gameObject.AddComponent<ReductoSpell>();
-        spells["Incendio"] = gameObject.AddComponent<IncendioSpell>();
-        Debug.Log($"SpellManager: Incendio spell added. Total spells: {spells.Count}");
-        // Add more spells here
+        foreach (BaseSpell spell in bookController.GetComponentsInChildren<BaseSpell>())
+        {
+            spells.Add(spell.spellName, spell);
+        }
     }
 
-    private void HandleSpellAimed(string spellName)
+    public void AimAt(GameObject obj)
     {
-        Debug.Log($"SpellManager: HandleSpellAimed called with {spellName}");
-        bookController.OnSpellAimed(spellName);
+        aimedObject = obj;
+        if (obj != null && obj.GetComponent<BaseSpell>() != null)
+        {
+            bookController.HoverSpell(obj);
+        }
     }
 
-    private void HandleSpellSelected(string spellName)
+    public void SelectSpell(string spellName)
     {
-        Debug.Log($"SpellManager: HandleSpellSelected called with {spellName}");
+        if (currentSpell != null)
+        {
+            currentSpell.OnDeselect();
+        }
+
         if (spells.TryGetValue(spellName, out BaseSpell spell))
         {
             currentSpell = spell;
-            currentSpell.Equip();
-            bookController.OnSpellSelected(spellName);
-        }
-        else
-        {
-            Debug.LogWarning($"SpellManager: Spell {spellName} not found in dictionary");
+            currentSpell.OnSelect(wandController.spawnPoint);
+            bookController.UpdateSpellVisuals(spellName);
         }
     }
 
-    private void HandleTriggerPressed(string spellName)
+    public void TriggerPressed()
     {
-        Debug.Log($"SpellManager: HandleTriggerPressed called with {spellName}");
+        if (aimedObject != null && aimedObject.GetComponent<BaseSpell>() != null)
+        {
+            SelectSpell(aimedObject.GetComponent<BaseSpell>().spellName);
+        }
+        else if (currentSpell != null)
+        {
+            currentSpell.OnCast(wandController.spawnPoint);
+        }
+    }
+
+    public void TriggerReleased()
+    {
         if (currentSpell != null)
         {
-            currentSpell.Cast(wandController.spawnPoint);
+            currentSpell.OnRelease();
         }
-        else
+    }
+
+    public void WandGrabbed()
+    {
+        if (currentSpell != null)
         {
-            Debug.LogWarning("SpellManager: No current spell selected");
+            currentSpell.OnSelect(wandController.spawnPoint);
         }
     }
 
-    private void HandleTriggerHeld(string spellName)
+    public void WandReleased()
     {
-        currentSpell?.Hold();
-    }
-
-    private void HandleTriggerReleased(string spellName)
-    {
-        currentSpell?.Release();
+        if (currentSpell != null)
+        {
+            currentSpell.OnDeselect();
+        }
+        bookController.ResetSpellVisuals();
     }
 }

@@ -2153,9 +2153,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b37fe1994c300bd4f8f123185418a34f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spellsParent: {fileID: 566796583}
-  defaultMaterial: {fileID: 0}
-  selectedMaterial: {fileID: 0}
   hoverTime: 1
 --- !u!1 &1002374787
 GameObject:
@@ -3431,13 +3428,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a52c06bfd36c80144936b439e8f8e100, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 1272773744}
-  hitVFXPrefab: {fileID: 0}
-  speed: 1
+  spellName: Incendio
+  description: Fiery Flames
+  equipVFX: {fileID: 1613354724157796980, guid: e74923825425cbb4fae70c9540c86d36,
+    type: 3}
+  castVFX: {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964, type: 3}
+  hitVFX: {fileID: 1613354724157796980, guid: e74923825425cbb4fae70c9540c86d36, type: 3}
+  spellMaterial: {fileID: 2100000, guid: e5ba56bfe630cd84983458432c570235, type: 2}
+  projectileSpeed: 10
   maxDistance: 100
-  curveHeight: 0.5
-  curveVariation: 0.2
 --- !u!1 &1630476490
 GameObject:
   m_ObjectHideFlags: 0
@@ -3640,6 +3639,7 @@ GameObject:
   - component: {fileID: 1771228456}
   - component: {fileID: 1771228455}
   - component: {fileID: 1771228454}
+  - component: {fileID: 1771228457}
   m_Layer: 0
   m_Name: Reducto
   m_TagString: Spell
@@ -3733,6 +3733,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1771228452}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1771228457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1771228452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6482f3936d2dd33498d2a5ccd2695ed0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spellName: Reducto
+  description: Blasting
+  equipVFX: {fileID: 1613354724157796980, guid: b49fdfd3529331f4bbd7cbb18c4eee67,
+    type: 3}
+  castVFX: {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470, type: 3}
+  hitVFX: {fileID: 1613354724157796980, guid: b49fdfd3529331f4bbd7cbb18c4eee67, type: 3}
+  spellMaterial: {fileID: 2100000, guid: 040e6a0800a6b5b40bd01b711ca08d5a, type: 2}
+  projectileSpeed: 10
+  maxDistance: 100
 --- !u!1 &1878011764
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,70 +1,72 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class BookController : MonoBehaviour
 {
-    public GameObject spellsParent;
-    public Material defaultMaterial;
-    public Material selectedMaterial;
     public float hoverTime = 1f;
 
-    private Dictionary<string, GameObject> spellObjects = new Dictionary<string, GameObject>();
-    private float currentHoverTime = 0f;
-    private GameObject hoveredSpell;
+    private SpellManager spellManager;
+    private GameObject currentHoveredSpell;
+    private float hoverStartTime;
 
     void Start()
     {
-        foreach (Transform child in spellsParent.transform)
+        spellManager = FindObjectOfType<SpellManager>();
+    }
+
+    public void HoverSpell(GameObject spellObject)
+    {
+        if (currentHoveredSpell != spellObject)
         {
-            spellObjects[child.name] = child.gameObject;
+            currentHoveredSpell = spellObject;
+            hoverStartTime = Time.time;
+        }
+
+        if (Time.time - hoverStartTime >= hoverTime)
+        {
+            ShowSpellDescription(spellObject.GetComponent<BaseSpell>());
         }
     }
 
-    public void OnSpellAimed(string spellName)
+    public void SelectSpell(GameObject spellObject)
     {
-        if (spellObjects.TryGetValue(spellName, out GameObject spellObject))
+        BaseSpell spell = spellObject.GetComponent<BaseSpell>();
+        if (spell != null)
         {
-            if (hoveredSpell != spellObject)
+            spellManager.SelectSpell(spell.spellName);
+        }
+    }
+
+    private void ShowSpellDescription(BaseSpell spell)
+    {
+        // Implement spell description UI logic here
+        Debug.Log($"Showing description for {spell.spellName}");
+    }
+
+    public void UpdateSpellVisuals(string selectedSpellName)
+    {
+        foreach (BaseSpell spell in GetComponentsInChildren<BaseSpell>())
+        {
+            Material spellMaterial = spell.spellMaterial;
+            if (spell.spellName == selectedSpellName)
             {
-                ResetHover();
-                hoveredSpell = spellObject;
+                spellMaterial.EnableKeyword("_EMISSION");
+                spellMaterial.SetColor("_EmissionColor", Color.white);
             }
-            currentHoverTime += Time.deltaTime;
-
-            if (currentHoverTime >= hoverTime)
+            else
             {
-                ShowSpellDescription(spellName);
+                spellMaterial.DisableKeyword("_EMISSION");
             }
-        }
-        else
-        {
-            ResetHover();
+            spell.GetComponent<Renderer>().material = spellMaterial;
         }
     }
 
-    public void OnSpellSelected(string spellName)
+    public void ResetSpellVisuals()
     {
-        foreach (var spell in spellObjects.Values)
+        foreach (BaseSpell spell in GetComponentsInChildren<BaseSpell>())
         {
-            spell.GetComponent<Renderer>().material = defaultMaterial;
+            Material spellMaterial = spell.spellMaterial;
+            spellMaterial.DisableKeyword("_EMISSION");
+            spell.GetComponent<Renderer>().material = spellMaterial;
         }
-
-        if (spellObjects.TryGetValue(spellName, out GameObject selectedSpell))
-        {
-            selectedSpell.GetComponent<Renderer>().material = selectedMaterial;
-        }
-    }
-
-    private void ResetHover()
-    {
-        hoveredSpell = null;
-        currentHoverTime = 0f;
-        // Hide spell description
-    }
-
-    private void ShowSpellDescription(string spellName)
-    {
-        // Show spell description UI
-        Debug.Log($"Showing description for {spellName}");
     }
 }
