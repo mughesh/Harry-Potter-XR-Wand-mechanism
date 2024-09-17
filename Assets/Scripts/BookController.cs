@@ -1,72 +1,115 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class BookController : MonoBehaviour
 {
-    public float hoverTime = 1f;
+    public GameObject[] bookmarks;
+    public GameObject[] spellPages;
+    public GameObject[] inventoryPages;
+    public GameObject leftArrow;
+    public GameObject rightArrow;
+    public Transform hipAttachPoint;
 
-    private SpellManager spellManager;
-    private GameObject currentHoveredSpell;
-    private float hoverStartTime;
+    private XRGrabInteractable grabInteractable;
+    private int currentSegment = 0; // 0 for spells, 1 for inventory
+    private int currentPage = 0;
 
     void Start()
     {
-        spellManager = FindObjectOfType<SpellManager>();
-    }
-
-    public void HoverSpell(GameObject spellObject)
-    {
-        if (currentHoveredSpell != spellObject)
+        grabInteractable = GetComponent<XRGrabInteractable>();
+        if (grabInteractable != null)
         {
-            currentHoveredSpell = spellObject;
-            hoverStartTime = Time.time;
+            grabInteractable.selectEntered.AddListener(OnGrab);
+            grabInteractable.selectExited.AddListener(OnRelease);
+        }
+        else
+        {
+            Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
 
-        if (Time.time - hoverStartTime >= hoverTime)
+        UpdateBookDisplay();
+    }
+
+    void UpdateBookDisplay()
+    {
+        // Update bookmarks visibility
+        bookmarks[0].SetActive(currentSegment == 0);
+        bookmarks[1].SetActive(currentSegment == 1);
+
+        // Update pages visibility
+        for (int i = 0; i < spellPages.Length; i++)
         {
-            ShowSpellDescription(spellObject.GetComponent<BaseSpell>());
+            spellPages[i].SetActive(currentSegment == 0 && i == currentPage);
         }
-    }
-
-    public void SelectSpell(GameObject spellObject)
-    {
-        BaseSpell spell = spellObject.GetComponent<BaseSpell>();
-        if (spell != null)
+        for (int i = 0; i < inventoryPages.Length; i++)
         {
-            spellManager.SelectSpell(spell.spellName);
+            inventoryPages[i].SetActive(currentSegment == 1 && i == currentPage);
         }
+
+        // Update arrows visibility
+        UpdateArrowsVisibility();
     }
 
-    private void ShowSpellDescription(BaseSpell spell)
+    void UpdateArrowsVisibility()
     {
-        // Implement spell description UI logic here
-        Debug.Log($"Showing description for {spell.spellName}");
-    }
-
-    public void UpdateSpellVisuals(string selectedSpellName)
-    {
-        foreach (BaseSpell spell in GetComponentsInChildren<BaseSpell>())
+        if (currentSegment == 0)
         {
-            Material spellMaterial = spell.spellMaterial;
-            if (spell.spellName == selectedSpellName)
-            {
-                spellMaterial.EnableKeyword("_EMISSION");
-                spellMaterial.SetColor("_EmissionColor", Color.white);
-            }
-            else
-            {
-                spellMaterial.DisableKeyword("_EMISSION");
-            }
-            spell.GetComponent<Renderer>().material = spellMaterial;
+            leftArrow.SetActive(currentPage > 0);
+            rightArrow.SetActive(currentPage < spellPages.Length - 1);
+        }
+        else
+        {
+            leftArrow.SetActive(currentPage > 0);
+            rightArrow.SetActive(currentPage < inventoryPages.Length - 1);
         }
     }
 
-    public void ResetSpellVisuals()
+    public void SelectSegment(int index)
     {
-        foreach (BaseSpell spell in GetComponentsInChildren<BaseSpell>())
+        currentSegment = index;
+        currentPage = 0;
+        UpdateBookDisplay();
+    }
+
+    public void NextPage()
+    {
+        if (currentSegment == 0 && currentPage < spellPages.Length - 1)
         {
-            Material spellMaterial = spell.spellMaterial;
-            spellMaterial.DisableKeyword("_EMISSION");
-            spell.GetComponent<Renderer>().material = spellMaterial;
+            currentPage++;
+        }
+        else if (currentSegment == 1 && currentPage < inventoryPages.Length - 1)
+        {
+            currentPage++;
+        }
+        UpdateBookDisplay();
+    }
+
+    public void PreviousPage()
+    {
+        if (currentPage > 0)
+        {
+            currentPage--;
+            UpdateBookDisplay();
+        }
+    }
+
+    public void OnGrab(SelectEnterEventArgs args)
+    {
+        // Book grabbed logic
+    }
+
+    public void OnRelease(SelectExitEventArgs args)
+    {
+        ReturnToHip();
+    }
+
+    public void ReturnToHip()
+    {
+        if (hipAttachPoint != null)
+        {
+            transform.SetParent(hipAttachPoint);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.identity;
         }
     }
 }

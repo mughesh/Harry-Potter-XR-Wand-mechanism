@@ -140,7 +140,9 @@ PlayerSettings:
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
   bundleVersion: 0.1.0
-  preloadedAssets: []
+  preloadedAssets:
+  - {fileID: 8564049924596201509, guid: 75d86a58c57be86409a7ae3f72672df7, type: 2}
+  - {fileID: 7170718215379344092, guid: b1faa09ff97824c49b2add6b8d574ee9, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -858,8 +860,8 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: Harry Potter Wand mechanism
-  metroPackageVersion: 
+  metroPackageName: HarryPotterWandmechanism
+  metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
@@ -867,7 +869,7 @@ PlayerSettings:
   metroCertificateNotAfter: 0000000000000000
   metroApplicationDescription: Harry Potter Wand mechanism
   wsaImages: {}
-  metroTileShortName: 
+  metroTileShortName: Harry Potter Wand mechanism
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
