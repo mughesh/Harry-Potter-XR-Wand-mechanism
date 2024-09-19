@@ -1,11 +1,23 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SpellSystem : MonoBehaviour
 {
+    [SerializeField] private SpellData[] availableSpells;
     private SpellData currentSpell;
 
     public SpellData CurrentSpell => currentSpell;
+
+    private void Start()
+    {
+        // // Initialize with the first spell if available
+        // if (availableSpells.Length > 0)
+        // {
+        //     SelectSpell(availableSpells[0]);
+        // }
+        //SelectSpell(availableSpells[0]);
+    }
 
     public void SelectSpell(SpellData spell)
     {
@@ -19,8 +31,14 @@ public class SpellSystem : MonoBehaviour
         if (currentSpell != null && currentSpell.equipVFXPrefab != null)
         {
             GameObject equipVFX = Instantiate(currentSpell.equipVFXPrefab, transform.position, Quaternion.identity);
-            Destroy(equipVFX, 2f); // Destroy the VFX after 2 seconds
+            Destroy(equipVFX, 2f);
         }
+    }
+
+    public void ResetSpell()
+    {
+        currentSpell = null;
+        Debug.Log("Spell reset");
     }
 
     public void CastSpell(Vector3 startPosition, Vector3 direction)
@@ -30,6 +48,10 @@ public class SpellSystem : MonoBehaviour
             Debug.Log($"Casting spell: {currentSpell.spellName}");
             StartCoroutine(CastSpellCoroutine(startPosition, direction));
         }
+        else
+        {
+            Debug.LogWarning("No spell selected!");
+        }
     }
 
     private IEnumerator CastSpellCoroutine(Vector3 startPosition, Vector3 direction)
@@ -38,7 +60,6 @@ public class SpellSystem : MonoBehaviour
         {
             GameObject castVFX = Instantiate(currentSpell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
             
-            // Handle different spell cast types
             switch (currentSpell.castType)
             {
                 case SpellCastType.Projectile:
@@ -56,23 +77,30 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator ProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+   private IEnumerator ProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
         float speed = 10f;
         float maxDistance = 20f;
         float distanceTraveled = 0f;
 
-        while (distanceTraveled < maxDistance)
-        {
-            castVFX.transform.position += direction * speed * Time.deltaTime;
-            distanceTraveled += speed * Time.deltaTime;
+        // Randomize the control point for varied curves
+        Vector3 randomOffset = Random.insideUnitSphere * 2f;
+        Vector3 controlPoint = startPosition + Vector3.up * 2f + direction * 5f + randomOffset;
+        List<Vector3> path = GenerateCurvedPath(startPosition, startPosition + direction * maxDistance, controlPoint, 50);
 
-            if (Physics.Raycast(castVFX.transform.position, direction, out RaycastHit hit, 0.5f))
+        int pathIndex = 0;
+        while (pathIndex < path.Count)
+        {
+            castVFX.transform.position = path[pathIndex];
+            castVFX.transform.forward = (pathIndex < path.Count - 1) ? (path[pathIndex + 1] - path[pathIndex]).normalized : direction;
+
+            if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out RaycastHit hit, 0.5f))
             {
                 SpellHitEffect(hit.point, hit.normal);
                 yield break;
             }
 
+            pathIndex++;
             yield return null;
         }
     }
@@ -117,5 +145,26 @@ public class SpellSystem : MonoBehaviour
             GameObject hitVFX = Instantiate(currentSpell.hitVFXPrefab, position, Quaternion.LookRotation(normal));
             Destroy(hitVFX, 2f);
         }
+    }
+
+    private List<Vector3> GenerateCurvedPath(Vector3 start, Vector3 end, Vector3 control, int resolution)
+    {
+        List<Vector3> path = new List<Vector3>();
+        for (int i = 0; i <= resolution; i++)
+        {
+            float t = i / (float)resolution;
+            Vector3 point = CalculateBezierPoint(start, control, end, t);
+            path.Add(point);
+        }
+        return path;
+    }
+
+    private Vector3 CalculateBezierPoint(Vector3 p0, Vector3 p1, Vector3 p2, float t)
+    {
+        float u = 1 - t;
+        float tt = t * t;
+        float uu = u * u;
+        Vector3 p = uu * p0 + 2 * u * t * p1 + tt * p2;
+        return p;
     }
 }

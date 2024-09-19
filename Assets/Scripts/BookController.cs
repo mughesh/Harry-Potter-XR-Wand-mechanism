@@ -64,14 +64,14 @@ public class BookController : MonoBehaviour
         }
     }
 
-    public void SelectSegment(int index)
+    void SelectSegment(int index)
     {
         currentSegment = index;
         currentPage = 0;
         UpdateBookDisplay();
     }
 
-    public void NextPage()
+    void NextPage()
     {
         if (currentSegment == 0 && currentPage < spellPages.Length - 1)
         {
@@ -84,7 +84,7 @@ public class BookController : MonoBehaviour
         UpdateBookDisplay();
     }
 
-    public void PreviousPage()
+    void PreviousPage()
     {
         if (currentPage > 0)
         {
@@ -101,6 +101,26 @@ public class BookController : MonoBehaviour
     public void OnRelease(SelectExitEventArgs args)
     {
         ReturnToHip();
+    }
+
+    public void OnBookmarkSelected(int index)
+    {
+        SelectSegment(index);
+        Debug.Log("Selected bookmark: " + index);
+    }
+
+    public void OnArrowSelected(bool isNextPage)
+    {
+        if (isNextPage)
+        {
+            NextPage();
+            Debug.Log("Next page");
+        }
+        else
+        {
+            PreviousPage();
+            Debug.Log("Previous page");
+        }
     }
 
     public void ReturnToHip()

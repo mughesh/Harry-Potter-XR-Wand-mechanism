@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
-  m_Name: Incendio
+  m_Name: Reducto
   m_EditorClassIdentifier: 
-  spellName: Incendio
-  description: Fiery Flames
+  spellName: Reducto
+  description: Blast Off
   equipVFXPrefab: {fileID: 8413530959677971091, guid: 38e243e0e023fd041b147e077303b8b6,
     type: 3}
-  castVFXPrefab: {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964,
+  castVFXPrefab: {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470,
     type: 3}
   hitVFXPrefab: {fileID: 5268460675038366902, guid: f5afcb7f49afad5419049090809f5cc7,
     type: 3}
   castType: 0
-  triggerType: 0
+  triggerType: 1

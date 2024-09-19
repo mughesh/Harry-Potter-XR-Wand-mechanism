@@ -6,6 +6,7 @@ TagManager:
   tags:
   - wand
   - Spell
+  - Book
   layers:
   - Default
   - TransparentFX
