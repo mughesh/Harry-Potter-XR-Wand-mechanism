@@ -160,12 +160,9 @@ MonoBehaviour:
     type: 3}
   maxDistance: 10
   hipAttachPoint: {fileID: 1433596618}
-  spellCastLayerMask:
+  interactableLayerMask:
     serializedVersion: 2
-    m_Bits: 1
-  debugMode: 0
-  debugRayColor: {r: 1, g: 0, b: 0, a: 1}
-  debugSphereRadius: 0.05
+    m_Bits: 384
 --- !u!4 &87420238
 Transform:
   m_ObjectHideFlags: 0
@@ -277,7 +274,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 87420237}
         m_TargetAssemblyTypeName: WandController, Assembly-CSharp
-        m_MethodName: CastSpell
+        m_MethodName: OnActivate
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -289,7 +286,19 @@ MonoBehaviour:
         m_CallState: 2
   m_Deactivated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 87420237}
+        m_TargetAssemblyTypeName: WandController, Assembly-CSharp
+        m_MethodName: OnDeactivate
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_StartingHoverFilters: []
   m_StartingSelectFilters: []
   m_StartingInteractionStrengthFilters: []
@@ -953,7 +962,7 @@ GameObject:
   - component: {fileID: 406112331}
   - component: {fileID: 406112330}
   - component: {fileID: 406112329}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Reducto
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -1177,9 +1186,9 @@ GameObject:
   - component: {fileID: 417884051}
   - component: {fileID: 417884050}
   - component: {fileID: 417884054}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: InventoryBookmark
-  m_TagString: Untagged
+  m_TagString: Bookmark
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1328,7 +1337,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 1
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -1461,7 +1470,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 439785652}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Bookmarks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1498,7 +1507,7 @@ GameObject:
   - component: {fileID: 455860801}
   - component: {fileID: 455860803}
   - component: {fileID: 455860804}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: leftArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1812,7 +1821,7 @@ GameObject:
   - component: {fileID: 491817829}
   - component: {fileID: 491817828}
   - component: {fileID: 491817827}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Incendio (1)
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -1914,7 +1923,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 566796584}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SpellsPage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1998,7 +2007,7 @@ GameObject:
   - component: {fileID: 588779136}
   - component: {fileID: 588779135}
   - component: {fileID: 588779134}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Reducto (1)
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -2470,7 +2479,7 @@ GameObject:
   - component: {fileID: 769623575}
   - component: {fileID: 769623574}
   - component: {fileID: 769623573}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Incendio
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -2648,6 +2657,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8301476891702440773, guid: fe40da5737e6347438959eab135f0470,
         type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8301476891702440773, guid: fe40da5737e6347438959eab135f0470,
+        type: 3}
       propertyPath: m_TagString
       value: Book
       objectReference: {fileID: 0}
@@ -2733,7 +2747,7 @@ GameObject:
   - component: {fileID: 807343841}
   - component: {fileID: 807343840}
   - component: {fileID: 807343838}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Lumos
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -3108,7 +3122,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1019256942}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: attachTransform_book
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3139,7 +3153,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1085083665}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: InventoryPage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3370,7 +3384,7 @@ GameObject:
   - component: {fileID: 1264352442}
   - component: {fileID: 1264352441}
   - component: {fileID: 1264352440}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: invetoryElement1
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -3577,7 +3591,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1282302946}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: spellPage2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3623,7 +3637,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1313969122}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: spellPage1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3731,8 +3745,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableSpells:
-  - {fileID: 11400000, guid: 3bbff01a557a3294fbd7b65e400db9a8, type: 2}
   - {fileID: 11400000, guid: 86384883b098a474abc41ba591821f1e, type: 2}
+  - {fileID: 11400000, guid: 3bbff01a557a3294fbd7b65e400db9a8, type: 2}
+  maxCastDistance: 20
 --- !u!114 &1368687923
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4178,7 +4193,7 @@ MonoBehaviour:
   m_HapticHoverCancelIntensity: 0
   m_HapticHoverCancelDuration: 0
   m_AllowHoverHapticsWhileSelecting: 1
-  m_ImproveAccuracyWithSphereCollider: 1
+  m_ImproveAccuracyWithSphereCollider: 0
   m_PhysicsLayerMask:
     serializedVersion: 2
     m_Bits: 1
@@ -4197,7 +4212,7 @@ GameObject:
   - component: {fileID: 1485767669}
   - component: {fileID: 1485767672}
   - component: {fileID: 1485767673}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Incendio
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -4354,13 +4369,13 @@ MonoBehaviour:
   m_SelectEntered:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1485767672}
+      - m_Target: {fileID: 87420236}
         m_TargetAssemblyTypeName: SpellItem, Assembly-CSharp
-        m_MethodName: OnSpellSelected
-        m_Mode: 0
+        m_MethodName: 
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgumentAssemblyTypeName: 
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -4383,7 +4398,19 @@ MonoBehaviour:
       m_Calls: []
   m_Activated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 87420237}
+        m_TargetAssemblyTypeName: WandController, Assembly-CSharp
+        m_MethodName: OnActivate
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_Deactivated:
     m_PersistentCalls:
       m_Calls: []
@@ -4449,8 +4476,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bookmarks:
-  - {fileID: 1735433202}
   - {fileID: 417884049}
+  - {fileID: 1735433202}
   spellPages:
   - {fileID: 1313969121}
   - {fileID: 1282302945}
@@ -4488,12 +4515,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_InteractionManager: {fileID: 0}
-  m_Colliders: []
+  m_Colliders:
+  - {fileID: 1000203117}
   m_InteractionLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
   m_InteractionLayers:
-    m_Bits: 1
+    m_Bits: 4
   m_DistanceCalculationMode: 1
   m_SelectMode: 0
   m_FocusMode: 1
@@ -5105,9 +5133,9 @@ GameObject:
   - component: {fileID: 1735433205}
   - component: {fileID: 1735433204}
   - component: {fileID: 1735433207}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: SpellsBookmark
-  m_TagString: Untagged
+  m_TagString: Bookmark
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5256,7 +5284,7 @@ MonoBehaviour:
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 1
+          m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -5325,7 +5353,7 @@ GameObject:
   - component: {fileID: 1743168613}
   - component: {fileID: 1743168615}
   - component: {fileID: 1743168616}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: RightArrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5546,7 +5574,7 @@ GameObject:
   - component: {fileID: 1771228454}
   - component: {fileID: 1771228458}
   - component: {fileID: 1771228457}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Reducto
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -5784,7 +5812,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1831047850
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5982,7 +6010,7 @@ GameObject:
   - component: {fileID: 1906280284}
   - component: {fileID: 1906280283}
   - component: {fileID: 1906280282}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Lumos (1)
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -6477,7 +6505,7 @@ GameObject:
   - component: {fileID: 2144706595}
   - component: {fileID: 2144706594}
   - component: {fileID: 2144706593}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Lumos
   m_TagString: Spell
   m_Icon: {fileID: 0}
@@ -6661,9 +6689,9 @@ SceneRoots:
   - {fileID: 1358234175}
   - {fileID: 1630476492}
   - {fileID: 1135815431}
+  - {fileID: 1368687924}
   - {fileID: 87420238}
   - {fileID: 1557643607}
-  - {fileID: 1368687924}
   - {fileID: 724269125}
   - {fileID: 655490824}
   - {fileID: 714721169}

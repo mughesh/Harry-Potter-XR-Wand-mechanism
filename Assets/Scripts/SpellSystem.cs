@@ -6,6 +6,7 @@ public class SpellSystem : MonoBehaviour
 {
     [SerializeField] private SpellData[] availableSpells;
     private SpellData currentSpell;
+    public float maxCastDistance = 20f;
 
     public SpellData CurrentSpell => currentSpell;
 
@@ -77,16 +78,25 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-   private IEnumerator ProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator ProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
         float speed = 10f;
-        float maxDistance = 20f;
         float distanceTraveled = 0f;
 
-        // Randomize the control point for varied curves
-        Vector3 randomOffset = Random.insideUnitSphere * 2f;
-        Vector3 controlPoint = startPosition + Vector3.up * 2f + direction * 5f + randomOffset;
-        List<Vector3> path = GenerateCurvedPath(startPosition, startPosition + direction * maxDistance, controlPoint, 50);
+        // Use the same raycast as the crosshair
+        RaycastHit hit;
+        Vector3 targetPosition;
+        if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
+        {
+            targetPosition = hit.point;
+        }
+        else
+        {
+            targetPosition = startPosition + direction * maxCastDistance;
+        }
+
+        Vector3 controlPoint = startPosition + Vector3.up * 2f + direction * 5f + Random.insideUnitSphere * 2f;
+        List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
 
         int pathIndex = 0;
         while (pathIndex < path.Count)
@@ -94,9 +104,9 @@ public class SpellSystem : MonoBehaviour
             castVFX.transform.position = path[pathIndex];
             castVFX.transform.forward = (pathIndex < path.Count - 1) ? (path[pathIndex + 1] - path[pathIndex]).normalized : direction;
 
-            if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out RaycastHit hit, 0.5f))
+            if (Vector3.Distance(castVFX.transform.position, targetPosition) < 0.1f)
             {
-                SpellHitEffect(hit.point, hit.normal);
+                SpellHitEffect(targetPosition, -direction);
                 yield break;
             }
 

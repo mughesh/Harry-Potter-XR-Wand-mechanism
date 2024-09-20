@@ -39,13 +39,15 @@ public class SpellItem : MonoBehaviour
     {
         if (spellRenderer != null)
         {
+            Material mat = spellRenderer.material;
             if (highlight)
             {
-                spellRenderer.material.EnableKeyword("_EMISSION");
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", Color.white);
             }
             else
             {
-                spellRenderer.material.DisableKeyword("_EMISSION");
+                mat.DisableKeyword("_EMISSION");
             }
         }
     }

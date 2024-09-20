@@ -7,9 +7,11 @@ public class WandController : MonoBehaviour
     public GameObject crosshairPrefab;
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
+    public LayerMask interactableLayerMask;
 
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
+    private bool isActivated = false;
     private SpellSystem spellSystem;
     private GameObject crosshairInstance;
 
@@ -77,7 +79,8 @@ public class WandController : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
             grabInteractable.selectExited.AddListener(OnRelease);
-            grabInteractable.activated.AddListener(CastSpell);
+            grabInteractable.activated.AddListener(OnActivate);
+            grabInteractable.deactivated.AddListener(OnDeactivate);
         }
         else
         {
@@ -96,19 +99,55 @@ public class WandController : MonoBehaviour
         ReturnToHip();
     }
 
+    public void OnActivate(ActivateEventArgs args)
+    {
+        if (!isActivated)
+        {
+            isActivated = true;
+            if (isGrabbed)
+            {
+                RaycastHit hit;
+                if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, interactableLayerMask))
+                {
+                    // Check if we hit an interactable object
+                    XRSimpleInteractable interactable = hit.collider.GetComponent<XRSimpleInteractable>();
+                    if (interactable != null)
+                    {
+                        // Manually invoke the interaction
+                        interactable.selectEntered.Invoke(new SelectEnterEventArgs());
+                        Debug.Log("Interacting with: " + hit.collider.gameObject.name);
+                    }
+                    else
+                    {
+                        Debug.Log("Hit object is not interactable");
+                    }
+                }
+                else if (spellSystem != null && spellSystem.CurrentSpell != null)
+                {
+                    CastSpell(args);
+                    Debug.Log("Casting spell: " + spellSystem.CurrentSpell.spellName);
+                }
+                else
+                {
+                    Debug.LogWarning("Cannot cast spell: " + 
+                        (spellSystem == null ? "SpellSystem not found. " : "") +
+                        (spellSystem != null && spellSystem.CurrentSpell == null ? "No spell selected. " : "") +
+                        (!isGrabbed ? "Wand not grabbed. " : ""));
+                }
+            }
+        }
+    }
+
+        public void OnDeactivate(DeactivateEventArgs args)
+    {
+        isActivated = false;
+    }
+
+
     public void CastSpell(ActivateEventArgs args)
     {   
-        if (isGrabbed && spellSystem != null && spellSystem.CurrentSpell != null)
-        {
-            spellSystem.CastSpell(wandTip.position, wandTip.forward);
-        }
-        else
-        {
-            Debug.LogWarning("Cannot cast spell: " + 
-                (spellSystem == null ? "SpellSystem not found. " : "") +
-                (spellSystem != null && spellSystem.CurrentSpell == null ? "No spell selected. " : "") +
-                (!isGrabbed ? "Wand not grabbed. " : ""));
-        }
+        spellSystem.CastSpell(wandTip.position, wandTip.forward);
+        Debug.Log("Casting spell method: " + spellSystem.CurrentSpell.spellName);
     }
 
     void ReturnToHip()

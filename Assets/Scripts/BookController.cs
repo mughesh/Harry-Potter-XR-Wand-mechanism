@@ -28,13 +28,65 @@ public class BookController : MonoBehaviour
         }
 
         UpdateBookDisplay();
+        SetupInteractables();
+    
     }
 
+     void SetupInteractables()
+    {
+        // Setup bookmarks
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            int index = i; // Capture the index for use in lambda
+            XRSimpleInteractable interactable = bookmarks[i].GetComponent<XRSimpleInteractable>();
+            if (interactable == null)
+            {
+                interactable = bookmarks[i].AddComponent<XRSimpleInteractable>();
+            }
+            interactable.selectEntered.AddListener((args) => OnBookmarkSelected(index));
+        }
+
+        // Setup arrows
+        SetupArrow(leftArrow, false);
+        SetupArrow(rightArrow, true);
+
+        // Setup spell items
+        SetupSpellItems();
+    }
+
+     void SetupArrow(GameObject arrow, bool isNext)
+    {
+        XRSimpleInteractable interactable = arrow.GetComponent<XRSimpleInteractable>();
+        if (interactable == null)
+        {
+            interactable = arrow.AddComponent<XRSimpleInteractable>();
+        }
+        interactable.selectEntered.AddListener((args) => OnArrowSelected(isNext));
+    }
+
+    void SetupSpellItems()
+    {
+        foreach (var page in spellPages)
+        {
+            SpellItem[] spellItems = page.GetComponentsInChildren<SpellItem>();
+            foreach (var spellItem in spellItems)
+            {
+                XRSimpleInteractable interactable = spellItem.gameObject.GetComponent<XRSimpleInteractable>();
+                if (interactable == null)
+                {
+                    interactable = spellItem.gameObject.AddComponent<XRSimpleInteractable>();
+                }
+                interactable.selectEntered.AddListener((args) => spellItem.OnSpellSelected(args));
+            }
+        }
+    }
     void UpdateBookDisplay()
     {
         // Update bookmarks visibility
-        bookmarks[0].SetActive(currentSegment == 0);
-        bookmarks[1].SetActive(currentSegment == 1);
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            bookmarks[i].SetActive(i == currentSegment);
+        }
 
         // Update pages visibility
         for (int i = 0; i < spellPages.Length; i++)
@@ -71,7 +123,42 @@ public class BookController : MonoBehaviour
         UpdateBookDisplay();
     }
 
-    void NextPage()
+
+
+    public void OnGrab(SelectEnterEventArgs args)
+    {
+        // Book grabbed logic
+        Debug.Log("Book grabbed");
+    }
+
+    public void OnRelease(SelectExitEventArgs args)
+    {
+        ReturnToHip();
+    }
+
+    public void OnBookmarkSelected(int index)
+    {
+        Debug.Log("Bookmark selected: " + index);
+        currentSegment = index;
+        currentPage = 0;
+        UpdateBookDisplay();
+    }
+
+    public void OnArrowSelected(bool isNextPage)
+    {
+        if (isNextPage)
+        {
+            NextPage();
+            Debug.Log("Next page");
+        }
+        else
+        {
+            PreviousPage();
+            Debug.Log("Previous page");
+        }
+    }
+
+        void NextPage()
     {
         if (currentSegment == 0 && currentPage < spellPages.Length - 1)
         {
@@ -90,36 +177,6 @@ public class BookController : MonoBehaviour
         {
             currentPage--;
             UpdateBookDisplay();
-        }
-    }
-
-    public void OnGrab(SelectEnterEventArgs args)
-    {
-        // Book grabbed logic
-    }
-
-    public void OnRelease(SelectExitEventArgs args)
-    {
-        ReturnToHip();
-    }
-
-    public void OnBookmarkSelected(int index)
-    {
-        SelectSegment(index);
-        Debug.Log("Selected bookmark: " + index);
-    }
-
-    public void OnArrowSelected(bool isNextPage)
-    {
-        if (isNextPage)
-        {
-            NextPage();
-            Debug.Log("Next page");
-        }
-        else
-        {
-            PreviousPage();
-            Debug.Log("Previous page");
         }
     }
 
