@@ -4,10 +4,7 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - wand
-  - Spell
-  - Book
-  - Bookmark
+  - BookUi
   layers:
   - Default
   - TransparentFX
@@ -15,9 +12,9 @@ TagManager:
   - 
   - Water
   - UI
-  - Camera
-  - Interactable
   - Book
+  - 
+  - 
   - 
   - 
   - 

@@ -1,68 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7944542782687298514
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
-  m_Name: Metro Settings
-  m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: -4966106098654036218}
-  m_InitManagerOnStart: 1
---- !u!114 &-6858516215653275789
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
-  m_Name: Standalone Providers
-  m_EditorClassIdentifier: 
-  m_RequiresSettingsUpdate: 0
-  m_AutomaticLoading: 0
-  m_AutomaticRunning: 0
-  m_Loaders:
-  - {fileID: 11400000, guid: 37f34293261673b45889e7fb94f81558, type: 2}
---- !u!114 &-4966106098654036218
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
-  m_Name: Metro Providers
-  m_EditorClassIdentifier: 
-  m_RequiresSettingsUpdate: 0
-  m_AutomaticLoading: 0
-  m_AutomaticRunning: 0
-  m_Loaders:
-  - {fileID: 11400000, guid: 37f34293261673b45889e7fb94f81558, type: 2}
---- !u!114 &-3701681611312567738
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
-  m_Name: Standalone Settings
-  m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: -6858516215653275789}
-  m_InitManagerOnStart: 1
---- !u!114 &-1839270323131067984
+--- !u!114 &-8889207678855866353
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -78,7 +16,7 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders: []
---- !u!114 &11400000
+--- !u!114 &-8705866492213646388
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,16 +25,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2dc886499c26824283350fa532d087d, type: 3}
-  m_Name: XRGeneralSettingsPerBuildTarget
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: WebGL Settings
   m_EditorClassIdentifier: 
-  Keys: 010000000e0000000d00000007000000
-  Values:
-  - {fileID: -3701681611312567738}
-  - {fileID: -7944542782687298514}
-  - {fileID: 8787237139446908914}
-  - {fileID: 8564049924596201509}
---- !u!114 &4745784711328813862
+  m_LoaderManagerInstance: {fileID: -8889207678855866353}
+  m_InitManagerOnStart: 1
+--- !u!114 &-7591722715991858571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: Standalone Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: -3142334807707376879}
+  m_InitManagerOnStart: 1
+--- !u!114 &-5867557741158848400
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -112,8 +60,74 @@ MonoBehaviour:
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders:
-  - {fileID: 11400000, guid: 37f34293261673b45889e7fb94f81558, type: 2}
---- !u!114 &8564049924596201509
+  - {fileID: 11400000, guid: 768664b0ab655f245ad83c1ae59c5752, type: 2}
+--- !u!114 &-5681860719808444511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
+  m_Name: Metro Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: 1029621278382083610}
+  m_InitManagerOnStart: 1
+--- !u!114 &-3142334807707376879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
+  m_Name: Standalone Providers
+  m_EditorClassIdentifier: 
+  m_RequiresSettingsUpdate: 0
+  m_AutomaticLoading: 0
+  m_AutomaticRunning: 0
+  m_Loaders:
+  - {fileID: 11400000, guid: 768664b0ab655f245ad83c1ae59c5752, type: 2}
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2dc886499c26824283350fa532d087d, type: 3}
+  m_Name: XRGeneralSettingsPerBuildTarget
+  m_EditorClassIdentifier: 
+  Keys: 070000000e000000010000000d000000
+  Values:
+  - {fileID: 6078675999926221707}
+  - {fileID: -5681860719808444511}
+  - {fileID: -7591722715991858571}
+  - {fileID: -8705866492213646388}
+--- !u!114 &1029621278382083610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4c3631f5e58749a59194e0cf6baf6d5, type: 3}
+  m_Name: Metro Providers
+  m_EditorClassIdentifier: 
+  m_RequiresSettingsUpdate: 0
+  m_AutomaticLoading: 0
+  m_AutomaticRunning: 0
+  m_Loaders:
+  - {fileID: 11400000, guid: 768664b0ab655f245ad83c1ae59c5752, type: 2}
+--- !u!114 &6078675999926221707
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -125,19 +139,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
   m_Name: Android Settings
   m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: 4745784711328813862}
-  m_InitManagerOnStart: 1
---- !u!114 &8787237139446908914
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d236b7d11115f2143951f1e14045df39, type: 3}
-  m_Name: WebGL Settings
-  m_EditorClassIdentifier: 
-  m_LoaderManagerInstance: {fileID: -1839270323131067984}
+  m_LoaderManagerInstance: {fileID: -5867557741158848400}
   m_InitManagerOnStart: 1

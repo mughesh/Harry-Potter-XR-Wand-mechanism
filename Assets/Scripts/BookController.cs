@@ -9,6 +9,7 @@ public class BookController : MonoBehaviour
     public GameObject leftArrow;
     public GameObject rightArrow;
     public Transform hipAttachPoint;
+    private Vector3[] originalBookmarkScales;
 
     private XRGrabInteractable grabInteractable;
     private int currentSegment = 0; // 0 for spells, 1 for inventory
@@ -26,6 +27,13 @@ public class BookController : MonoBehaviour
         {
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
+
+    // Store the original scale for each bookmark
+    originalBookmarkScales = new Vector3[bookmarks.Length];
+    for (int i = 0; i < bookmarks.Length; i++)
+    {
+        originalBookmarkScales[i] = bookmarks[i].transform.localScale;
+    }
 
         UpdateBookDisplay();
         SetupInteractables();
@@ -82,11 +90,21 @@ public class BookController : MonoBehaviour
     }
     void UpdateBookDisplay()
     {
-        // Update bookmarks visibility
-        for (int i = 0; i < bookmarks.Length; i++)
+    // Always show all bookmarks
+    for (int i = 0; i < bookmarks.Length; i++)
+    {
+        bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
+
+        // Scale the current segment bookmark slightly larger to signify it
+        if (i == currentSegment)
         {
-            bookmarks[i].SetActive(i == currentSegment);
+            bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
         }
+        else
+        {
+            bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
+        }
+    }
 
         // Update pages visibility
         for (int i = 0; i < spellPages.Length; i++)
@@ -115,15 +133,6 @@ public class BookController : MonoBehaviour
             rightArrow.SetActive(currentPage < inventoryPages.Length - 1);
         }
     }
-
-    void SelectSegment(int index)
-    {
-        currentSegment = index;
-        currentPage = 0;
-        UpdateBookDisplay();
-    }
-
-
 
     public void OnGrab(SelectEnterEventArgs args)
     {

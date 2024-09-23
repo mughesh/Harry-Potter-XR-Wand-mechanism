@@ -11,7 +11,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.cloud.gltfast": {
-      "version": "6.7.1",
+      "version": "6.8.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -24,7 +24,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.collab-proxy": {
-      "version": "2.4.4",
+      "version": "2.5.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -94,15 +94,6 @@
       "depth": 2,
       "source": "registry",
       "dependencies": {},
-      "url": "https://packages.unity.com"
-    },
-    "com.unity.postprocessing": {
-      "version": "3.4.0",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.modules.physics": "1.0.0"
-      },
       "url": "https://packages.unity.com"
     },
     "com.unity.render-pipelines.core": {
@@ -193,15 +184,6 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "com.unity.visualeffectgraph": {
-      "version": "14.0.11",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.shadergraph": "14.0.11",
-        "com.unity.render-pipelines.core": "14.0.11"
-      }
-    },
     "com.unity.visualscripting": {
       "version": "1.9.4",
       "depth": 0,
@@ -222,7 +204,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.hands": {
-      "version": "1.4.1",
+      "version": "1.4.3",
       "depth": 0,
       "source": "registry",
       "dependencies": {

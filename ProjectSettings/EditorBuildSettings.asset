@@ -6,12 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Harry potter scene.unity
+    path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
-    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: e81000777acc5fb48a0310ca2dbf26b1,
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 98c3bc832334a0b4894932c2c1a179ae,
       type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 75d86a58c57be86409a7ae3f72672df7,
-      type: 2}
-    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: b1faa09ff97824c49b2add6b8d574ee9,
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: e756f2627f0bed3498b4e4a6c4eaf23d,
       type: 2}

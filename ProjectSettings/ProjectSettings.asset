@@ -4,16 +4,16 @@
 PlayerSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 26
-  productGUID: 5dd35e7682cf081439a106070042e102
+  productGUID: 13428a4860969544f968820475434604
   AndroidProfiler: 0
   AndroidFilterTouchesWhenObscured: 0
   AndroidEnableSustainedPerformanceMode: 0
-  defaultScreenOrientation: 3
+  defaultScreenOrientation: 4
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: DefaultCompany
-  productName: Harry Potter Wand mechanism
+  productName: Harry Potter XR
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.13725491, g: 0.12156863, b: 0.1254902, a: 1}
@@ -46,7 +46,7 @@ PlayerSettings:
   defaultScreenHeight: 768
   defaultScreenWidthWeb: 960
   defaultScreenHeightWeb: 600
-  m_StereoRenderingPath: 2
+  m_StereoRenderingPath: 0
   m_ActiveColorSpace: 1
   unsupportedMSAAFallback: 0
   m_SpriteBatchVertexThreshold: 300
@@ -141,8 +141,8 @@ PlayerSettings:
   tvOSBundleVersion: 1.0
   bundleVersion: 0.1.0
   preloadedAssets:
-  - {fileID: 8564049924596201509, guid: 75d86a58c57be86409a7ae3f72672df7, type: 2}
-  - {fileID: 7170718215379344092, guid: b1faa09ff97824c49b2add6b8d574ee9, type: 2}
+  - {fileID: 6078675999926221707, guid: 98c3bc832334a0b4894932c2c1a179ae, type: 2}
+  - {fileID: 9136969801177868622, guid: e756f2627f0bed3498b4e4a6c4eaf23d, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -173,9 +173,9 @@ PlayerSettings:
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
-  AndroidMinSdkVersion: 29
-  AndroidTargetSdkVersion: 32
-  AndroidPreferredInstallLocation: 0
+  AndroidMinSdkVersion: 22
+  AndroidTargetSdkVersion: 0
+  AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1
   iPhoneStrippingLevel: 0
@@ -517,9 +517,7 @@ PlayerSettings:
       m_SubKind: 
   m_BuildTargetBatching: []
   m_BuildTargetShaderSettings: []
-  m_BuildTargetGraphicsJobs:
-  - m_BuildTarget: WindowsStandaloneSupport
-    m_GraphicsJobs: 0
+  m_BuildTargetGraphicsJobs: []
   m_BuildTargetGraphicsJobMode: []
   m_BuildTargetGraphicsAPIs:
   - m_BuildTarget: iOSSupport
@@ -527,9 +525,6 @@ PlayerSettings:
     m_Automatic: 1
   - m_BuildTarget: AndroidPlayer
     m_APIs: 150000000b000000
-    m_Automatic: 0
-  - m_BuildTarget: WindowsStandaloneSupport
-    m_APIs: 02000000
     m_Automatic: 0
   m_BuildTargetVRSettings: []
   m_DefaultShaderChunkSizeInMB: 16
@@ -814,20 +809,9 @@ PlayerSettings:
   webGLMemoryGeometricGrowthCap: 96
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Android: USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS;UNITY_POST_PROCESSING_STACK_V2
-    EmbeddedLinux: UNITY_POST_PROCESSING_STACK_V2
-    GameCoreXboxOne: UNITY_POST_PROCESSING_STACK_V2
-    Nintendo Switch: UNITY_POST_PROCESSING_STACK_V2
-    PS4: UNITY_POST_PROCESSING_STACK_V2
-    PS5: UNITY_POST_PROCESSING_STACK_V2
-    QNX: UNITY_POST_PROCESSING_STACK_V2
-    Stadia: UNITY_POST_PROCESSING_STACK_V2
-    Standalone: USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS;UNITY_POST_PROCESSING_STACK_V2
-    VisionOS: UNITY_POST_PROCESSING_STACK_V2
-    WebGL: UNITY_POST_PROCESSING_STACK_V2
+    Android: USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
+    Standalone: USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
     Windows Store Apps: USE_INPUT_SYSTEM_POSE_CONTROL;USE_STICK_CONTROL_THUMBSTICKS
-    XboxOne: UNITY_POST_PROCESSING_STACK_V2
-    tvOS: UNITY_POST_PROCESSING_STACK_V2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -860,16 +844,16 @@ PlayerSettings:
   apiCompatibilityLevelPerPlatform: {}
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
-  metroPackageName: HarryPotterWandmechanism
+  metroPackageName: HarryPotterXR
   metroPackageVersion: 1.0.0.0
   metroCertificatePath: 
   metroCertificatePassword: 
   metroCertificateSubject: 
   metroCertificateIssuer: 
   metroCertificateNotAfter: 0000000000000000
-  metroApplicationDescription: Harry Potter Wand mechanism
+  metroApplicationDescription: Harry Potter XR
   wsaImages: {}
-  metroTileShortName: Harry Potter Wand mechanism
+  metroTileShortName: Harry Potter XR
   metroTileShowName: 0
   metroMediumTileShowName: 0
   metroLargeTileShowName: 0
@@ -937,11 +921,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 2
   windowsGamepadBackendHint: 0
-  cloudProjectId: f49e91ee-03c6-4b05-9278-521a06c6d0db
+  cloudProjectId: 
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Harry Potter Wand mechanism
-  organizationId: mugheshambani
+  projectName: 
+  organizationId: 
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}
