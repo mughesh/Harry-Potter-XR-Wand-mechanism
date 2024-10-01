@@ -22,6 +22,14 @@ public class SpellItem : MonoBehaviour
         interactable.selectEntered.AddListener(OnSpellSelected);
     }
 
+    public void OnSpellHovered(HoverEnterEventArgs args)
+    {
+        if (spellSystem != null)
+        {
+            spellSystem.HoverSpell(spellData);
+            Debug.Log("Spell hovered: " + spellData.spellName);
+        }
+    }
     public void OnSpellSelected(SelectEnterEventArgs args)
     {
         if (spellSystem != null)

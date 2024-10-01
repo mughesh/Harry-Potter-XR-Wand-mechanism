@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 
 public class SpellSystem : MonoBehaviour
 {
@@ -25,6 +26,14 @@ public class SpellSystem : MonoBehaviour
         currentSpell = spell;
         Debug.Log($"Selected spell: {currentSpell.spellName}");
         EquipSpell();
+    }
+
+    public void HoverSpell(SpellData spell)
+    {
+        if (currentSpell == spell)
+        {
+            Debug.Log($"Hovering spell: {currentSpell.description}");
+        }
     }
 
     private void EquipSpell()

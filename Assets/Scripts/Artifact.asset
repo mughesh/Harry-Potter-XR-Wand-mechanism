@@ -15,5 +15,5 @@ MonoBehaviour:
   itemName: Artifact
   description: Test artifact
   bookSprite: {fileID: 21300000, guid: 17d565bb4a7744b41b7e4dc7e3a09e35, type: 3}
-  worldPrefab: {fileID: 8143744471127339051, guid: 872f88de605cbf944a8fc2fa9a6d388d,
+  worldPrefab: {fileID: 5456881618169781782, guid: 90cb68682af3b9e498966f93e36a233f,
     type: 3}

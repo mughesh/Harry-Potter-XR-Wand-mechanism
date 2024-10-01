@@ -451,7 +451,7 @@ GameObject:
   - component: {fileID: 80541661}
   - component: {fileID: 80541659}
   - component: {fileID: 80541660}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: BookController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1281,7 +1281,10 @@ MonoBehaviour:
   hipAttachPoint: {fileID: 637751220}
   interactableLayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 64
+  inventoryObjectLayerMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!114 &276158325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1374,7 +1377,19 @@ MonoBehaviour:
       m_Calls: []
   m_Activated:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 276158324}
+        m_TargetAssemblyTypeName: WandController, Assembly-CSharp
+        m_MethodName: OnActivate
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_Deactivated:
     m_PersistentCalls:
       m_Calls: []
@@ -1875,7 +1890,19 @@ MonoBehaviour:
       m_Calls: []
   m_HoverEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 574994543}
+        m_TargetAssemblyTypeName: SpellItem, Assembly-CSharp
+        m_MethodName: OnSpellHovered
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_HoverExited:
     m_PersistentCalls:
       m_Calls: []
@@ -3320,7 +3347,7 @@ Transform:
   m_GameObject: {fileID: 1018247498}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.269}
+  m_LocalPosition: {x: 0, y: 0, z: 0.209}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3650,6 +3677,7 @@ GameObject:
   - component: {fileID: 1128473067}
   - component: {fileID: 1128473066}
   - component: {fileID: 1128473064}
+  - component: {fileID: 1128473069}
   m_Layer: 6
   m_Name: artifact1
   m_TagString: BookUi
@@ -3722,7 +3750,19 @@ MonoBehaviour:
       m_Calls: []
   m_SelectEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1128473069}
+        m_TargetAssemblyTypeName: InventoryItem, Assembly-CSharp
+        m_MethodName: OnItemSelected
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_SelectExited:
     m_PersistentCalls:
       m_Calls: []
@@ -3845,6 +3885,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1128473062}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1128473069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1128473062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7e3a436a43534429c141722e10ba33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
 --- !u!1 &1167527371
 GameObject:
   m_ObjectHideFlags: 0
@@ -4412,7 +4465,19 @@ MonoBehaviour:
       m_Calls: []
   m_HoverEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1378858445}
+        m_TargetAssemblyTypeName: SpellItem, Assembly-CSharp
+        m_MethodName: OnSpellHovered
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_HoverExited:
     m_PersistentCalls:
       m_Calls: []
@@ -5767,6 +5832,7 @@ GameObject:
   - component: {fileID: 1682669225}
   - component: {fileID: 1682669224}
   - component: {fileID: 1682669222}
+  - component: {fileID: 1682669227}
   m_Layer: 6
   m_Name: artifact2
   m_TagString: BookUi
@@ -5839,7 +5905,19 @@ MonoBehaviour:
       m_Calls: []
   m_SelectEntered:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1682669227}
+        m_TargetAssemblyTypeName: InventoryItem, Assembly-CSharp
+        m_MethodName: OnItemSelected
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_SelectExited:
     m_PersistentCalls:
       m_Calls: []
@@ -5962,6 +6040,19 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1682669220}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1682669227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1682669220}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7e3a436a43534429c141722e10ba33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
 --- !u!1 &1685356954
 GameObject:
   m_ObjectHideFlags: 0
@@ -6231,7 +6322,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c216e484938064544847f0c93c2b0b47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryItems: []
+  bookTransform: {fileID: 2112840751}
+  wandTipTransform: {fileID: 1018247499}
+  inventoryObjectLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  addDuration: 0.5
+  retrieveDuration: 0.5
 --- !u!1 &1912370888
 GameObject:
   m_ObjectHideFlags: 0
