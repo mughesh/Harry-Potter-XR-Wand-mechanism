@@ -8,6 +8,7 @@ public class WandController : MonoBehaviour
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
     public LayerMask interactableLayerMask;
+    public LayerMask inventoryItemLayer;
 
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
@@ -107,8 +108,25 @@ public class WandController : MonoBehaviour
             if (isGrabbed)
             {
                 RaycastHit hit;
-                if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, interactableLayerMask))
+                if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
                 {
+                    InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+                    if (inventoryItem != null)
+                    {
+                        inventoryItem.AddToInventory();
+                        Debug.Log("Adding item to inventory: " + inventoryItem.itemData.itemName);
+                    }
+                }
+                
+                else if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, interactableLayerMask))
+                {
+                    InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+                    if (inventoryItem != null)
+                    {
+                        inventoryItem.AddToInventory();
+                        Debug.Log("Adding item to inventory: " + inventoryItem.itemData.itemName);
+                    }
+
                     // Check if we hit an interactable object
                     XRSimpleInteractable interactable = hit.collider.GetComponent<XRSimpleInteractable>();
                     if (interactable != null)
@@ -121,7 +139,8 @@ public class WandController : MonoBehaviour
                     {
                         Debug.Log("Hit object is not interactable");
                     }
-                }
+
+                                   }
                 else if (spellSystem != null && spellSystem.CurrentSpell != null)
                 {
                     CastSpell(args);
