@@ -8,12 +8,14 @@ public class WandController : MonoBehaviour
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
     public LayerMask interactableLayerMask;
+    public LayerMask inventoryItemLayer;
 
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
     private GameObject crosshairInstance;
+    private BookController bookController;
 
     void Start()
     {
@@ -23,6 +25,13 @@ public class WandController : MonoBehaviour
         {
             Debug.LogError("SpellSystem not found in the scene!");
         }
+
+        bookController = FindObjectOfType<BookController>();
+        if (bookController == null)
+        {
+            Debug.LogError("BookController not found in the scene!");
+        }
+
         SetupInteractions();
         CreateCrosshair();
     }
@@ -126,6 +135,23 @@ public class WandController : MonoBehaviour
                 {
                     CastSpell(args);
                     Debug.Log("Casting spell: " + spellSystem.CurrentSpell.spellName);
+                }
+                
+        //Inventory --------------------------------------------------------------------------------------------------
+                if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
+                {
+                    InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+                    if (inventoryItem != null)
+                    {
+                        if (bookController.AddItemToInventory(inventoryItem))
+                        {
+                            Debug.Log("Item added to inventory: " + inventoryItem.itemData.itemName);
+                        }
+                        else
+                        {
+                            Debug.Log("Inventory is full!");
+                        }
+                    }
                 }
                 else
                 {

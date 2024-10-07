@@ -6,6 +6,7 @@ public class BookController : MonoBehaviour
     public GameObject[] bookmarks;
     public GameObject[] spellPages;
     public GameObject[] inventoryPages;
+    public Transform[] inventorySlots;
     public GameObject leftArrow;
     public GameObject rightArrow;
     public Transform hipAttachPoint;
@@ -14,6 +15,8 @@ public class BookController : MonoBehaviour
     private XRGrabInteractable grabInteractable;
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
+    public XRDirectInteractor leftHandInteractor;
+
 
     void Start()
     {
@@ -28,6 +31,9 @@ public class BookController : MonoBehaviour
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
 
+    // Restrict book grabbing to left hand only
+        grabInteractable.interactionLayers = 1 << leftHandInteractor.gameObject.layer;
+   
     // Store the original scale for each bookmark
     originalBookmarkScales = new Vector3[bookmarks.Length];
     for (int i = 0; i < bookmarks.Length; i++)
@@ -88,6 +94,20 @@ public class BookController : MonoBehaviour
             }
         }
     }
+    
+    public bool AddItemToInventory(InventoryItem item)
+    {
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            if (inventorySlots[i].childCount == 0)
+            {
+                item.AddToInventory(inventorySlots[i]);
+                return true;
+            }
+        }
+        return false; // Inventory is full
+    }
+
     void UpdateBookDisplay()
     {
     // Always show all bookmarks
