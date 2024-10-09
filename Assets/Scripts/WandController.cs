@@ -16,6 +16,8 @@ public class WandController : MonoBehaviour
     private SpellSystem spellSystem;
     private GameObject crosshairInstance;
     private BookController bookController;
+    public Transform retrievePosition;
+    public float retrievalDistance = 1.5f;
 
     void Start()
     {
@@ -143,13 +145,22 @@ public class WandController : MonoBehaviour
                     InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
                     if (inventoryItem != null)
                     {
-                        if (bookController.AddItemToInventory(inventoryItem))
+                        if (inventoryItem.transform.parent == null) // Item is in the world
                         {
-                            Debug.Log("Item added to inventory: " + inventoryItem.itemData.itemName);
+                            if (bookController.AddItemToInventory(inventoryItem))
+                            {
+                                Debug.Log("Item added to inventory: " + inventoryItem.itemData.itemName);
+                            }
+                            else
+                            {
+                                Debug.Log("Inventory is full!");
+                            }
                         }
-                        else
+                        else // Item is in the inventory
                         {
-                            Debug.Log("Inventory is full!");
+                            Vector3 retrievalPosition = Camera.main.transform.position + Camera.main.transform.forward * retrievalDistance;
+                            inventoryItem.RetrieveFromInventory(retrievalPosition);
+                            Debug.Log("Item retrieved from inventory: " + inventoryItem.itemData.itemName);
                         }
                     }
                 }

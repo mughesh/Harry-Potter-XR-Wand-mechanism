@@ -15,7 +15,7 @@ public class BookController : MonoBehaviour
     private XRGrabInteractable grabInteractable;
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
-    public XRDirectInteractor leftHandInteractor;
+    public IXRSelectInteractor leftHandInteractor;
 
 
     void Start()
@@ -25,14 +25,14 @@ public class BookController : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
             grabInteractable.selectExited.AddListener(OnRelease);
+            
         }
         else
         {
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
 
-    // Restrict book grabbing to left hand only
-        grabInteractable.interactionLayers = 1 << leftHandInteractor.gameObject.layer;
+
    
     // Store the original scale for each bookmark
     originalBookmarkScales = new Vector3[bookmarks.Length];
@@ -94,19 +94,7 @@ public class BookController : MonoBehaviour
             }
         }
     }
-    
-    public bool AddItemToInventory(InventoryItem item)
-    {
-        for (int i = 0; i < inventorySlots.Length; i++)
-        {
-            if (inventorySlots[i].childCount == 0)
-            {
-                item.AddToInventory(inventorySlots[i]);
-                return true;
-            }
-        }
-        return false; // Inventory is full
-    }
+
 
     void UpdateBookDisplay()
     {
@@ -156,13 +144,35 @@ public class BookController : MonoBehaviour
 
     public void OnGrab(SelectEnterEventArgs args)
     {
-        // Book grabbed logic
-        Debug.Log("Book grabbed");
+
+        // Only allow grabbing with the left hand
+        if (IsLeftHandInteractor(args.interactorObject))
+        {
+            leftHandInteractor = args.interactorObject;  // Store left hand interactor
+            Debug.Log("Book grabbed by left hand");
+        }
+        else
+        {
+            // Prevent grabbing with the right hand while left hand is holding it
+            grabInteractable.interactionManager.CancelInteractorSelection(args.interactorObject);
+        }
+        Debug.Log("Book grabbed by left hand");
+    }
+
+    private bool IsLeftHandInteractor(IXRSelectInteractor interactor)
+    {
+        // Check the tag of the interactor's gameObject
+        return interactor.transform.CompareTag("LeftHand");
     }
 
     public void OnRelease(SelectExitEventArgs args)
     {
-        ReturnToHip();
+              // Only reset if the left hand releases it
+        if (args.interactorObject == leftHandInteractor)
+        {
+            leftHandInteractor = null;  // Reset left hand interactor when released
+            ReturnToHip();
+        }
     }
 
     public void OnBookmarkSelected(int index)
@@ -217,5 +227,36 @@ public class BookController : MonoBehaviour
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
         }
+    }
+
+        public Transform GetAvailableSlot()
+    {
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            if (inventorySlots[i].childCount == 0)
+            {
+                return inventorySlots[i];
+            }
+        }
+        return null; // No available slots
+    }
+
+
+    public bool AddItemToInventory(InventoryItem item)
+    {
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            if (inventorySlots[i].childCount == 0)
+            {
+                item.AddToInventory(inventorySlots[i]);
+                return true;
+            }
+        }
+        return false; // Inventory is full
+    }
+    
+    public void RemoveItemFromInventory(InventoryItem item)
+    {
+        item.transform.SetParent(null);
     }
 }
