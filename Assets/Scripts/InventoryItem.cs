@@ -6,20 +6,19 @@ public class InventoryItem : MonoBehaviour
 {
     public InventoryItemData itemData;
     private XRGrabInteractable grabInteractable;
-    private Vector3 originalWorldScale;
+    private Vector3 originalScale;
     private Transform originalParent;
+     private XRSocketInteractor currentSocket;
+     private bool isInBookCollider = false;
     
     [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
-    [SerializeField] private float finalInventoryScale = 0.5f;
-    
-    private bool isInInventory = false;
-    private Coroutine currentScalingCoroutine;
+    [SerializeField] private float inventoryScale = 0.2f;
 
     private void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
-        originalWorldScale = transform.lossyScale;
+        originalScale = transform.localScale;
         originalParent = transform.parent;
         
         grabInteractable.selectEntered.AddListener(OnGrab);
@@ -28,104 +27,147 @@ public class InventoryItem : MonoBehaviour
 
     public void AddToInventory(Transform slot)
     {
-        if (currentScalingCoroutine != null)
-            StopCoroutine(currentScalingCoroutine);
-        currentScalingCoroutine = StartCoroutine(AddToInventoryCoroutine(slot));
+        StartCoroutine(AddToInventoryCoroutine(slot));
     }
 
-    private IEnumerator AddToInventoryCoroutine(Transform slot)
+   private IEnumerator AddToInventoryCoroutine(Transform slot)
     {
         Vector3 startPosition = transform.position;
-        Vector3 startScale = transform.lossyScale;
-        Vector3 targetScale = originalWorldScale * finalInventoryScale;
         
-        yield return ScaleObject(startScale, targetScale);
-        yield return MoveObject(startPosition, slot.position);
+        float elapsedTime = 0f;
+        while (elapsedTime < moveDuration)
+        {
+            float t = elapsedTime / moveDuration;
+            transform.position = Vector3.Lerp(startPosition, slot.position, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
 
         transform.SetParent(slot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
-        transform.localScale = Vector3.one * finalInventoryScale;
-        grabInteractable.enabled = false;
-        isInInventory = true;
+
+        currentSocket = slot.GetComponent<XRSocketInteractor>();
     }
 
     public void RetrieveFromInventory(Vector3 targetPosition)
     {
-        if (currentScalingCoroutine != null)
-            StopCoroutine(currentScalingCoroutine);
-        currentScalingCoroutine = StartCoroutine(RetrieveFromInventoryCoroutine(targetPosition));
+        StartCoroutine(RetrieveFromInventoryCoroutine(targetPosition));
     }
 
     private IEnumerator RetrieveFromInventoryCoroutine(Vector3 targetPosition)
     {
         Vector3 startPosition = transform.position;
-        Vector3 startScale = transform.lossyScale;
-
-        transform.SetParent(null);
-        grabInteractable.enabled = true;
-
-        yield return ScaleObject(startScale, originalWorldScale);
-        yield return MoveObject(startPosition, targetPosition);
-
-        isInInventory = false;
-    }
-
-    private IEnumerator ScaleObject(Vector3 startScale, Vector3 endScale)
-    {
-        float elapsedTime = 0f;
-        while (elapsedTime < scaleDuration)
-        {
-            float t = elapsedTime / scaleDuration;
-            SetWorldScale(Vector3.Lerp(startScale, endScale, t));
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-        SetWorldScale(endScale);
-    }
-
-    private IEnumerator MoveObject(Vector3 startPosition, Vector3 endPosition)
-    {
+        
         float elapsedTime = 0f;
         while (elapsedTime < moveDuration)
         {
             float t = elapsedTime / moveDuration;
-            transform.position = Vector3.Lerp(startPosition, endPosition, t);
+            transform.position = Vector3.Lerp(startPosition, targetPosition, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        transform.position = endPosition;
+
+        transform.SetParent(null);
+        StartCoroutine(ScaleToOriginal());
+    }
+
+
+    private IEnumerator ScaleDown()
+    {
+        Vector3 startScale = transform.localScale;
+        Vector3 targetScale = originalScale * inventoryScale;
+        
+        float elapsedTime = 0f;
+        while (elapsedTime < scaleDuration)
+        {
+            float t = elapsedTime / scaleDuration;
+            transform.localScale = Vector3.Lerp(startScale, targetScale, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+   private IEnumerator ScaleToOriginal()
+    {
+        Vector3 startScale = transform.localScale;
+        
+        float elapsedTime = 0f;
+        while (elapsedTime < scaleDuration)
+        {
+            float t = elapsedTime / scaleDuration;
+            transform.localScale = Vector3.Lerp(startScale, originalScale, t);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
     }
 
     private void OnGrab(SelectEnterEventArgs args)
     {
-        if (isInInventory)
-        {
-            if (currentScalingCoroutine != null)
-                StopCoroutine(currentScalingCoroutine);
-            currentScalingCoroutine = StartCoroutine(ScaleObject(transform.lossyScale, originalWorldScale));
-            isInInventory = false;
-        }
+        StopAllCoroutines();
+        transform.localScale = originalScale;
     }
 
     private void OnRelease(SelectExitEventArgs args)
     {
-                if (!isInInventory)
+        if (isInBookCollider)
         {
-            Collider bookCollider = FindObjectOfType<BookController>().GetComponent<Collider>();
-            if (bookCollider.bounds.Contains(transform.position))
+            BookController bookController = FindObjectOfType<BookController>();
+            if (bookController != null)
             {
-                AddToInventory(transform.parent);
+                Transform availableSlot = bookController.GetAvailableSlot();
+                if (availableSlot != null)
+                {
+                    AddToInventory(availableSlot);
+                }
             }
-        }    }
-
-    private void SetWorldScale(Vector3 worldScale)
-    {
-        transform.localScale = Vector3.one;
-        transform.localScale = new Vector3(
-            worldScale.x / transform.lossyScale.x,
-            worldScale.y / transform.lossyScale.y,
-            worldScale.z / transform.lossyScale.z
-        );
+        }
+        else
+        {
+            StartCoroutine(ScaleToOriginal());
+        }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("BookCollider"))
+        {
+            isInBookCollider = true;
+            StartCoroutine(ScaleDown());
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("BookCollider"))
+        {
+            isInBookCollider = false;
+            if (!grabInteractable.isSelected)
+            {
+                StartCoroutine(ScaleToOriginal());
+            }
+        }
+    }
+
+    // public void OnSelectEntered(SelectEnterEventArgs args)
+    // {
+    //     if (args.interactorObject is XRSocketInteractor socketInteractor)
+    //     {
+    //         currentSocket = socketInteractor;
+    //         transform.SetParent(socketInteractor.transform);
+    //     }
+    // }
+
+    // public void OnSelectExited(SelectExitEventArgs args)
+    // {
+    //     if (args.interactorObject is XRSocketInteractor)
+    //     {
+    //         // Only unparent if it's not being grabbed by a hand
+    //         if (!(args.interactorObject is XRDirectInteractor))
+    //         {
+    //             transform.SetParent(null);
+    //             currentSocket = null;
+    //         }
+    //     }
+    // }
 }

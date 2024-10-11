@@ -6,16 +6,15 @@ public class BookController : MonoBehaviour
     public GameObject[] bookmarks;
     public GameObject[] spellPages;
     public GameObject[] inventoryPages;
-    public Transform[] inventorySlots;
     public GameObject leftArrow;
     public GameObject rightArrow;
     public Transform hipAttachPoint;
     private Vector3[] originalBookmarkScales;
-
-    private XRGrabInteractable grabInteractable;
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
-    public IXRSelectInteractor leftHandInteractor;
+    private XRGrabInteractable grabInteractable;
+    public XRSocketInteractor[] inventorySlots;
+
 
 
     void Start()
@@ -145,18 +144,7 @@ public class BookController : MonoBehaviour
     public void OnGrab(SelectEnterEventArgs args)
     {
 
-        // Only allow grabbing with the left hand
-        if (IsLeftHandInteractor(args.interactorObject))
-        {
-            leftHandInteractor = args.interactorObject;  // Store left hand interactor
-            Debug.Log("Book grabbed by left hand");
-        }
-        else
-        {
-            // Prevent grabbing with the right hand while left hand is holding it
-            grabInteractable.interactionManager.CancelInteractorSelection(args.interactorObject);
-        }
-        Debug.Log("Book grabbed by left hand");
+
     }
 
     private bool IsLeftHandInteractor(IXRSelectInteractor interactor)
@@ -167,12 +155,7 @@ public class BookController : MonoBehaviour
 
     public void OnRelease(SelectExitEventArgs args)
     {
-              // Only reset if the left hand releases it
-        if (args.interactorObject == leftHandInteractor)
-        {
-            leftHandInteractor = null;  // Reset left hand interactor when released
-            ReturnToHip();
-        }
+         ReturnToHip();      
     }
 
     public void OnBookmarkSelected(int index)
@@ -231,28 +214,29 @@ public class BookController : MonoBehaviour
 
         public Transform GetAvailableSlot()
     {
-        for (int i = 0; i < inventorySlots.Length; i++)
+        foreach (XRSocketInteractor slot in inventorySlots)
         {
-            if (inventorySlots[i].childCount == 0)
+            if (slot.interactablesSelected.Count == 0)
             {
-                return inventorySlots[i];
+                return slot.transform;
             }
         }
-        return null; // No available slots
+        return null;
+
     }
 
 
-    public bool AddItemToInventory(InventoryItem item)
+    public void AddItemToInventory(InventoryItem item)
     {
-        for (int i = 0; i < inventorySlots.Length; i++)
+        Transform availableSlot = GetAvailableSlot();
+        if (availableSlot != null)
         {
-            if (inventorySlots[i].childCount == 0)
-            {
-                item.AddToInventory(inventorySlots[i]);
-                return true;
-            }
+            item.AddToInventory(availableSlot);
         }
-        return false; // Inventory is full
+        else
+        {
+            Debug.Log("No available slots in the inventory.");
+        }
     }
     
     public void RemoveItemFromInventory(InventoryItem item)

@@ -18,6 +18,7 @@ public class WandController : MonoBehaviour
     private BookController bookController;
     public Transform retrievePosition;
     public float retrievalDistance = 1.5f;
+    public Transform characterController;
 
     void Start()
     {
@@ -138,35 +139,38 @@ public class WandController : MonoBehaviour
                     CastSpell(args);
                     Debug.Log("Casting spell: " + spellSystem.CurrentSpell.spellName);
                 }
-                
-        //Inventory --------------------------------------------------------------------------------------------------
+
+                //Inventory --------------------------------------------------------------------------------------------------
                 if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
                 {
                     InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
                     if (inventoryItem != null)
                     {
-                        if (inventoryItem.transform.parent == null) // Item is in the world
+                        XRSocketInteractor socketInteractor = inventoryItem.GetComponentInParent<XRSocketInteractor>();
+                        if (socketInteractor != null) // Item is in the inventory
                         {
-                            if (bookController.AddItemToInventory(inventoryItem))
+                            Vector3 retrievePosition = characterController.position + characterController.forward * 1.5f + Vector3.up;
+                            inventoryItem.RetrieveFromInventory(retrievePosition);
+                            socketInteractor.interactionManager.SelectExit((IXRSelectInteractor)socketInteractor, (IXRSelectInteractable)inventoryItem.GetComponent<XRGrabInteractable>());
+                        }
+                        else // Item is in the world
+                        {
+                            Transform availableSlot = bookController.GetAvailableSlot();
+                            if (availableSlot != null)
                             {
-                                Debug.Log("Item added to inventory: " + inventoryItem.itemData.itemName);
+                                inventoryItem.AddToInventory(availableSlot);
                             }
                             else
                             {
                                 Debug.Log("Inventory is full!");
                             }
                         }
-                        else // Item is in the inventory
-                        {
-                            Vector3 retrievalPosition = Camera.main.transform.position + Camera.main.transform.forward * retrievalDistance;
-                            inventoryItem.RetrieveFromInventory(retrievalPosition);
-                            Debug.Log("Item retrieved from inventory: " + inventoryItem.itemData.itemName);
-                        }
+
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("Cannot cast spell: " + 
+                    Debug.LogWarning("Cannot cast spell: " +
                         (spellSystem == null ? "SpellSystem not found. " : "") +
                         (spellSystem != null && spellSystem.CurrentSpell == null ? "No spell selected. " : "") +
                         (!isGrabbed ? "Wand not grabbed. " : ""));
@@ -175,14 +179,36 @@ public class WandController : MonoBehaviour
         }
     }
 
-        public void OnDeactivate(DeactivateEventArgs args)
+public void OnTriggerPressed()
+{
+    RaycastHit hit;
+    if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
+    {
+        InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+        if (inventoryItem != null)
+        {
+            BookController bookController = FindObjectOfType<BookController>();
+            if (bookController != null)
+            {
+                Transform availableSlot = bookController.GetAvailableSlot();
+                if (availableSlot != null)
+                {
+                    inventoryItem.AddToInventory(availableSlot);
+                }
+            }
+        }
+    }
+}
+
+
+    public void OnDeactivate(DeactivateEventArgs args)
     {
         isActivated = false;
     }
 
 
     public void CastSpell(ActivateEventArgs args)
-    {   
+    {
         spellSystem.CastSpell(wandTip.position, wandTip.forward);
         Debug.Log("Casting spell method: " + spellSystem.CurrentSpell.spellName);
     }
