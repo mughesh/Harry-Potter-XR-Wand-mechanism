@@ -180,25 +180,21 @@ public class WandController : MonoBehaviour
     }
 
 public void OnTriggerPressed()
-{
-    RaycastHit hit;
-    if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
     {
-        InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
-        if (inventoryItem != null)
+        RaycastHit hit;
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, inventoryItemLayer))
         {
-            BookController bookController = FindObjectOfType<BookController>();
-            if (bookController != null)
+            InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+            if (inventoryItem != null)
             {
-                Transform availableSlot = bookController.GetAvailableSlot();
-                if (availableSlot != null)
+                BookController bookController = FindObjectOfType<BookController>();
+                if (bookController != null)
                 {
-                    inventoryItem.AddToInventory(availableSlot);
+                    bookController.AddItemToInventory(inventoryItem);
                 }
             }
         }
     }
-}
 
 
     public void OnDeactivate(DeactivateEventArgs args)

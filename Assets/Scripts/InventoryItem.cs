@@ -8,21 +8,85 @@ public class InventoryItem : MonoBehaviour
     private XRGrabInteractable grabInteractable;
     private Vector3 originalScale;
     private Transform originalParent;
-     private XRSocketInteractor currentSocket;
-     private bool isInBookCollider = false;
+    private XRSocketInteractor currentSocket;
+    private bool isInBookCollider = false;
+    private bool isGrabbed = false;
+    private Rigidbody rb;
     
     [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
-    [SerializeField] private float inventoryScale = 0.2f;
+    [SerializeField] private float inventoryScalePercentage = 10f;
 
     private void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
+        rb = GetComponent<Rigidbody>();
         originalScale = transform.localScale;
         originalParent = transform.parent;
-        
+
         grabInteractable.selectEntered.AddListener(OnGrab);
         grabInteractable.selectExited.AddListener(OnRelease);
+
+        // Enable physics by default
+        EnablePhysics();
+    }
+
+    private void OnGrab(SelectEnterEventArgs args)
+    {
+        isGrabbed = true;
+    }
+
+    private void OnRelease(SelectExitEventArgs args)
+    {
+        isGrabbed = false;
+        if (isInBookCollider)
+        {
+            Debug.Log("Book collider OnRelease: " + isInBookCollider);
+            BookController bookController = FindObjectOfType<BookController>();
+            if (bookController != null)
+            {
+                Transform availableSlot = bookController.GetAvailableSlot();
+                if (availableSlot != null)
+                {
+                    AddToInventory(availableSlot);
+                    Debug.Log("Item added to inventory");
+                }
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("BookCollider"))
+        {
+            isInBookCollider = true;
+            if (isGrabbed)
+            {
+                StartCoroutine(ScaleTo(inventoryScalePercentage / 100f));
+            }
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("BookCollider") && isGrabbed)
+        {
+            // Maintain small scale while in book collider
+            transform.localScale = originalScale * (inventoryScalePercentage / 100f);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("BookCollider"))
+        {   isInBookCollider = false;
+            Debug.Log("Book collider OnTriggerExit: " + isInBookCollider);
+            
+            if (isGrabbed)
+            {
+                StartCoroutine(ScaleTo(1f));
+            }
+        }
     }
 
     public void AddToInventory(Transform slot)
@@ -30,7 +94,7 @@ public class InventoryItem : MonoBehaviour
         StartCoroutine(AddToInventoryCoroutine(slot));
     }
 
-   private IEnumerator AddToInventoryCoroutine(Transform slot)
+    private IEnumerator AddToInventoryCoroutine(Transform slot)
     {
         Vector3 startPosition = transform.position;
         
@@ -43,11 +107,13 @@ public class InventoryItem : MonoBehaviour
             yield return null;
         }
 
+        // Set parent and disable physics only after moving to the slot
         transform.SetParent(slot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
         currentSocket = slot.GetComponent<XRSocketInteractor>();
+        DisablePhysics();
     }
 
     public void RetrieveFromInventory(Vector3 targetPosition)
@@ -59,6 +125,10 @@ public class InventoryItem : MonoBehaviour
     {
         Vector3 startPosition = transform.position;
         
+        // Enable physics and remove parent before moving
+        EnablePhysics();
+        transform.SetParent(null);
+
         float elapsedTime = 0f;
         while (elapsedTime < moveDuration)
         {
@@ -68,15 +138,13 @@ public class InventoryItem : MonoBehaviour
             yield return null;
         }
 
-        transform.SetParent(null);
-        StartCoroutine(ScaleToOriginal());
+        StartCoroutine(ScaleTo(1f));
     }
 
-
-    private IEnumerator ScaleDown()
+    private IEnumerator ScaleTo(float targetScalePercentage)
     {
         Vector3 startScale = transform.localScale;
-        Vector3 targetScale = originalScale * inventoryScale;
+        Vector3 targetScale = originalScale * targetScalePercentage;
         
         float elapsedTime = 0f;
         while (elapsedTime < scaleDuration)
@@ -88,86 +156,21 @@ public class InventoryItem : MonoBehaviour
         }
     }
 
-   private IEnumerator ScaleToOriginal()
+    private void EnablePhysics()
     {
-        Vector3 startScale = transform.localScale;
-        
-        float elapsedTime = 0f;
-        while (elapsedTime < scaleDuration)
+        if (rb != null)
         {
-            float t = elapsedTime / scaleDuration;
-            transform.localScale = Vector3.Lerp(startScale, originalScale, t);
-            elapsedTime += Time.deltaTime;
-            yield return null;
+            rb.isKinematic = false;
+            rb.useGravity = true;
         }
     }
 
-    private void OnGrab(SelectEnterEventArgs args)
+    private void DisablePhysics()
     {
-        StopAllCoroutines();
-        transform.localScale = originalScale;
-    }
-
-    private void OnRelease(SelectExitEventArgs args)
-    {
-        if (isInBookCollider)
+        if (rb != null)
         {
-            BookController bookController = FindObjectOfType<BookController>();
-            if (bookController != null)
-            {
-                Transform availableSlot = bookController.GetAvailableSlot();
-                if (availableSlot != null)
-                {
-                    AddToInventory(availableSlot);
-                }
-            }
-        }
-        else
-        {
-            StartCoroutine(ScaleToOriginal());
+            rb.isKinematic = true;
+            rb.useGravity = false;
         }
     }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("BookCollider"))
-        {
-            isInBookCollider = true;
-            StartCoroutine(ScaleDown());
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.CompareTag("BookCollider"))
-        {
-            isInBookCollider = false;
-            if (!grabInteractable.isSelected)
-            {
-                StartCoroutine(ScaleToOriginal());
-            }
-        }
-    }
-
-    // public void OnSelectEntered(SelectEnterEventArgs args)
-    // {
-    //     if (args.interactorObject is XRSocketInteractor socketInteractor)
-    //     {
-    //         currentSocket = socketInteractor;
-    //         transform.SetParent(socketInteractor.transform);
-    //     }
-    // }
-
-    // public void OnSelectExited(SelectExitEventArgs args)
-    // {
-    //     if (args.interactorObject is XRSocketInteractor)
-    //     {
-    //         // Only unparent if it's not being grabbed by a hand
-    //         if (!(args.interactorObject is XRDirectInteractor))
-    //         {
-    //             transform.SetParent(null);
-    //             currentSocket = null;
-    //         }
-    //     }
-    // }
 }

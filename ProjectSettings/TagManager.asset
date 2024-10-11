@@ -6,6 +6,7 @@ TagManager:
   tags:
   - BookUi
   - LeftHand
+  - BookCollider
   layers:
   - Default
   - TransparentFX

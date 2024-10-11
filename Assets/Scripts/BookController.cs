@@ -14,6 +14,7 @@ public class BookController : MonoBehaviour
     private int currentPage = 0;
     private XRGrabInteractable grabInteractable;
     public XRSocketInteractor[] inventorySlots;
+    private int currentSlotIndex = 0;
 
 
 
@@ -212,17 +213,18 @@ public class BookController : MonoBehaviour
         }
     }
 
-        public Transform GetAvailableSlot()
+    public Transform GetAvailableSlot()
     {
-        foreach (XRSocketInteractor slot in inventorySlots)
+        for (int i = 0; i < inventorySlots.Length; i++)
         {
-            if (slot.interactablesSelected.Count == 0)
+            int index = (currentSlotIndex + i) % inventorySlots.Length;
+            if (inventorySlots[index].interactablesSelected.Count == 0)
             {
-                return slot.transform;
+                currentSlotIndex = (index + 1) % inventorySlots.Length;
+                return inventorySlots[index].transform;
             }
         }
         return null;
-
     }
 
 
