@@ -8,21 +8,35 @@ public class WandController : MonoBehaviour
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
     public LayerMask interactableLayerMask;
+    public LayerMask inventoryItemLayer;
+    public LayerMask bookLayerMask;
 
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
     private GameObject crosshairInstance;
+    private BookController bookController;
+    public Transform retrievePosition;
+    public float retrievalDistance = 1.5f;
+    public Transform characterController;
 
     void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
         spellSystem = FindObjectOfType<SpellSystem>();
+        bookController = FindObjectOfType<BookController>();
+
         if (spellSystem == null)
         {
             Debug.LogError("SpellSystem not found in the scene!");
         }
+
+        
+        {
+            Debug.LogError("BookController not found in the scene!");
+        }
+
         SetupInteractions();
         CreateCrosshair();
     }
@@ -101,55 +115,112 @@ public class WandController : MonoBehaviour
 
     public void OnActivate(ActivateEventArgs args)
     {
-        if (!isActivated)
+        if (!isActivated && isGrabbed)
         {
             isActivated = true;
-            if (isGrabbed)
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance, interactableLayerMask))
-                {
-                    // Check if we hit an interactable object
-                    XRSimpleInteractable interactable = hit.collider.GetComponent<XRSimpleInteractable>();
-                    if (interactable != null)
-                    {
-                        // Manually invoke the interaction
-                        interactable.selectEntered.Invoke(new SelectEnterEventArgs());
-                        Debug.Log("Interacting with: " + hit.collider.gameObject.name);
-                    }
-                    else
-                    {
-                        Debug.Log("Hit object is not interactable");
-                    }
-                }
-                else if (spellSystem != null && spellSystem.CurrentSpell != null)
-                {
-                    CastSpell(args);
-                    Debug.Log("Casting spell: " + spellSystem.CurrentSpell.spellName);
-                }
-                else
-                {
-                    Debug.LogWarning("Cannot cast spell: " + 
-                        (spellSystem == null ? "SpellSystem not found. " : "") +
-                        (spellSystem != null && spellSystem.CurrentSpell == null ? "No spell selected. " : "") +
-                        (!isGrabbed ? "Wand not grabbed. " : ""));
-                }
-            }
+            HandleWandInteraction();
         }
     }
-
-        public void OnDeactivate(DeactivateEventArgs args)
+    public void OnDeactivate(DeactivateEventArgs args)
     {
         isActivated = false;
     }
 
 
-    public void CastSpell(ActivateEventArgs args)
-    {   
-        spellSystem.CastSpell(wandTip.position, wandTip.forward);
-        Debug.Log("Casting spell method: " + spellSystem.CurrentSpell.spellName);
+    void HandleWandInteraction()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        {
+            // Check for inventory item
+            if (((1 << hit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+            {
+                HandleInventoryItemInteraction(hit);
+            }
+            // Check for book interaction
+            else if (((1 << hit.collider.gameObject.layer) & bookLayerMask) != 0)
+            {
+                HandleBookInteraction(hit);
+            }
+            // Check for other interactables (like spell selection)
+            else if (((1 << hit.collider.gameObject.layer) & interactableLayerMask) != 0)
+            {
+                HandleInteractableInteraction(hit);
+            }
+            // If none of the above, try to cast spell
+            else
+            {
+                CastSpell();
+            }
+        }
+        else
+        {
+            // If nothing was hit, try to cast spell
+            CastSpell();
+        }
     }
 
+void HandleInventoryItemInteraction(RaycastHit hit)
+    {
+        InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+        if (inventoryItem != null)
+        {
+            if (inventoryItem.IsInSlot)
+            {
+                // Retrieve from inventory
+                inventoryItem.RetrieveFromInventoryWithWand(transform);
+            }
+            else
+            {
+                // Add to inventory
+                if (bookController != null)
+                {
+                    Transform availableSlot = bookController.GetAvailableSlot();
+                    if (availableSlot != null)
+                    {
+                        inventoryItem.AddToInventory(availableSlot);
+                    }
+                    else
+                    {
+                        Debug.Log("No available slots in the inventory.");
+                    }
+                }
+            }
+        }
+    }
+
+    void HandleBookInteraction(RaycastHit hit)
+    {
+        // Implement book-specific interactions here
+        // For example, turning pages or selecting spells
+        XRSimpleInteractable interactable = hit.collider.GetComponent<XRSimpleInteractable>();
+        if (interactable != null)
+        {
+            interactable.selectEntered.Invoke(new SelectEnterEventArgs());
+        }
+    }
+
+    void HandleInteractableInteraction(RaycastHit hit)
+    {
+        XRSimpleInteractable interactable = hit.collider.GetComponent<XRSimpleInteractable>();
+        if (interactable != null)
+        {
+            interactable.selectEntered.Invoke(new SelectEnterEventArgs());
+        }
+    }
+
+    void CastSpell()
+    {
+        if (spellSystem != null && spellSystem.CurrentSpell != null)
+        {
+            spellSystem.CastSpell(wandTip.position, wandTip.forward);
+        }
+        else
+        {
+            Debug.Log("No spell selected or spell system not found.");
+        }
+    }
+    
     void ReturnToHip()
     {
         if (hipAttachPoint != null)

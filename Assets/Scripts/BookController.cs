@@ -10,10 +10,13 @@ public class BookController : MonoBehaviour
     public GameObject rightArrow;
     public Transform hipAttachPoint;
     private Vector3[] originalBookmarkScales;
-
-    private XRGrabInteractable grabInteractable;
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
+    private XRGrabInteractable grabInteractable;
+    public XRSocketInteractor[] inventorySlots;
+    private int currentSlotIndex = 0;
+
+
 
     void Start()
     {
@@ -22,12 +25,15 @@ public class BookController : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
             grabInteractable.selectExited.AddListener(OnRelease);
+            
         }
         else
         {
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
 
+
+   
     // Store the original scale for each bookmark
     originalBookmarkScales = new Vector3[bookmarks.Length];
     for (int i = 0; i < bookmarks.Length; i++)
@@ -88,6 +94,8 @@ public class BookController : MonoBehaviour
             }
         }
     }
+
+
     void UpdateBookDisplay()
     {
     // Always show all bookmarks
@@ -136,13 +144,19 @@ public class BookController : MonoBehaviour
 
     public void OnGrab(SelectEnterEventArgs args)
     {
-        // Book grabbed logic
-        Debug.Log("Book grabbed");
+
+
+    }
+
+    private bool IsLeftHandInteractor(IXRSelectInteractor interactor)
+    {
+        // Check the tag of the interactor's gameObject
+        return interactor.transform.CompareTag("LeftHand");
     }
 
     public void OnRelease(SelectExitEventArgs args)
     {
-        ReturnToHip();
+         ReturnToHip();      
     }
 
     public void OnBookmarkSelected(int index)
@@ -197,5 +211,38 @@ public class BookController : MonoBehaviour
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
         }
+    }
+
+    public Transform GetAvailableSlot()
+    {
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            int index = (currentSlotIndex + i) % inventorySlots.Length;
+            if (inventorySlots[index].interactablesSelected.Count == 0)
+            {
+                currentSlotIndex = (index + 1) % inventorySlots.Length;
+                return inventorySlots[index].transform;
+            }
+        }
+        return null;
+    }
+
+
+    public void AddItemToInventory(InventoryItem item)
+    {
+        Transform availableSlot = GetAvailableSlot();
+        if (availableSlot != null)
+        {
+            item.AddToInventory(availableSlot);
+        }
+        else
+        {
+            Debug.Log("No available slots in the inventory.");
+        }
+    }
+    
+    public void RemoveItemFromInventory(InventoryItem item)
+    {
+        item.transform.SetParent(null);
     }
 }
