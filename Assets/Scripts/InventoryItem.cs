@@ -17,6 +17,8 @@ public class InventoryItem : MonoBehaviour
     [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
     [SerializeField] private float inventoryScalePercentage = 10f;
+    public bool IsInSlot { get; private set; }
+
 
     private void Start()
     {
@@ -117,11 +119,22 @@ public class InventoryItem : MonoBehaviour
 
         currentSocket = slot.GetComponent<XRSocketInteractor>();
         DisablePhysics();
+        IsInSlot = true;
     }
+
 
     public void RetrieveFromInventory(Vector3 targetPosition)
     {
         StartCoroutine(RetrieveFromInventoryCoroutine(targetPosition));
+    }
+
+    public void RetrieveFromInventoryWithWand(Transform playerTransform)
+    {
+        if (IsInSlot)
+        {
+            Vector3 retrievalPosition = playerTransform.position + playerTransform.forward * 1.5f + Vector3.up * 1.2f;
+            StartCoroutine(RetrieveFromInventoryCoroutine(retrievalPosition));
+        }
     }
 
     private IEnumerator RetrieveFromInventoryCoroutine(Vector3 targetPosition)
@@ -131,6 +144,7 @@ public class InventoryItem : MonoBehaviour
         
         EnablePhysics();
         transform.SetParent(null);
+        IsInSlot = false;
 
         float elapsedTime = 0f;
         while (elapsedTime < moveDuration)
@@ -144,6 +158,9 @@ public class InventoryItem : MonoBehaviour
 
         transform.localScale = originalScale;
     }
+
+
+
 
     private IEnumerator ScaleTo(float targetScalePercentage)
     {

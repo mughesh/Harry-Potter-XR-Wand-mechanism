@@ -201,7 +201,7 @@ GameObject:
   - component: {fileID: 46197232}
   - component: {fileID: 46197235}
   - component: {fileID: 46197234}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Spells
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1200,7 +1200,7 @@ GameObject:
   - component: {fileID: 127537715}
   - component: {fileID: 127537716}
   - component: {fileID: 127537717}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Slot1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1362,7 +1362,7 @@ GameObject:
   - component: {fileID: 196994839}
   - component: {fileID: 196994841}
   - component: {fileID: 196994840}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Slot1 (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1839,10 +1839,13 @@ MonoBehaviour:
   hipAttachPoint: {fileID: 637751220}
   interactableLayerMask:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 256
   inventoryItemLayer:
     serializedVersion: 2
     m_Bits: 128
+  bookLayerMask:
+    serializedVersion: 2
+    m_Bits: 64
   retrievePosition: {fileID: 605250657}
   retrievalDistance: 1.5
   characterController: {fileID: 622039167}
@@ -2565,7 +2568,7 @@ GameObject:
   - component: {fileID: 574994544}
   - component: {fileID: 574994543}
   - component: {fileID: 574994542}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Reducto
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -3091,7 +3094,7 @@ GameObject:
   - component: {fileID: 642024053}
   - component: {fileID: 642024052}
   - component: {fileID: 642024051}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Lumos
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -3464,7 +3467,7 @@ GameObject:
   - component: {fileID: 881450171}
   - component: {fileID: 881450170}
   - component: {fileID: 881450169}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Reducto
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -3760,7 +3763,7 @@ GameObject:
   - component: {fileID: 988092228}
   - component: {fileID: 988092227}
   - component: {fileID: 988092226}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Lumos
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -3982,7 +3985,7 @@ GameObject:
   - component: {fileID: 998278519}
   - component: {fileID: 998278518}
   - component: {fileID: 998278517}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Incendio
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -5137,7 +5140,7 @@ GameObject:
   - component: {fileID: 1378858446}
   - component: {fileID: 1378858445}
   - component: {fileID: 1378858444}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Incendio
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -5394,7 +5397,7 @@ GameObject:
   - component: {fileID: 1435386937}
   - component: {fileID: 1435386941}
   - component: {fileID: 1435386940}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: ArrowRight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6003,7 +6006,7 @@ GameObject:
   - component: {fileID: 1542815219}
   - component: {fileID: 1542815218}
   - component: {fileID: 1542815216}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: artifact1
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -6344,7 +6347,7 @@ GameObject:
   - component: {fileID: 1652807975}
   - component: {fileID: 1652807979}
   - component: {fileID: 1652807978}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: ArrowLeft
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6564,7 +6567,7 @@ GameObject:
   - component: {fileID: 1685356959}
   - component: {fileID: 1685356958}
   - component: {fileID: 1685356956}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: artifact2
   m_TagString: BookUi
   m_Icon: {fileID: 0}
@@ -7202,7 +7205,7 @@ GameObject:
   - component: {fileID: 2047058713}
   - component: {fileID: 2047058717}
   - component: {fileID: 2047058716}
-  m_Layer: 6
+  m_Layer: 8
   m_Name: Inventory
   m_TagString: Untagged
   m_Icon: {fileID: 0}
