@@ -12,6 +12,7 @@ public class InventoryItem : MonoBehaviour
     private bool isInBookCollider = false;
     private bool isGrabbed = false;
     private Rigidbody rb;
+    private Coroutine scaleCoroutine;
     
     [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
@@ -27,7 +28,6 @@ public class InventoryItem : MonoBehaviour
         grabInteractable.selectEntered.AddListener(OnGrab);
         grabInteractable.selectExited.AddListener(OnRelease);
 
-        // Enable physics by default
         EnablePhysics();
     }
 
@@ -41,7 +41,6 @@ public class InventoryItem : MonoBehaviour
         isGrabbed = false;
         if (isInBookCollider)
         {
-            Debug.Log("Book collider OnRelease: " + isInBookCollider);
             BookController bookController = FindObjectOfType<BookController>();
             if (bookController != null)
             {
@@ -49,7 +48,6 @@ public class InventoryItem : MonoBehaviour
                 if (availableSlot != null)
                 {
                     AddToInventory(availableSlot);
-                    Debug.Log("Item added to inventory");
                 }
             }
         }
@@ -57,36 +55,38 @@ public class InventoryItem : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("BookCollider"))
+        if (isGrabbed == true && other.CompareTag("BookCollider"))
         {
             isInBookCollider = true;
-            if (isGrabbed)
-            {
-                StartCoroutine(ScaleTo(inventoryScalePercentage / 100f));
-            }
+            StartScaling(inventoryScalePercentage / 100f);
         }
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("BookCollider") && isGrabbed)
+        if (isGrabbed == true && other.CompareTag("BookCollider"))
         {
-            // Maintain small scale while in book collider
+            // Ensure the object maintains its small scale while in the collider
             transform.localScale = originalScale * (inventoryScalePercentage / 100f);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("BookCollider"))
-        {   isInBookCollider = false;
-            Debug.Log("Book collider OnTriggerExit: " + isInBookCollider);
-            
-            if (isGrabbed)
-            {
-                StartCoroutine(ScaleTo(1f));
-            }
+        if (isGrabbed == true && other.CompareTag("BookCollider"))
+        {
+            isInBookCollider = false;
+            StartScaling(1f);
         }
+    }
+
+    private void StartScaling(float targetScalePercentage)
+    {
+        if (scaleCoroutine != null)
+        {
+            StopCoroutine(scaleCoroutine);
+        }
+        scaleCoroutine = StartCoroutine(ScaleTo(targetScalePercentage));
     }
 
     public void AddToInventory(Transform slot)
@@ -97,20 +97,23 @@ public class InventoryItem : MonoBehaviour
     private IEnumerator AddToInventoryCoroutine(Transform slot)
     {
         Vector3 startPosition = transform.position;
+        Vector3 startScale = transform.localScale;
+        Vector3 targetScale = originalScale * (inventoryScalePercentage / 100f);
         
         float elapsedTime = 0f;
         while (elapsedTime < moveDuration)
         {
             float t = elapsedTime / moveDuration;
             transform.position = Vector3.Lerp(startPosition, slot.position, t);
+            transform.localScale = Vector3.Lerp(startScale, targetScale, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        // Set parent and disable physics only after moving to the slot
         transform.SetParent(slot);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+        transform.localScale = targetScale;
 
         currentSocket = slot.GetComponent<XRSocketInteractor>();
         DisablePhysics();
@@ -124,8 +127,8 @@ public class InventoryItem : MonoBehaviour
     private IEnumerator RetrieveFromInventoryCoroutine(Vector3 targetPosition)
     {
         Vector3 startPosition = transform.position;
+        Vector3 startScale = transform.localScale;
         
-        // Enable physics and remove parent before moving
         EnablePhysics();
         transform.SetParent(null);
 
@@ -134,11 +137,12 @@ public class InventoryItem : MonoBehaviour
         {
             float t = elapsedTime / moveDuration;
             transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            transform.localScale = Vector3.Lerp(startScale, originalScale, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        StartCoroutine(ScaleTo(1f));
+        transform.localScale = originalScale;
     }
 
     private IEnumerator ScaleTo(float targetScalePercentage)
