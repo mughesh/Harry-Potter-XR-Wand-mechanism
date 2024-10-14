@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using System.Collections.Generic;
 
 public class BookController : MonoBehaviour
 {
@@ -15,6 +16,8 @@ public class BookController : MonoBehaviour
     private XRGrabInteractable grabInteractable;
     public XRSocketInteractor[] inventorySlots;
     private int currentSlotIndex = 0;
+
+    private List<InventoryItem> inventoryItems = new List<InventoryItem>();
 
 
 
@@ -98,21 +101,14 @@ public class BookController : MonoBehaviour
 
     void UpdateBookDisplay()
     {
-    // Always show all bookmarks
-    for (int i = 0; i < bookmarks.Length; i++)
-    {
-        bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
-
-        // Scale the current segment bookmark slightly larger to signify it
-        if (i == currentSegment)
+        // Update bookmarks
+        for (int i = 0; i < bookmarks.Length; i++)
         {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
+            bookmarks[i].SetActive(true);
+            bookmarks[i].transform.localScale = (i == currentSegment) 
+                ? originalBookmarkScales[i] * 1.2f 
+                : originalBookmarkScales[i];
         }
-        else
-        {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
-        }
-    }
 
         // Update pages visibility
         for (int i = 0; i < spellPages.Length; i++)
@@ -124,8 +120,30 @@ public class BookController : MonoBehaviour
             inventoryPages[i].SetActive(currentSegment == 1 && i == currentPage);
         }
 
-        // Update arrows visibility
+        // Update inventory items visibility
+        UpdateInventoryItemsVisibility();
+
         UpdateArrowsVisibility();
+    }
+
+    void UpdateInventoryItemsVisibility()
+    {
+        foreach (var item in inventoryItems)
+        {
+            if (item != null)
+            {
+                bool shouldBeVisible = currentSegment == 1;
+                item.gameObject.SetActive(shouldBeVisible);
+                
+                // Ensure proper parenting
+                if (shouldBeVisible && item.transform.parent != item.CurrentSlot)
+                {
+                    item.transform.SetParent(item.CurrentSlot);
+                    item.transform.localPosition = Vector3.zero;
+                    item.transform.localRotation = Quaternion.identity;
+                }
+            }
+        }
     }
 
     void UpdateArrowsVisibility()
@@ -234,15 +252,17 @@ public class BookController : MonoBehaviour
         if (availableSlot != null)
         {
             item.AddToInventory(availableSlot);
+            inventoryItems.Add(item);
+            UpdateInventoryItemsVisibility();
         }
         else
         {
             Debug.Log("No available slots in the inventory.");
         }
     }
-    
     public void RemoveItemFromInventory(InventoryItem item)
     {
-        item.transform.SetParent(null);
+        inventoryItems.Remove(item);
+        UpdateInventoryItemsVisibility();
     }
 }

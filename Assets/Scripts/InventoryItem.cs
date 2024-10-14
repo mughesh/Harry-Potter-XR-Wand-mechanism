@@ -18,6 +18,7 @@ public class InventoryItem : MonoBehaviour
     [SerializeField] private float moveDuration = 0.5f;
     [SerializeField] private float inventoryScalePercentage = 10f;
     public bool IsInSlot { get; private set; }
+    public Transform CurrentSlot { get; private set; }
 
 
     private void Start()
@@ -120,6 +121,14 @@ public class InventoryItem : MonoBehaviour
         currentSocket = slot.GetComponent<XRSocketInteractor>();
         DisablePhysics();
         IsInSlot = true;
+        CurrentSlot = slot;
+
+        // Notify BookController
+        BookController bookController = FindObjectOfType<BookController>();
+        if (bookController != null)
+        {
+            bookController.AddItemToInventory(this);
+        }
     }
 
 
@@ -145,6 +154,7 @@ public class InventoryItem : MonoBehaviour
         EnablePhysics();
         transform.SetParent(null);
         IsInSlot = false;
+        CurrentSlot = null;
 
         float elapsedTime = 0f;
         while (elapsedTime < moveDuration)
@@ -157,6 +167,13 @@ public class InventoryItem : MonoBehaviour
         }
 
         transform.localScale = originalScale;
+
+        // Notify BookController
+        BookController bookController = FindObjectOfType<BookController>();
+        if (bookController != null)
+        {
+            bookController.RemoveItemFromInventory(this);
+        }
     }
 
 
