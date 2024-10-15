@@ -32,7 +32,8 @@ public class WandController : MonoBehaviour
             Debug.LogError("SpellSystem not found in the scene!");
         }
 
-        
+        bookController = FindObjectOfType<BookController>();
+        if (bookController == null)
         {
             Debug.LogError("BookController not found in the scene!");
         }
@@ -160,32 +161,40 @@ public class WandController : MonoBehaviour
         }
     }
 
-void HandleInventoryItemInteraction(RaycastHit hit)
+    void HandleInventoryItemInteraction(RaycastHit hit)
     {
+        
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
-                // Retrieve from inventory
                 inventoryItem.RetrieveFromInventoryWithWand(transform);
+                bookController.RemoveItemFromInventory(inventoryItem);
             }
             else
             {
-                // Add to inventory
                 if (bookController != null)
                 {
                     Transform availableSlot = bookController.GetAvailableSlot();
                     if (availableSlot != null)
                     {
-                        inventoryItem.AddToInventory(availableSlot);
+                        bookController.AddItemToInventory(inventoryItem);
                     }
                     else
                     {
                         Debug.Log("No available slots in the inventory.");
                     }
                 }
+                else
+                {
+                    Debug.LogError("BookController is null in WandController!");
+                }
             }
+        }
+        else
+        {
+            Debug.LogError("No InventoryItem component found on the hit object!");
         }
     }
 

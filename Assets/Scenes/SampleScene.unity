@@ -1846,6 +1846,7 @@ MonoBehaviour:
   bookLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  bookController: {fileID: 80541659}
   retrievePosition: {fileID: 605250657}
   retrievalDistance: 1.5
   characterController: {fileID: 622039167}

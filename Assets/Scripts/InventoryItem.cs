@@ -13,6 +13,7 @@ public class InventoryItem : MonoBehaviour
     private bool isGrabbed = false;
     private Rigidbody rb;
     private Coroutine scaleCoroutine;
+    private BookController bookController;
     
     [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
@@ -23,6 +24,12 @@ public class InventoryItem : MonoBehaviour
 
     private void Start()
     {
+        bookController = FindObjectOfType<BookController>();
+        if (bookController == null)
+        {
+            Debug.LogError("BookController not found in the scene!");
+        }
+
         grabInteractable = GetComponent<XRGrabInteractable>();
         rb = GetComponent<Rigidbody>();
         originalScale = transform.localScale;
@@ -113,9 +120,6 @@ public class InventoryItem : MonoBehaviour
             yield return null;
         }
 
-        transform.SetParent(slot);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
         transform.localScale = targetScale;
 
         currentSocket = slot.GetComponent<XRSocketInteractor>();
@@ -123,12 +127,7 @@ public class InventoryItem : MonoBehaviour
         IsInSlot = true;
         CurrentSlot = slot;
 
-        // Notify BookController
-        BookController bookController = FindObjectOfType<BookController>();
-        if (bookController != null)
-        {
-            bookController.AddItemToInventory(this);
-        }
+
     }
 
 
@@ -152,7 +151,6 @@ public class InventoryItem : MonoBehaviour
         Vector3 startScale = transform.localScale;
         
         EnablePhysics();
-        transform.SetParent(null);
         IsInSlot = false;
         CurrentSlot = null;
 
@@ -168,12 +166,6 @@ public class InventoryItem : MonoBehaviour
 
         transform.localScale = originalScale;
 
-        // Notify BookController
-        BookController bookController = FindObjectOfType<BookController>();
-        if (bookController != null)
-        {
-            bookController.RemoveItemFromInventory(this);
-        }
     }
 
 
