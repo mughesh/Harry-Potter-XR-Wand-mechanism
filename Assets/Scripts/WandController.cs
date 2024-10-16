@@ -15,7 +15,7 @@ public class WandController : MonoBehaviour
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
-    private InventorySystem inventorySystem;
+     [SerializeField] private InventorySystem inventorySystem;
     private GameObject crosshairInstance;
     private BookController bookController;
     public Transform retrievePosition;
@@ -39,11 +39,7 @@ public class WandController : MonoBehaviour
             Debug.LogError("SpellSystem not found in the scene!");
         }
 
-<<<<<<< Updated upstream
-        
-=======
         if (bookController == null)
->>>>>>> Stashed changes
         {
             Debug.LogError("BookController not found in the scene!");
         }
@@ -177,46 +173,22 @@ public class WandController : MonoBehaviour
 
 void HandleInventoryItemInteraction(RaycastHit hit)
     {
-<<<<<<< Updated upstream
-=======
         if (inventorySystem == null)
         {
             Debug.LogError("InventorySystem reference missing in WandController!");
             return;
         }
 
->>>>>>> Stashed changes
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
-<<<<<<< Updated upstream
-                // Retrieve from inventory
-                inventoryItem.RetrieveFromInventoryWithWand(transform);
-            }
-            else
-            {
-                // Add to inventory
-                if (bookController != null)
-                {
-                    Transform availableSlot = bookController.GetAvailableSlot();
-                    if (availableSlot != null)
-                    {
-                        inventoryItem.AddToInventory(availableSlot);
-                    }
-                    else
-                    {
-                        Debug.Log("No available slots in the inventory.");
-                    }
-                }
-=======
                 inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
             }
             else
             {
                 inventorySystem.AddItemViaWand(inventoryItem);
->>>>>>> Stashed changes
             }
         }
     }
