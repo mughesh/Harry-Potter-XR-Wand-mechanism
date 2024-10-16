@@ -13,14 +13,23 @@ public class BookController : MonoBehaviour
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
     private XRGrabInteractable grabInteractable;
+<<<<<<< Updated upstream
     public XRSocketInteractor[] inventorySlots;
     private int currentSlotIndex = 0;
 
 
+=======
+    [SerializeField] private InventorySystem inventorySystem;
+>>>>>>> Stashed changes
 
     void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
+        inventorySystem = FindObjectOfType<InventorySystem>();
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem not found!");
+        }
         if (grabInteractable != null)
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
@@ -31,7 +40,11 @@ public class BookController : MonoBehaviour
         {
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
+<<<<<<< Updated upstream
 
+=======
+        
+>>>>>>> Stashed changes
 
    
     // Store the original scale for each bookmark
@@ -122,12 +135,28 @@ public class BookController : MonoBehaviour
         for (int i = 0; i < inventoryPages.Length; i++)
         {
             inventoryPages[i].SetActive(currentSegment == 1 && i == currentPage);
+<<<<<<< Updated upstream
         }
 
         // Update arrows visibility
+=======
+        }
+                // Use InventorySystem to update item visibility
+        if (inventorySystem != null)
+        {
+            inventorySystem.UpdateItemsVisibility(currentSegment == 1);
+            inventorySystem.UpdateInventoryParenting();
+        }
+
+
+>>>>>>> Stashed changes
         UpdateArrowsVisibility();
     }
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     void UpdateArrowsVisibility()
     {
         if (currentSegment == 0)
@@ -142,6 +171,32 @@ public class BookController : MonoBehaviour
         }
     }
 
+<<<<<<< Updated upstream
+=======
+    void UpdateInventoryItemsParenting()
+    {
+        // Debug.Log("UpdateInventoryItemsParenting called");
+        // Debug.Log($"Number of items in inventory: {inventoryItemSlots.Count}");
+        foreach (var kvp in inventorySystem.itemSlotMap)
+        {
+            InventoryItem item = kvp.Key;
+            Transform slot = kvp.Value;
+
+            if (item != null && slot != null)
+            {
+                item.transform.SetParent(slot);
+                item.transform.localPosition = Vector3.zero;
+                item.transform.localRotation = Quaternion.identity;
+                item.gameObject.SetActive(currentSegment == 1);
+            }
+            else
+            {
+                Debug.LogError($"Null reference found - Item: {item}, Slot: {slot}");
+            }
+        }
+    }
+
+>>>>>>> Stashed changes
     public void OnGrab(SelectEnterEventArgs args)
     {
 
@@ -213,6 +268,7 @@ public class BookController : MonoBehaviour
         }
     }
 
+<<<<<<< Updated upstream
     public Transform GetAvailableSlot()
     {
         for (int i = 0; i < inventorySlots.Length; i++)
@@ -245,4 +301,8 @@ public class BookController : MonoBehaviour
     {
         item.transform.SetParent(null);
     }
+=======
+
+
+>>>>>>> Stashed changes
 }

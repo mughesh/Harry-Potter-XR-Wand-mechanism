@@ -1,41 +1,50 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-using System.Collections;
 
 public class InventoryItem : MonoBehaviour
 {
     public InventoryItemData itemData;
-    private XRGrabInteractable grabInteractable;
     private Vector3 originalScale;
-    private Transform originalParent;
-    private XRSocketInteractor currentSocket;
     private bool isInBookCollider = false;
     private bool isGrabbed = false;
     private Rigidbody rb;
+<<<<<<< Updated upstream
     private Coroutine scaleCoroutine;
+=======
+    private InventorySystem inventorySystem;
+>>>>>>> Stashed changes
     
-    [SerializeField] private float scaleDuration = 0.5f;
-    [SerializeField] private float moveDuration = 0.5f;
-    [SerializeField] private float inventoryScalePercentage = 10f;
+    public Vector3 OriginalScale => originalScale;
     public bool IsInSlot { get; private set; }
-
 
     private void Start()
     {
+<<<<<<< Updated upstream
         grabInteractable = GetComponent<XRGrabInteractable>();
+=======
+        inventorySystem = FindObjectOfType<InventorySystem>();
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem not found!");
+            return;
+        }
+
+>>>>>>> Stashed changes
         rb = GetComponent<Rigidbody>();
         originalScale = transform.localScale;
-        originalParent = transform.parent;
-
+        
+        XRGrabInteractable grabInteractable = GetComponent<XRGrabInteractable>();
         grabInteractable.selectEntered.AddListener(OnGrab);
         grabInteractable.selectExited.AddListener(OnRelease);
-
-        EnablePhysics();
     }
 
     private void OnGrab(SelectEnterEventArgs args)
     {
         isGrabbed = true;
+        if (IsInSlot)
+        {
+            inventorySystem.RetrieveItemViaHand(this);
+        }
     }
 
     private void OnRelease(SelectExitEventArgs args)
@@ -43,45 +52,27 @@ public class InventoryItem : MonoBehaviour
         isGrabbed = false;
         if (isInBookCollider)
         {
-            BookController bookController = FindObjectOfType<BookController>();
-            if (bookController != null)
-            {
-                Transform availableSlot = bookController.GetAvailableSlot();
-                if (availableSlot != null)
-                {
-                    AddToInventory(availableSlot);
-                }
-            }
+            inventorySystem.AddItemViaHand(this);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (isGrabbed == true && other.CompareTag("BookCollider"))
+        if (isGrabbed && other.CompareTag("BookCollider"))
         {
             isInBookCollider = true;
-            StartScaling(inventoryScalePercentage / 100f);
-        }
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (isGrabbed == true && other.CompareTag("BookCollider"))
-        {
-            // Ensure the object maintains its small scale while in the collider
-            transform.localScale = originalScale * (inventoryScalePercentage / 100f);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (isGrabbed == true && other.CompareTag("BookCollider"))
+        if (other.CompareTag("BookCollider"))
         {
             isInBookCollider = false;
-            StartScaling(1f);
         }
     }
 
+<<<<<<< Updated upstream
     private void StartScaling(float targetScalePercentage)
     {
         if (scaleCoroutine != null)
@@ -178,6 +169,9 @@ public class InventoryItem : MonoBehaviour
     }
 
     private void EnablePhysics()
+=======
+    public void EnablePhysics()
+>>>>>>> Stashed changes
     {
         if (rb != null)
         {
@@ -186,12 +180,18 @@ public class InventoryItem : MonoBehaviour
         }
     }
 
-    private void DisablePhysics()
+    public void DisablePhysics()
     {
         if (rb != null)
         {
             rb.isKinematic = true;
             rb.useGravity = false;
         }
+    }
+
+    public void SetInventoryState(bool inInventory, Transform slot)
+    {
+        IsInSlot = inInventory;
+        CurrentSlot = slot;
     }
 }

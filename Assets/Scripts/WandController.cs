@@ -15,28 +15,43 @@ public class WandController : MonoBehaviour
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
+    private InventorySystem inventorySystem;
     private GameObject crosshairInstance;
     private BookController bookController;
     public Transform retrievePosition;
     public float retrievalDistance = 1.5f;
     public Transform characterController;
 
+
     void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
         spellSystem = FindObjectOfType<SpellSystem>();
         bookController = FindObjectOfType<BookController>();
+        inventorySystem = FindObjectOfType<InventorySystem>();
 
+        if (grabInteractable == null)
+        {
+            Debug.LogError("XRGrabInteractable component not found on the Wand object!");
+        }
         if (spellSystem == null)
         {
             Debug.LogError("SpellSystem not found in the scene!");
         }
 
+<<<<<<< Updated upstream
         
+=======
+        if (bookController == null)
+>>>>>>> Stashed changes
         {
             Debug.LogError("BookController not found in the scene!");
         }
 
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem not found!");
+        }
         SetupInteractions();
         CreateCrosshair();
     }
@@ -162,11 +177,21 @@ public class WandController : MonoBehaviour
 
 void HandleInventoryItemInteraction(RaycastHit hit)
     {
+<<<<<<< Updated upstream
+=======
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem reference missing in WandController!");
+            return;
+        }
+
+>>>>>>> Stashed changes
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
+<<<<<<< Updated upstream
                 // Retrieve from inventory
                 inventoryItem.RetrieveFromInventoryWithWand(transform);
             }
@@ -185,6 +210,13 @@ void HandleInventoryItemInteraction(RaycastHit hit)
                         Debug.Log("No available slots in the inventory.");
                     }
                 }
+=======
+                inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
+            }
+            else
+            {
+                inventorySystem.AddItemViaWand(inventoryItem);
+>>>>>>> Stashed changes
             }
         }
     }

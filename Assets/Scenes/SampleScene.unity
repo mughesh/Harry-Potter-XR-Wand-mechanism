@@ -499,9 +499,7 @@ MonoBehaviour:
   leftArrow: {fileID: 1652807973}
   rightArrow: {fileID: 1435386935}
   hipAttachPoint: {fileID: 269665075}
-  inventorySlots:
-  - {fileID: 127537716}
-  - {fileID: 0}
+  inventorySystem: {fileID: 1690288870}
 --- !u!114 &80541660
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1363,7 +1361,7 @@ GameObject:
   - component: {fileID: 196994841}
   - component: {fileID: 196994840}
   m_Layer: 8
-  m_Name: Slot1 (1)
+  m_Name: Slot2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1767,9 +1765,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
-  scaleDuration: 0.5
-  moveDuration: 0.5
-  inventoryScalePercentage: 10
 --- !u!1 &269665074
 GameObject:
   m_ObjectHideFlags: 0
@@ -2366,9 +2361,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
-  scaleDuration: 0.5
-  moveDuration: 0.5
-  inventoryScalePercentage: 10
 --- !u!1 &347009993
 GameObject:
   m_ObjectHideFlags: 0
@@ -6823,8 +6815,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c216e484938064544847f0c93c2b0b47, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryItems:
-  - {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
+  inventorySlots:
+  - {fileID: 127537715}
+  - {fileID: 196994839}
+  scaleDuration: 0.5
+  moveDuration: 0.5
+  inventoryScalePercentage: 10
 --- !u!1 &1713900417
 GameObject:
   m_ObjectHideFlags: 0
