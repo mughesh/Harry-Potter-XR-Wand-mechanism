@@ -1765,6 +1765,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
+  scaleAnimationDuration: 0.3
+  inventoryScalePercentage: 10
 --- !u!1 &269665074
 GameObject:
   m_ObjectHideFlags: 0
@@ -1841,6 +1843,7 @@ MonoBehaviour:
   bookLayerMask:
     serializedVersion: 2
     m_Bits: 64
+  inventorySystem: {fileID: 0}
   retrievePosition: {fileID: 605250657}
   retrievalDistance: 1.5
   characterController: {fileID: 622039167}
@@ -2361,6 +2364,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemData: {fileID: 11400000, guid: 897b966a921dc2c4da0251e07c079fc3, type: 2}
+  scaleAnimationDuration: 0.3
+  inventoryScalePercentage: 10
 --- !u!1 &347009993
 GameObject:
   m_ObjectHideFlags: 0
@@ -3305,7 +3310,7 @@ PrefabInstance:
     - target: {fileID: 3332607324745233096, guid: 90cb68682af3b9e498966f93e36a233f,
         type: 3}
       propertyPath: m_UseGravity
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3332607324745233096, guid: 90cb68682af3b9e498966f93e36a233f,
         type: 3}
@@ -6818,9 +6823,8 @@ MonoBehaviour:
   inventorySlots:
   - {fileID: 127537715}
   - {fileID: 196994839}
-  scaleDuration: 0.5
   moveDuration: 0.5
-  inventoryScalePercentage: 10
+  retrievalOffset: 0.3
 --- !u!1 &1713900417
 GameObject:
   m_ObjectHideFlags: 0

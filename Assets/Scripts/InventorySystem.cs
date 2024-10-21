@@ -1,19 +1,17 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
 
 public class InventorySystem : MonoBehaviour
 {
     [SerializeField] private Transform[] inventorySlots;
-    [SerializeField] private float scaleDuration = 0.5f;
     [SerializeField] private float moveDuration = 0.5f;
-    [SerializeField] private float inventoryScalePercentage = 10f;
+    [SerializeField] private float retrievalOffset = 0.3f;
     
-    public Dictionary<InventoryItem, Transform> itemSlotMap = new Dictionary<InventoryItem, Transform>();
+    private Dictionary<Transform, InventoryItem> slotItemMap = new Dictionary<Transform, InventoryItem>();
     private int currentSlotIndex = 0;
 
-    // Core inventory management
     public Transform GetAvailableSlot()
     {
         if (inventorySlots == null || inventorySlots.Length == 0)
@@ -22,31 +20,56 @@ public class InventorySystem : MonoBehaviour
             return null;
         }
 
+        // Find first available slot
         for (int i = 0; i < inventorySlots.Length; i++)
         {
-            int index = (currentSlotIndex + i) % inventorySlots.Length;
-            Transform slot = inventorySlots[index];
-            
-            if (slot == null) continue;
-
-            XRSocketInteractor socket = slot.GetComponent<XRSocketInteractor>();
-            if (socket != null && socket.interactablesSelected.Count == 0)
+            if (!slotItemMap.ContainsKey(inventorySlots[i]))
             {
-                currentSlotIndex = (index + 1) % inventorySlots.Length;
-                return slot;
+                return inventorySlots[i];
             }
         }
+
         return null;
     }
 
-    // Add item methods
     public void AddItemViaHand(InventoryItem item)
     {
         Transform slot = GetAvailableSlot();
         if (slot != null)
         {
-            StartCoroutine(AddItemToSlotCoroutine(item, slot));
+            StartCoroutine(SmoothAddItem(item, slot));
         }
+        else
+        {
+            Debug.LogWarning("No available inventory slots!");
+        }
+    }
+
+    private IEnumerator SmoothAddItem(InventoryItem item, Transform slot)
+    {
+        float elapsedTime = 0f;
+        Vector3 startPos = item.transform.position;
+        Quaternion startRot = item.transform.rotation;
+        
+        while (elapsedTime < moveDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / moveDuration;
+            float smoothT = Mathf.SmoothStep(0, 1, t);
+            
+            item.transform.position = Vector3.Lerp(startPos, slot.position, smoothT);
+            item.transform.rotation = Quaternion.Lerp(startRot, slot.rotation, smoothT);
+            
+            yield return null;
+        }
+
+        // Final setup
+        item.transform.SetParent(slot);
+        item.transform.localPosition = Vector3.zero;
+        item.transform.localRotation = Quaternion.identity;
+        
+        slotItemMap[slot] = item;
+        item.SetInventoryState(true, slot);
     }
 
     public void AddItemViaWand(InventoryItem item)
@@ -54,116 +77,83 @@ public class InventorySystem : MonoBehaviour
         Transform slot = GetAvailableSlot();
         if (slot != null)
         {
-            StartCoroutine(AddItemToSlotCoroutine(item, slot));
+            StartCoroutine(SmoothAddItem(item, slot));
         }
     }
 
-    private IEnumerator AddItemToSlotCoroutine(InventoryItem item, Transform slot)
-    {
-        Vector3 startPosition = item.transform.position;
-        Vector3 startScale = item.transform.localScale;
-        Vector3 targetScale = item.OriginalScale * (inventoryScalePercentage / 100f);
-
-        // Animation
-        float elapsedTime = 0f;
-        while (elapsedTime < moveDuration)
-        {
-            float t = elapsedTime / moveDuration;
-            item.transform.position = Vector3.Lerp(startPosition, slot.position, t);
-            item.transform.localScale = Vector3.Lerp(startScale, targetScale, t);
-            elapsedTime += Time.deltaTime;
-            yield return null;
-        }
-
-        // Finalize and set parent
-        item.transform.SetParent(slot);
-        item.transform.localPosition = Vector3.zero;
-        item.transform.localRotation = Quaternion.identity;
-        item.transform.localScale = targetScale;
-        item.DisablePhysics();
-        itemSlotMap[item] = slot;
-        item.SetInventoryState(true, slot);
-    }
-
-    // Retrieve item methods
     public void RetrieveItemViaHand(InventoryItem item)
     {
-        if (itemSlotMap.ContainsKey(item))
+        if (item.CurrentSlot != null)
         {
+            slotItemMap.Remove(item.CurrentSlot);
             item.transform.SetParent(null);
-            item.EnablePhysics();
-            itemSlotMap.Remove(item);
             item.SetInventoryState(false, null);
-            StartCoroutine(ScaleToOriginal(item));
         }
     }
 
     public void RetrieveItemViaWand(InventoryItem item, Transform wandTransform)
     {
-        if (itemSlotMap.ContainsKey(item))
+        if (item.CurrentSlot != null)
         {
-            item.transform.SetParent(null); 
-            Vector3 retrievalPosition = wandTransform.position + wandTransform.forward * 1.5f + Vector3.up * 1.2f;
-            StartCoroutine(RetrieveItemCoroutine(item, retrievalPosition));
-            itemSlotMap.Remove(item);
-            item.SetInventoryState(false, null);
+            Transform slot = item.CurrentSlot;
+            slotItemMap.Remove(slot);
+            
+            if (wandTransform != null)
+            {
+                Vector3 retrievalPosition = wandTransform.position + wandTransform.forward * retrievalOffset;
+                StartCoroutine(SmoothRetrieveItem(item, retrievalPosition));
+            }
+            else
+            {
+                item.transform.SetParent(null);
+                item.SetInventoryState(false, null);
+            }
         }
     }
 
-    private IEnumerator RetrieveItemCoroutine(InventoryItem item, Vector3 targetPosition)
+    private IEnumerator SmoothRetrieveItem(InventoryItem item, Vector3 targetPosition)
     {
-        Vector3 startPosition = item.transform.position;
-        Vector3 startScale = item.transform.localScale;
-        
-        item.EnablePhysics();
-
         float elapsedTime = 0f;
+        Vector3 startPos = item.transform.position;
+        
+        item.transform.SetParent(null);
+        item.SetInventoryState(false, null);
+        
         while (elapsedTime < moveDuration)
         {
-            float t = elapsedTime / moveDuration;
-            item.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
-            item.transform.localScale = Vector3.Lerp(startScale, item.OriginalScale, t);
             elapsedTime += Time.deltaTime;
+            float t = elapsedTime / moveDuration;
+            float smoothT = Mathf.SmoothStep(0, 1, t);
+            
+            item.transform.position = Vector3.Lerp(startPos, targetPosition, smoothT);
+            
             yield return null;
         }
     }
 
-    private IEnumerator ScaleToOriginal(InventoryItem item)
+    public void UpdateItemsVisibility(bool isInventoryOpen)
     {
-        Vector3 startScale = item.transform.localScale;
-        
-        float elapsedTime = 0f;
-        while (elapsedTime < scaleDuration)
+        foreach (var kvp in slotItemMap)
         {
-            float t = elapsedTime / scaleDuration;
-            item.transform.localScale = Vector3.Lerp(startScale, item.OriginalScale, t);
-            elapsedTime += Time.deltaTime;
-            yield return null;
+            if (kvp.Value != null)
+            {
+                kvp.Value.gameObject.SetActive(isInventoryOpen);
+            }
         }
     }
 
     public void UpdateInventoryParenting()
     {
-        foreach (var kvp in itemSlotMap)
+        foreach (var kvp in slotItemMap)
         {
-            InventoryItem item = kvp.Key;
-            Transform slot = kvp.Value;
+            InventoryItem item = kvp.Value;
+            Transform slot = kvp.Key;
 
             if (item != null && slot != null)
             {
                 item.transform.SetParent(slot);
                 item.transform.localPosition = Vector3.zero;
                 item.transform.localRotation = Quaternion.identity;
-            }
-        }
-    }
-    public void UpdateItemsVisibility(bool isInventoryOpen)
-    {
-        foreach (var kvp in itemSlotMap)
-        {
-            if (kvp.Key != null)
-            {
-                kvp.Key.gameObject.SetActive(isInventoryOpen);
             }
         }
     }
