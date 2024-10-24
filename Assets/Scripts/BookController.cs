@@ -165,7 +165,7 @@ public class BookController : MonoBehaviour
 
     public void OnBookmarkSelected(int index)
     {
-        Debug.Log("Bookmark selected: " + index);
+        //Debug.Log("Bookmark selected: " + index);
         currentSegment = index;
         currentPage = 0;
         UpdateBookDisplay();
@@ -176,12 +176,12 @@ public class BookController : MonoBehaviour
         if (isNextPage)
         {
             NextPage();
-            Debug.Log("Next page");
+            //Debug.Log("Next page");
         }
         else
         {
             PreviousPage();
-            Debug.Log("Previous page");
+            //Debug.Log("Previous page");
         }
     }
 

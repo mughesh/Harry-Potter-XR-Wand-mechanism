@@ -86,6 +86,7 @@ public class WandController : MonoBehaviour
                 crosshairInstance.SetActive(true);
                 crosshairInstance.transform.position = hit.point;
                 crosshairInstance.transform.rotation = Quaternion.LookRotation(-hit.normal);
+                //Debug.Log("crosshair hitting" + hit.collider.name);
             }
             else
             {
