@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -21,7 +22,8 @@ public class WandController : MonoBehaviour
     public Transform retrievePosition;
     public float retrievalDistance = 1.5f;
     public Transform characterController;
-
+    private RaycastHit currentRaycastHit;
+    private GameObject previousHitObject = null;
 
     void Start()
     {
@@ -54,7 +56,23 @@ public class WandController : MonoBehaviour
 
     void Update()
     {
+        PerformRaycast();
         UpdateCrosshair();
+    }
+
+    void PerformRaycast()
+    {
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance))
+        {
+            if (currentRaycastHit.collider.gameObject != previousHitObject)
+            {
+                previousHitObject = currentRaycastHit.collider.gameObject;
+            }
+        }
+        else
+        {
+            previousHitObject = null;
+        }
     }
 
     void CreateCrosshair()
@@ -78,15 +96,14 @@ public class WandController : MonoBehaviour
             return;
         }
 
-        RaycastHit hit;
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        if (currentRaycastHit.collider != null)
         {
             if (crosshairInstance != null)
             {
                 crosshairInstance.SetActive(true);
-                crosshairInstance.transform.position = hit.point;
-                crosshairInstance.transform.rotation = Quaternion.LookRotation(-hit.normal);
-                //Debug.Log("crosshair hitting" + hit.collider.name);
+                crosshairInstance.transform.position = currentRaycastHit.point;
+                crosshairInstance.transform.rotation = Quaternion.LookRotation(-currentRaycastHit.normal);
+                Debug.Log("crosshair hitting" + currentRaycastHit.collider.name);
             }
             else
             {
@@ -131,6 +148,7 @@ public class WandController : MonoBehaviour
         {
             isActivated = true;
             HandleWandInteraction();
+           // Debug.Log("crosshair hitting" + hit.collider.name);
         }
     }
     public void OnDeactivate(DeactivateEventArgs args)
@@ -141,34 +159,36 @@ public class WandController : MonoBehaviour
 
     void HandleWandInteraction()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        if (isActivated && isGrabbed)
         {
-            // Check for inventory item
-            if (((1 << hit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+            if (currentRaycastHit.collider != null)
             {
-                HandleInventoryItemInteraction(hit);
+                // Use the stored currentRaycastHit in the interaction handling methods
+                if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+                {
+                    HandleInventoryItemInteraction(currentRaycastHit);
+                }
+                // Check for book interaction
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
+                {
+                    HandleBookInteraction(currentRaycastHit);
+                }
+                // Check for other interactables (like spell selection)
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & interactableLayerMask) != 0)
+                {
+                    HandleInteractableInteraction(currentRaycastHit);
+                }
+                // If none of the above, try to cast spell
+                else
+                {
+                    CastSpell();
+                }
             }
-            // Check for book interaction
-            else if (((1 << hit.collider.gameObject.layer) & bookLayerMask) != 0)
-            {
-                HandleBookInteraction(hit);
-            }
-            // Check for other interactables (like spell selection)
-            else if (((1 << hit.collider.gameObject.layer) & interactableLayerMask) != 0)
-            {
-                HandleInteractableInteraction(hit);
-            }
-            // If none of the above, try to cast spell
             else
             {
+                // If nothing was hit, try to cast spell
                 CastSpell();
             }
-        }
-        else
-        {
-            // If nothing was hit, try to cast spell
-            CastSpell();
         }
     }
 
@@ -181,15 +201,20 @@ void HandleInventoryItemInteraction(RaycastHit hit)
         }
 
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+        Debug.Log("raycast hit : " + hit.collider.name);
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
+                inventoryItem.SetInventoryState(false, null);                   // --------
                 inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
+                
             }
             else
             {
                 inventorySystem.AddItemViaWand(inventoryItem);
+                inventoryItem.SetInventoryState(true, transform);       // --------
+                Debug.Log("Inventory item added: " + inventoryItem.name);
             }
         }
     }

@@ -27,28 +27,28 @@ public class BookController : MonoBehaviour
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
             grabInteractable.selectExited.AddListener(OnRelease);
-            
+
         }
         else
         {
             Debug.LogError("XRGrabInteractable component not found on the Book object.");
         }
-        
 
-   
-    // Store the original scale for each bookmark
-    originalBookmarkScales = new Vector3[bookmarks.Length];
-    for (int i = 0; i < bookmarks.Length; i++)
-    {
-        originalBookmarkScales[i] = bookmarks[i].transform.localScale;
-    }
+
+
+        // Store the original scale for each bookmark
+        originalBookmarkScales = new Vector3[bookmarks.Length];
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            originalBookmarkScales[i] = bookmarks[i].transform.localScale;
+        }
 
         UpdateBookDisplay();
         SetupInteractables();
-    
+
     }
 
-     void SetupInteractables()
+    void SetupInteractables()
     {
         // Setup bookmarks
         for (int i = 0; i < bookmarks.Length; i++)
@@ -70,7 +70,7 @@ public class BookController : MonoBehaviour
         SetupSpellItems();
     }
 
-     void SetupArrow(GameObject arrow, bool isNext)
+    void SetupArrow(GameObject arrow, bool isNext)
     {
         XRSimpleInteractable interactable = arrow.GetComponent<XRSimpleInteractable>();
         if (interactable == null)
@@ -100,21 +100,21 @@ public class BookController : MonoBehaviour
 
     void UpdateBookDisplay()
     {
-    // Always show all bookmarks
-    for (int i = 0; i < bookmarks.Length; i++)
-    {
-        bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
+        // Always show all bookmarks
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
 
-        // Scale the current segment bookmark slightly larger to signify it
-        if (i == currentSegment)
-        {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
+            // Scale the current segment bookmark slightly larger to signify it
+            if (i == currentSegment)
+            {
+                bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
+            }
+            else
+            {
+                bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
+            }
         }
-        else
-        {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
-        }
-    }
 
         // Update pages visibility
         for (int i = 0; i < spellPages.Length; i++)
@@ -125,7 +125,7 @@ public class BookController : MonoBehaviour
         {
             inventoryPages[i].SetActive(currentSegment == 1 && i == currentPage);
         }
-                // Use InventorySystem to update item visibility
+        // Use InventorySystem to update item visibility
         if (inventorySystem != null)
         {
             inventorySystem.UpdateItemsVisibility(currentSegment == 1);
@@ -160,7 +160,7 @@ public class BookController : MonoBehaviour
 
     public void OnRelease(SelectExitEventArgs args)
     {
-         ReturnToHip();      
+        ReturnToHip();
     }
 
     public void OnBookmarkSelected(int index)
@@ -185,7 +185,7 @@ public class BookController : MonoBehaviour
         }
     }
 
-        void NextPage()
+    void NextPage()
     {
         if (currentSegment == 0 && currentPage < spellPages.Length - 1)
         {
