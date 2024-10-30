@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
@@ -7,35 +8,55 @@ public class WandController : MonoBehaviour
     public GameObject crosshairPrefab;
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
-    public LayerMask interactableLayerMask;
-    public LayerMask inventoryItemLayer;
-    public LayerMask bookLayerMask;
-
+    public LayerMask interactableLayerMask;  // For General interactables eg. spells, interactable in scene objects
+    public LayerMask inventoryItemLayer;    // For inventory items
+    public LayerMask bookLayerMask;         // For book UI
+    private LayerMask raycastLayerMask;     // combined layer masks
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
+     [SerializeField] private InventorySystem inventorySystem;
     private GameObject crosshairInstance;
     private BookController bookController;
     public Transform retrievePosition;
     public float retrievalDistance = 1.5f;
     public Transform characterController;
+    private RaycastHit currentRaycastHit;
+    private GameObject previousHitObject = null;
 
     void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
         spellSystem = FindObjectOfType<SpellSystem>();
         bookController = FindObjectOfType<BookController>();
+        inventorySystem = FindObjectOfType<InventorySystem>();
 
+        if (grabInteractable == null)
+        {
+            Debug.LogError("XRGrabInteractable component not found on the Wand object!");
+        }
         if (spellSystem == null)
         {
             Debug.LogError("SpellSystem not found in the scene!");
         }
 
-        
+        if (bookController == null)
         {
             Debug.LogError("BookController not found in the scene!");
         }
+
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem not found!");
+        }
+
+            // Combine the layer masks but exclude the layers to ignore
+        raycastLayerMask = interactableLayerMask | inventoryItemLayer | bookLayerMask;
+        
+         // To explicitly exclude layers
+        int excludeLayers = (1 << LayerMask.NameToLayer("Inventory slots")) | (1 << LayerMask.NameToLayer("Book controller"));
+        raycastLayerMask &= ~excludeLayers;
 
         SetupInteractions();
         CreateCrosshair();
@@ -43,7 +64,23 @@ public class WandController : MonoBehaviour
 
     void Update()
     {
+        PerformRaycast();
         UpdateCrosshair();
+    }
+
+    void PerformRaycast()
+    {
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance, raycastLayerMask))
+        {
+            if (currentRaycastHit.collider.gameObject != previousHitObject)
+            {
+                previousHitObject = currentRaycastHit.collider.gameObject;
+            }
+        }
+        else
+        {
+            previousHitObject = null;
+        }
     }
 
     void CreateCrosshair()
@@ -67,14 +104,14 @@ public class WandController : MonoBehaviour
             return;
         }
 
-        RaycastHit hit;
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        if (currentRaycastHit.collider != null)
         {
             if (crosshairInstance != null)
             {
                 crosshairInstance.SetActive(true);
-                crosshairInstance.transform.position = hit.point;
-                crosshairInstance.transform.rotation = Quaternion.LookRotation(-hit.normal);
+                crosshairInstance.transform.position = currentRaycastHit.point;
+                crosshairInstance.transform.rotation = Quaternion.LookRotation(-currentRaycastHit.normal);
+                Debug.Log("crosshair hitting" + currentRaycastHit.collider.name);
             }
             else
             {
@@ -119,6 +156,7 @@ public class WandController : MonoBehaviour
         {
             isActivated = true;
             HandleWandInteraction();
+           // Debug.Log("crosshair hitting" + hit.collider.name);
         }
     }
     public void OnDeactivate(DeactivateEventArgs args)
@@ -129,62 +167,62 @@ public class WandController : MonoBehaviour
 
     void HandleWandInteraction()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out hit, maxDistance))
+        if (isActivated && isGrabbed)
         {
-            // Check for inventory item
-            if (((1 << hit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+            if (currentRaycastHit.collider != null)
             {
-                HandleInventoryItemInteraction(hit);
+                // Use the stored currentRaycastHit in the interaction handling methods
+                if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+                {
+                    HandleInventoryItemInteraction(currentRaycastHit);
+                }
+                // Check for book interaction
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
+                {
+                    HandleBookInteraction(currentRaycastHit);
+                }
+                // Check for other interactables (like spell selection)
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & interactableLayerMask) != 0)
+                {
+                    HandleInteractableInteraction(currentRaycastHit);
+                }
+                // If none of the above, try to cast spell
+                else
+                {
+                    CastSpell();
+                }
             }
-            // Check for book interaction
-            else if (((1 << hit.collider.gameObject.layer) & bookLayerMask) != 0)
-            {
-                HandleBookInteraction(hit);
-            }
-            // Check for other interactables (like spell selection)
-            else if (((1 << hit.collider.gameObject.layer) & interactableLayerMask) != 0)
-            {
-                HandleInteractableInteraction(hit);
-            }
-            // If none of the above, try to cast spell
             else
             {
+                // If nothing was hit, try to cast spell
                 CastSpell();
             }
-        }
-        else
-        {
-            // If nothing was hit, try to cast spell
-            CastSpell();
         }
     }
 
 void HandleInventoryItemInteraction(RaycastHit hit)
     {
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem reference missing in WandController!");
+            return;
+        }
+
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
+        Debug.Log("raycast hit : " + hit.collider.name);
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
-                // Retrieve from inventory
-                inventoryItem.RetrieveFromInventoryWithWand(transform);
+                inventoryItem.SetInventoryState(false, null);                   // --------
+                inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
+                
             }
             else
             {
-                // Add to inventory
-                if (bookController != null)
-                {
-                    Transform availableSlot = bookController.GetAvailableSlot();
-                    if (availableSlot != null)
-                    {
-                        inventoryItem.AddToInventory(availableSlot);
-                    }
-                    else
-                    {
-                        Debug.Log("No available slots in the inventory.");
-                    }
-                }
+                inventorySystem.AddItemViaWand(inventoryItem);
+                inventoryItem.SetInventoryState(true, transform);       // --------
+                Debug.Log("Inventory item added: " + inventoryItem.name);
             }
         }
     }

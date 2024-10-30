@@ -13,19 +13,21 @@ public class BookController : MonoBehaviour
     private int currentSegment = 0; // 0 for spells, 1 for inventory
     private int currentPage = 0;
     private XRGrabInteractable grabInteractable;
-    public XRSocketInteractor[] inventorySlots;
-    private int currentSlotIndex = 0;
-
-
+    [SerializeField] private InventorySystem inventorySystem;
 
     void Start()
     {
         grabInteractable = GetComponent<XRGrabInteractable>();
+        inventorySystem = FindObjectOfType<InventorySystem>();
+        if (inventorySystem == null)
+        {
+            Debug.LogError("InventorySystem not found!");
+        }
         if (grabInteractable != null)
         {
             grabInteractable.selectEntered.AddListener(OnGrab);
             grabInteractable.selectExited.AddListener(OnRelease);
-            
+
         }
         else
         {
@@ -33,20 +35,20 @@ public class BookController : MonoBehaviour
         }
 
 
-   
-    // Store the original scale for each bookmark
-    originalBookmarkScales = new Vector3[bookmarks.Length];
-    for (int i = 0; i < bookmarks.Length; i++)
-    {
-        originalBookmarkScales[i] = bookmarks[i].transform.localScale;
-    }
+
+        // Store the original scale for each bookmark
+        originalBookmarkScales = new Vector3[bookmarks.Length];
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            originalBookmarkScales[i] = bookmarks[i].transform.localScale;
+        }
 
         UpdateBookDisplay();
         SetupInteractables();
-    
+
     }
 
-     void SetupInteractables()
+    void SetupInteractables()
     {
         // Setup bookmarks
         for (int i = 0; i < bookmarks.Length; i++)
@@ -68,7 +70,7 @@ public class BookController : MonoBehaviour
         SetupSpellItems();
     }
 
-     void SetupArrow(GameObject arrow, bool isNext)
+    void SetupArrow(GameObject arrow, bool isNext)
     {
         XRSimpleInteractable interactable = arrow.GetComponent<XRSimpleInteractable>();
         if (interactable == null)
@@ -98,21 +100,21 @@ public class BookController : MonoBehaviour
 
     void UpdateBookDisplay()
     {
-    // Always show all bookmarks
-    for (int i = 0; i < bookmarks.Length; i++)
-    {
-        bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
+        // Always show all bookmarks
+        for (int i = 0; i < bookmarks.Length; i++)
+        {
+            bookmarks[i].SetActive(true);  // Ensure bookmarks are always active
 
-        // Scale the current segment bookmark slightly larger to signify it
-        if (i == currentSegment)
-        {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
+            // Scale the current segment bookmark slightly larger to signify it
+            if (i == currentSegment)
+            {
+                bookmarks[i].transform.localScale = originalBookmarkScales[i] * 1.2f;  // Increase size by 20%
+            }
+            else
+            {
+                bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
+            }
         }
-        else
-        {
-            bookmarks[i].transform.localScale = originalBookmarkScales[i];  // Reset to original size
-        }
-    }
 
         // Update pages visibility
         for (int i = 0; i < spellPages.Length; i++)
@@ -123,8 +125,14 @@ public class BookController : MonoBehaviour
         {
             inventoryPages[i].SetActive(currentSegment == 1 && i == currentPage);
         }
+        // Use InventorySystem to update item visibility
+        if (inventorySystem != null)
+        {
+            inventorySystem.UpdateItemsVisibility(currentSegment == 1);
+            inventorySystem.UpdateInventoryParenting();
+        }
 
-        // Update arrows visibility
+
         UpdateArrowsVisibility();
     }
 
@@ -142,26 +150,22 @@ public class BookController : MonoBehaviour
         }
     }
 
+
     public void OnGrab(SelectEnterEventArgs args)
     {
 
 
     }
 
-    private bool IsLeftHandInteractor(IXRSelectInteractor interactor)
-    {
-        // Check the tag of the interactor's gameObject
-        return interactor.transform.CompareTag("LeftHand");
-    }
 
     public void OnRelease(SelectExitEventArgs args)
     {
-         ReturnToHip();      
+        ReturnToHip();
     }
 
     public void OnBookmarkSelected(int index)
     {
-        Debug.Log("Bookmark selected: " + index);
+        //Debug.Log("Bookmark selected: " + index);
         currentSegment = index;
         currentPage = 0;
         UpdateBookDisplay();
@@ -172,16 +176,16 @@ public class BookController : MonoBehaviour
         if (isNextPage)
         {
             NextPage();
-            Debug.Log("Next page");
+            //Debug.Log("Next page");
         }
         else
         {
             PreviousPage();
-            Debug.Log("Previous page");
+            //Debug.Log("Previous page");
         }
     }
 
-        void NextPage()
+    void NextPage()
     {
         if (currentSegment == 0 && currentPage < spellPages.Length - 1)
         {
@@ -213,36 +217,6 @@ public class BookController : MonoBehaviour
         }
     }
 
-    public Transform GetAvailableSlot()
-    {
-        for (int i = 0; i < inventorySlots.Length; i++)
-        {
-            int index = (currentSlotIndex + i) % inventorySlots.Length;
-            if (inventorySlots[index].interactablesSelected.Count == 0)
-            {
-                currentSlotIndex = (index + 1) % inventorySlots.Length;
-                return inventorySlots[index].transform;
-            }
-        }
-        return null;
-    }
 
 
-    public void AddItemToInventory(InventoryItem item)
-    {
-        Transform availableSlot = GetAvailableSlot();
-        if (availableSlot != null)
-        {
-            item.AddToInventory(availableSlot);
-        }
-        else
-        {
-            Debug.Log("No available slots in the inventory.");
-        }
-    }
-    
-    public void RemoveItemFromInventory(InventoryItem item)
-    {
-        item.transform.SetParent(null);
-    }
 }

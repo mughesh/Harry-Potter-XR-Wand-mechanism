@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7902580048014894349}
   - component: {fileID: 4664668442542141632}
   - component: {fileID: 6448435153632582580}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: crosshair
   m_TagString: Untagged
   m_Icon: {fileID: 0}
