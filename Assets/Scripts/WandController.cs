@@ -8,10 +8,10 @@ public class WandController : MonoBehaviour
     public GameObject crosshairPrefab;
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
-    public LayerMask interactableLayerMask;
-    public LayerMask inventoryItemLayer;
-    public LayerMask bookLayerMask;
-
+    public LayerMask interactableLayerMask;  // For General interactables eg. spells, interactable in scene objects
+    public LayerMask inventoryItemLayer;    // For inventory items
+    public LayerMask bookLayerMask;         // For book UI
+    private LayerMask raycastLayerMask;     // combined layer masks
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
     private bool isActivated = false;
@@ -50,6 +50,14 @@ public class WandController : MonoBehaviour
         {
             Debug.LogError("InventorySystem not found!");
         }
+
+            // Combine the layer masks but exclude the layers to ignore
+        raycastLayerMask = interactableLayerMask | inventoryItemLayer | bookLayerMask;
+        
+         // To explicitly exclude layers
+        int excludeLayers = (1 << LayerMask.NameToLayer("Inventory slots")) | (1 << LayerMask.NameToLayer("Book controller"));
+        raycastLayerMask &= ~excludeLayers;
+
         SetupInteractions();
         CreateCrosshair();
     }
@@ -62,7 +70,7 @@ public class WandController : MonoBehaviour
 
     void PerformRaycast()
     {
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance))
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance, raycastLayerMask))
         {
             if (currentRaycastHit.collider.gameObject != previousHitObject)
             {
