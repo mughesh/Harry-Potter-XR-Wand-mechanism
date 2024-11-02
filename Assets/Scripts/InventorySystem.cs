@@ -8,7 +8,7 @@ public class InventorySystem : MonoBehaviour
     [SerializeField] private Transform[] inventorySlots;
     [SerializeField] private float moveDuration = 0.5f;
     [SerializeField] private float retrievalOffset = 0.3f;
-    
+    public GameObject retrievePosition;
     private Dictionary<Transform, InventoryItem> slotItemMap = new Dictionary<Transform, InventoryItem>();
     private int currentSlotIndex = 0;
 
@@ -73,7 +73,8 @@ public class InventorySystem : MonoBehaviour
     }
 
     public void AddItemViaWand(InventoryItem item)
-    {
+    {   
+        Debug.Log("Adding item via wand");
         Transform slot = GetAvailableSlot();
         if (slot != null)
         {
@@ -93,18 +94,23 @@ public class InventorySystem : MonoBehaviour
 
     public void RetrieveItemViaWand(InventoryItem item, Transform wandTransform)
     {
+        //Debug.Log("Retrieving item via wand");
         if (item.CurrentSlot != null)
-        {
+        {   
+            Debug.Log("Retrieving item via wand: " + item.name);
             Transform slot = item.CurrentSlot;
             slotItemMap.Remove(slot);
             
             if (wandTransform != null)
-            {
-                Vector3 retrievalPosition = wandTransform.position + wandTransform.forward * retrievalOffset;
+            {   
+                Debug.Log("If block");
+                Vector3 retrievalPosition = retrievePosition.transform.position;
                 StartCoroutine(SmoothRetrieveItem(item, retrievalPosition));
+                
             }
             else
             {
+                Debug.Log("Else block");
                 item.transform.SetParent(null);
                 item.SetInventoryState(false, null);
             }
@@ -117,6 +123,7 @@ public class InventorySystem : MonoBehaviour
         Vector3 startPos = item.transform.position;
         
         item.transform.SetParent(null);
+        Debug.Log("unparented item: " + item.name);
         item.SetInventoryState(false, null);
         
         while (elapsedTime < moveDuration)

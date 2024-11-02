@@ -111,7 +111,7 @@ public class WandController : MonoBehaviour
                 crosshairInstance.SetActive(true);
                 crosshairInstance.transform.position = currentRaycastHit.point;
                 crosshairInstance.transform.rotation = Quaternion.LookRotation(-currentRaycastHit.normal);
-                Debug.Log("crosshair hitting" + currentRaycastHit.collider.name);
+                //Debug.Log("crosshair hitting" + currentRaycastHit.collider.name);
             }
             else
             {
@@ -209,20 +209,21 @@ void HandleInventoryItemInteraction(RaycastHit hit)
         }
 
         InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
-        Debug.Log("raycast hit : " + hit.collider.name);
+        //Debug.Log("raycast hit : " + hit.collider.name);
         if (inventoryItem != null)
         {
             if (inventoryItem.IsInSlot)
             {
-                inventoryItem.SetInventoryState(false, null);                   // --------
+                Debug.Log("wand controller - retrieval: " + inventoryItem.name);
+                //inventoryItem.SetInventoryState(false, null);                   // --------
                 inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
                 
             }
             else
             {
                 inventorySystem.AddItemViaWand(inventoryItem);
-                inventoryItem.SetInventoryState(true, transform);       // --------
-                Debug.Log("Inventory item added: " + inventoryItem.name);
+                //inventoryItem.SetInventoryState(true, transform);       // --------
+                //Debug.Log("Inventory item added: " + inventoryItem.name);
             }
         }
     }

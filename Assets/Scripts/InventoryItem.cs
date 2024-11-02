@@ -165,7 +165,9 @@ public class InventoryItem : MonoBehaviour
     public void SetInventoryState(bool inInventory, Transform slot)
     {
         IsInSlot = inInventory;
+        Debug.Log("IsInSlot: " + IsInSlot);
         CurrentSlot = slot;
+        Debug.Log("CurrentSlot: " + CurrentSlot);
 
         if (inInventory)
         {
@@ -180,15 +182,15 @@ public class InventoryItem : MonoBehaviour
     }
 
     // Method for wand-based interaction
-    public void OnWandSelect()
-    {
-        if (IsInSlot)
-        {
-            inventorySystem.RetrieveItemViaWand(this, null);
-        }
-        else if (isInBookCollider)
-        {
-            inventorySystem.AddItemViaWand(this);
-        }
-    }
+    // public void OnWandSelect()
+    // {
+    //     if (IsInSlot)
+    //     {
+    //         inventorySystem.RetrieveItemViaWand(this, null);
+    //     }
+    //     else if (isInBookCollider)
+    //     {
+    //         inventorySystem.AddItemViaWand(this);
+    //     }
+    // }
 }
