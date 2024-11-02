@@ -54,12 +54,14 @@ public class InventoryItem : MonoBehaviour
     private void OnGrab(SelectEnterEventArgs args)
     {
         isGrabbed = true;
+        transform.SetParent(null);
         
         if (IsInSlot)
-        {
-            inventorySystem.RetrieveItemViaHand(this);
+        {   
+            Debug.Log("Grabbed item in slot: " + name);
+            //inventorySystem.RetrieveItemViaHand(this);
             StartScaleAnimation(originalScale);
-            SetPhysicsState(false);
+            //SetPhysicsState(false);
         }
     }
 
@@ -72,7 +74,7 @@ public class InventoryItem : MonoBehaviour
             if (!IsInSlot)
             {
                 inventorySystem.AddItemViaHand(this);
-                SetPhysicsState(true);
+                SetPhysicsState(false);
             }
         }
         else
@@ -81,13 +83,15 @@ public class InventoryItem : MonoBehaviour
             {
                 // If released outside while in slot, retrieve it
                 inventorySystem.RetrieveItemViaHand(this);
-                SetPhysicsState(false);
+                transform.localScale = originalScale;
+                SetPhysicsState(true);
             }
             else
             {
-                // Just enable physics if not in slot
-                SetPhysicsState(false);
+                transform.localScale = originalScale;
+                SetPhysicsState(true);
             }
+
         }
     }
 
@@ -120,6 +124,7 @@ public class InventoryItem : MonoBehaviour
             if (isGrabbed)
             {
                 StartScaleAnimation(originalScale);
+                transform.localScale = originalScale;
             }
         }
     }
@@ -157,8 +162,8 @@ public class InventoryItem : MonoBehaviour
     {
         if (rb != null)
         {
-            rb.isKinematic = inInventory;
-            rb.useGravity = !inInventory;
+            rb.isKinematic = !inInventory;
+            rb.useGravity = inInventory;
         }
     }
 
@@ -172,12 +177,12 @@ public class InventoryItem : MonoBehaviour
         if (inInventory)
         {
             transform.localScale = originalScale * (inventoryScalePercentage / 100f);
-            SetPhysicsState(true);
+            SetPhysicsState(false);
         }
         else
         {
             StartScaleAnimation(originalScale);
-            SetPhysicsState(false);
+            SetPhysicsState(true);
         }
     }
 

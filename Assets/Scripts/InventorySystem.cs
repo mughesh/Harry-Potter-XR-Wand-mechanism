@@ -32,6 +32,18 @@ public class InventorySystem : MonoBehaviour
         return null;
     }
 
+    // Adding item to inventory
+
+    public void AddItemViaWand(InventoryItem item)
+    {   
+        Debug.Log("Adding item via wand");
+        Transform slot = GetAvailableSlot();
+        if (slot != null)
+        {
+            StartCoroutine(SmoothAddItem(item, slot));
+        }
+    }
+
     public void AddItemViaHand(InventoryItem item)
     {
         Transform slot = GetAvailableSlot();
@@ -72,20 +84,15 @@ public class InventorySystem : MonoBehaviour
         item.SetInventoryState(true, slot);
     }
 
-    public void AddItemViaWand(InventoryItem item)
-    {   
-        Debug.Log("Adding item via wand");
-        Transform slot = GetAvailableSlot();
-        if (slot != null)
-        {
-            StartCoroutine(SmoothAddItem(item, slot));
-        }
-    }
+
+    // Retrieve item from inventory
+
 
     public void RetrieveItemViaHand(InventoryItem item)
     {
         if (item.CurrentSlot != null)
         {
+            Debug.Log("Retrieving item via hand: " + item.name);
             slotItemMap.Remove(item.CurrentSlot);
             item.transform.SetParent(null);
             item.SetInventoryState(false, null);
@@ -94,7 +101,6 @@ public class InventorySystem : MonoBehaviour
 
     public void RetrieveItemViaWand(InventoryItem item, Transform wandTransform)
     {
-        //Debug.Log("Retrieving item via wand");
         if (item.CurrentSlot != null)
         {   
             Debug.Log("Retrieving item via wand: " + item.name);
@@ -106,6 +112,7 @@ public class InventorySystem : MonoBehaviour
                 Debug.Log("If block");
                 Vector3 retrievalPosition = retrievePosition.transform.position;
                 StartCoroutine(SmoothRetrieveItem(item, retrievalPosition));
+                
                 
             }
             else
