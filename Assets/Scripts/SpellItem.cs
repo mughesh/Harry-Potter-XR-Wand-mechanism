@@ -20,6 +20,7 @@ public class SpellItem : MonoBehaviour
         }
 
         interactable.selectEntered.AddListener(OnSpellSelected);
+        HighlightSpell(false);
     }
 
     public void OnSpellHovered(HoverEnterEventArgs args)
