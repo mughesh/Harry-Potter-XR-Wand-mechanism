@@ -21,4 +21,4 @@ MonoBehaviour:
   hitVFXPrefab: {fileID: 5268460675038366902, guid: f5afcb7f49afad5419049090809f5cc7,
     type: 3}
   castType: 1
-  triggerType: 1
+  triggerType: 0
