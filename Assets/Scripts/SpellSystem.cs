@@ -128,8 +128,21 @@ public class SpellSystem : MonoBehaviour
     {
         if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
+            // Create a new GameObject with a LineRenderer component
+            GameObject rayEffect = Instantiate(currentSpell.lineRendererPrefab, startPosition, Quaternion.identity);
+            LineRenderer lineRenderer = rayEffect.GetComponent<LineRenderer>();
+
+            // Update the LineRenderer properties
+            lineRenderer.SetPosition(0, startPosition);
+            lineRenderer.SetPosition(1, hit.point);
+
+            // Set other LineRenderer properties as needed (color, width, etc.)
+
             castVFX.transform.position = hit.point;
             SpellHitEffect(hit.point, hit.normal);
+
+            yield return new WaitForSeconds(0.5f);
+            Destroy(rayEffect);
         }
         else
         {

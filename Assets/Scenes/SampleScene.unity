@@ -1583,14 +1583,14 @@ MonoBehaviour:
   hipAttachPoint: {fileID: 637751220}
   interactableLayerMask:
     serializedVersion: 2
-    m_Bits: 2304
+    m_Bits: 8192
   inventoryItemLayer:
     serializedVersion: 2
     m_Bits: 128
   bookLayerMask:
     serializedVersion: 2
-    m_Bits: 64
-  inventorySystem: {fileID: 0}
+    m_Bits: 2368
+  inventorySystem: {fileID: 1690288870}
   retrievePosition: {fileID: 605250657}
   retrievalDistance: 1.5
   characterController: {fileID: 622039167}
@@ -4425,7 +4425,7 @@ GameObject:
   - component: {fileID: 1184039225}
   - component: {fileID: 1184039224}
   - component: {fileID: 1184039228}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5964,7 +5964,7 @@ GameObject:
   - component: {fileID: 1642785213}
   - component: {fileID: 1642785212}
   - component: {fileID: 1642785211}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
