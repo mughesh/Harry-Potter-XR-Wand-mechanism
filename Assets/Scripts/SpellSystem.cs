@@ -51,12 +51,12 @@ public class SpellSystem : MonoBehaviour
         Debug.Log("Spell reset");
     }
 
-    public void CastSpell(Vector3 startPosition, Vector3 direction)
+    public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        if (currentSpell != null)
+        if (spell != null)
         {
-            Debug.Log($"Casting spell: {currentSpell.spellName}");
-            StartCoroutine(CastSpellCoroutine(startPosition, direction));
+            Debug.Log($"Casting spell: {spell.spellName}");
+            StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
         }
         else
         {
@@ -64,22 +64,22 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator CastSpellCoroutine(Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        if (currentSpell.castVFXPrefab != null)
+        if (spell.castVFXPrefab != null)
         {
-            GameObject castVFX = Instantiate(currentSpell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
-            
-            switch (currentSpell.castType)
+            GameObject castVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+
+            switch (spell.castType)
             {
                 case SpellCastType.Projectile:
-                    yield return StartCoroutine(ProjectileSpell(castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastProjectileSpell(castVFX, startPosition, direction));
                     break;
                 case SpellCastType.Ray:
-                    yield return StartCoroutine(RaySpell(castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastRaySpell(castVFX, startPosition, direction));
                     break;
                 case SpellCastType.Area:
-                    yield return StartCoroutine(AreaSpell(castVFX, startPosition));
+                    yield return StartCoroutine(CastAreaSpell(castVFX, startPosition));
                     break;
             }
 
@@ -87,7 +87,7 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator ProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
         float speed = 10f;
         float distanceTraveled = 0f;
@@ -124,22 +124,35 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-    private IEnumerator RaySpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastRaySpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
-        if (Physics.Raycast(startPosition, direction, out RaycastHit hit))
+        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
+            // Create a new GameObject with a LineRenderer component
+            GameObject rayEffect = Instantiate(currentSpell.lineRendererPrefab, startPosition, Quaternion.identity);
+            LineRenderer lineRenderer = rayEffect.GetComponent<LineRenderer>();
+
+            // Update the LineRenderer properties
+            lineRenderer.SetPosition(0, startPosition);
+            lineRenderer.SetPosition(1, hit.point);
+
+            // Set other LineRenderer properties as needed (color, width, etc.)
+
             castVFX.transform.position = hit.point;
             SpellHitEffect(hit.point, hit.normal);
+
+            yield return new WaitForSeconds(0.5f);
+            Destroy(rayEffect);
         }
         else
         {
-            castVFX.transform.position = startPosition + direction * 20f;
+            castVFX.transform.position = startPosition + direction * maxCastDistance;
         }
 
         yield return new WaitForSeconds(0.5f);
     }
 
-    private IEnumerator AreaSpell(GameObject castVFX, Vector3 startPosition)
+    private IEnumerator CastAreaSpell(GameObject castVFX, Vector3 startPosition)
     {
         float radius = 5f;
         float duration = 2f;

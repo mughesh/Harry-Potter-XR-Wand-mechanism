@@ -8,8 +8,10 @@ public class SpellData : ScriptableObject
     public GameObject equipVFXPrefab;
     public GameObject castVFXPrefab;
     public GameObject hitVFXPrefab;
+    public GameObject lineRendererPrefab;
     public SpellCastType castType;
     public SpellTriggerType triggerType;
+    
 }
 
 public enum SpellCastType

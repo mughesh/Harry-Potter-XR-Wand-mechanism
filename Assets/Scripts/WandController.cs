@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using System.Collections;
 
 public class WandController : MonoBehaviour
 {
@@ -60,6 +61,7 @@ public class WandController : MonoBehaviour
 
         SetupInteractions();
         CreateCrosshair();
+     
     }
 
     void Update()
@@ -194,11 +196,33 @@ public class WandController : MonoBehaviour
             }
             else
             {
-                // If nothing was hit, try to cast spell
-                CastSpell();
+                // Cast the spell
+                if (spellSystem.CurrentSpell != null)
+                {
+                    if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
+                    {
+                        // Cast the spell immediately
+                        spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+                    }
+                    else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
+                    {
+                        // Start casting the spell and continue until deactivated
+                        StartCoroutine(CastHeldSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward));
+                    }
+                }
             }
         }
     }
+
+IEnumerator CastHeldSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    while (isActivated)
+    {
+        // Cast the spell (based on its type)
+        spellSystem.CastSpell(spell, startPosition, direction);
+        yield return null;
+    }
+}
 
 void HandleInventoryItemInteraction(RaycastHit hit)
     {
@@ -252,7 +276,7 @@ void HandleInventoryItemInteraction(RaycastHit hit)
     {
         if (spellSystem != null && spellSystem.CurrentSpell != null)
         {
-            spellSystem.CastSpell(wandTip.position, wandTip.forward);
+            spellSystem.CastSpell(spellSystem.CurrentSpell,wandTip.position, wandTip.forward);
         }
         else
         {
