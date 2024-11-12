@@ -20,9 +20,9 @@ MonoBehaviour:
     isPrivate: 1
     createdAt: 2024-11-12T06:57:10-0800
     trainingStatus: 1
-    lastTrainDuration: 72
-    lastTrainedAt: 2024-11-12T12:29:50-0800
-    nextTrainAt: 2024-11-12T12:28:38-0800
+    lastTrainDuration: 122
+    lastTrainedAt: 2024-11-12T13:07:57-0800
+    nextTrainAt: 2024-11-12T13:05:55-0800
     intents:
     - id: 1232033794727786
       name: cast_spell
@@ -33,20 +33,14 @@ MonoBehaviour:
     - name: spell_name
       id: 1104156768378232
       lookups:
-      - free-text
       - keywords
       roles:
       - name: spell_name
         id: 914175823560625
       keywords:
-      - keyword: In Sandi
-        synonyms:
-        - in sandi
-      - keyword: In Sandio
-        synonyms:
-        - in sandio
       - keyword: incendio
         synonyms:
+        - in cendio
         - in san diego
         - incendio
         - insandio
@@ -54,6 +48,7 @@ MonoBehaviour:
         - sandio
       - keyword: reducto
         synonyms:
+        - product
         - raedacto
         - reducto
         - ruducto
