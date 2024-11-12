@@ -199,4 +199,16 @@ public class SpellSystem : MonoBehaviour
         Vector3 p = uu * p0 + 2 * u * t * p1 + tt * p2;
         return p;
     }
+
+    public SpellData GetSpellByName(string spellName)
+    {
+        foreach (SpellData spell in availableSpells)
+        {
+            if (spell.spellName == spellName)
+            {
+                return spell;
+            }
+        }
+        return null;
+}
 }

@@ -1488,7 +1488,7 @@
                     "path": "<XRController>{RightHand}/primaryButton",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": "Generic XR Controller;Continuous Move",
                     "action": "Primary Action",
                     "isComposite": false,
                     "isPartOfComposite": false

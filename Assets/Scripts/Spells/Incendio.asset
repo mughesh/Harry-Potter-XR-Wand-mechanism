@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
   m_Name: Incendio
   m_EditorClassIdentifier: 
-  spellName: Incendio
+  spellName: incendio
   description: Fiery Flames
   equipVFXPrefab: {fileID: 0}
   castVFXPrefab: {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964,
