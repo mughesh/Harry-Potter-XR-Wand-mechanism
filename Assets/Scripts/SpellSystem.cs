@@ -9,6 +9,8 @@ public class SpellSystem : MonoBehaviour
     private SpellData currentSpell;
     public float maxCastDistance = 20f;
 
+    // Dictionary to track active state spells and their instances
+    private Dictionary<string, GameObject> activeStateSpells = new Dictionary<string, GameObject>();
     public SpellData CurrentSpell => currentSpell;
 
     private void Start()
@@ -56,12 +58,107 @@ public class SpellSystem : MonoBehaviour
         if (spell != null)
         {
             Debug.Log($"Casting spell: {spell.spellName}");
-            StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+            
+            switch (spell.castType)
+            {
+                case SpellCastType.Projectile:
+                case SpellCastType.Ray:
+                case SpellCastType.Area:
+                    StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+                    break;
+                    
+                case SpellCastType.State:
+                    HandleStateSpell(spell, startPosition, direction);
+                    break;
+                    
+                case SpellCastType.Buff:
+                    HandleBuffSpell(spell, startPosition);
+                    break;
+            }
         }
-        else
+    }
+
+    private void HandleStateSpell(SpellData spell, Vector3 position, Vector3 direction)
+    {
+        string spellKey = spell.spellName.ToLower();
+
+        // If spell is already active and can be toggled, deactivate it
+        if (activeStateSpells.ContainsKey(spellKey))
         {
-            Debug.LogWarning("No spell selected!");
+            if (spell.canBeToggled)
+            {
+                DeactivateStateSpell(spell);
+            }
+            return;
         }
+
+        // Activate the spell
+        if (spell.castVFXPrefab != null)
+        {
+            // Instantiate the spell effect prefab
+            GameObject spellEffect = Instantiate(spell.castVFXPrefab, position, Quaternion.LookRotation(direction));
+            
+            // Parent it to the casting position (usually wand tip)
+            spellEffect.transform.SetParent(transform);
+            
+            // Add to active spells dictionary
+            activeStateSpells.Add(spellKey, spellEffect);
+
+            // If the spell has a duration, set up automatic deactivation
+            if (spell.effectDuration > 0)
+            {
+                StartCoroutine(DeactivateAfterDuration(spell, spell.effectDuration));
+            }
+
+            // Play equip VFX if available
+            if (spell.equipVFXPrefab != null)
+            {
+                GameObject equipVFX = Instantiate(spell.equipVFXPrefab, position, Quaternion.identity);
+                Destroy(equipVFX, 2f);
+            }
+        }
+    }
+
+    private void DeactivateStateSpell(SpellData spell)
+    {
+        string spellKey = spell.spellName.ToLower();
+        if (activeStateSpells.TryGetValue(spellKey, out GameObject spellEffect))
+        {
+            // Play hit VFX if available (can be used as a deactivation effect)
+            if (spell.hitVFXPrefab != null)
+            {
+                GameObject deactivateVFX = Instantiate(spell.hitVFXPrefab, 
+                    spellEffect.transform.position, 
+                    spellEffect.transform.rotation);
+                Destroy(deactivateVFX, 2f);
+            }
+
+            // Clean up the spell effect
+            Destroy(spellEffect);
+            activeStateSpells.Remove(spellKey);
+        }
+    }
+
+    public void DeactivateAllStateSpells()
+    {
+        List<SpellData> activeSpells = new List<SpellData>();
+        foreach (var spell in availableSpells)
+        {
+            if (activeStateSpells.ContainsKey(spell.spellName.ToLower()))
+            {
+                activeSpells.Add(spell);
+            }
+        }
+
+        foreach (var spell in activeSpells)
+        {
+            DeactivateStateSpell(spell);
+        }
+    }
+    private IEnumerator DeactivateAfterDuration(SpellData spell, float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        DeactivateStateSpell(spell);
     }
 
     private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -178,6 +275,11 @@ public class SpellSystem : MonoBehaviour
             Destroy(hitVFX, 2f);
         }
     }
+    private void HandleBuffSpell(SpellData spell, Vector3 position)
+    {
+        // Implementation for buff-type spells
+        // This could include spells that enhance player abilities or apply effects
+    }
 
     private List<Vector3> GenerateCurvedPath(Vector3 start, Vector3 end, Vector3 control, int resolution)
     {
@@ -200,15 +302,14 @@ public class SpellSystem : MonoBehaviour
         return p;
     }
 
+
     public SpellData GetSpellByName(string spellName)
     {
-        foreach (SpellData spell in availableSpells)
+        foreach (var spell in availableSpells)
         {
-            if (spell.spellName == spellName)
-            {
+            if (spell.spellName.ToLower() == spellName.ToLower())
                 return spell;
-            }
         }
         return null;
-}
+    }
 }

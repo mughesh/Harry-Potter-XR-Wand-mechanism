@@ -10,17 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
-  m_Name: Reducto
+  m_Name: Lumos
   m_EditorClassIdentifier: 
-  spellName: reducto
-  description: Blast Off
+  spellName: Lumos
+  description: light
   equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470,
+  castVFXPrefab: {fileID: 1175016409960847972, guid: 363b5587b34862742bcc40a8ac3534a4,
     type: 3}
-  hitVFXPrefab: {fileID: 5268460675038366902, guid: f5afcb7f49afad5419049090809f5cc7,
-    type: 3}
+  hitVFXPrefab: {fileID: 0}
   lineRendererPrefab: {fileID: 0}
-  castType: 0
+  castType: 3
   triggerType: 0
   effectDuration: -1
-  canBeToggled: 0
+  canBeToggled: 1
