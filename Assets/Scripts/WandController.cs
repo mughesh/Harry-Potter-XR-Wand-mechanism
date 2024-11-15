@@ -167,52 +167,52 @@ public class WandController : MonoBehaviour
     }
 
 
-    void HandleWandInteraction()
+void HandleWandInteraction()
+{
+    if (isActivated && isGrabbed)
     {
-        if (isActivated && isGrabbed)
+        if (currentRaycastHit.collider != null)
         {
-            if (currentRaycastHit.collider != null)
+            // Use the stored currentRaycastHit in the interaction handling methods
+            if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
             {
-                // Use the stored currentRaycastHit in the interaction handling methods
-                if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
-                {
-                    HandleInventoryItemInteraction(currentRaycastHit);
-                }
-                // Check for book interaction
-                else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
-                {
-                    HandleBookInteraction(currentRaycastHit);
-                }
-                // Check for other interactables (like spell selection)
-                else if (((1 << currentRaycastHit.collider.gameObject.layer) & interactableLayerMask) != 0)
-                {
-                    HandleInteractableInteraction(currentRaycastHit);
-                }
-                // If none of the above, try to cast spell
-                else
-                {
-                    CastSpell();
-                }
+                HandleInventoryItemInteraction(currentRaycastHit);
             }
+            // Check for book interaction
+            else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
+            {
+                HandleBookInteraction(currentRaycastHit);
+            }
+            // Check for other interactables (like spell selection)
+            else if (((1 << currentRaycastHit.collider.gameObject.layer) & interactableLayerMask) != 0)
+            {
+                HandleInteractableInteraction(currentRaycastHit);
+            }
+            // If none of the above, try to cast spell
             else
             {
-                // Cast the spell
-                if (spellSystem.CurrentSpell != null)
+                CastSpell();
+            }
+        }
+        else
+        {
+            // Cast the spell
+            if (spellSystem.CurrentSpell != null)
+            {
+                if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
                 {
-                    if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
-                    {
-                        // Cast the spell immediately
-                        spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
-                    }
-                    else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
-                    {
-                        // Start casting the spell and continue until deactivated
-                        StartCoroutine(CastHeldSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward));
-                    }
+                    // Cast the spell immediately
+                    spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+                }
+                else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
+                {
+                    // Start casting the spell and continue until deactivated
+                    StartCoroutine(CastHeldSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward));
                 }
             }
         }
     }
+}
 
 IEnumerator CastHeldSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
 {

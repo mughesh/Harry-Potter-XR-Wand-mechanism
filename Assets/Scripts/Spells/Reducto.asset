@@ -21,6 +21,4 @@ MonoBehaviour:
     type: 3}
   lineRendererPrefab: {fileID: 0}
   castType: 0
-  triggerType: 0
-  effectDuration: -1
-  canBeToggled: 0
+  triggerType: 1

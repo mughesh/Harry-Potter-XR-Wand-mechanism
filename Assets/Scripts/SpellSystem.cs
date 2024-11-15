@@ -9,8 +9,6 @@ public class SpellSystem : MonoBehaviour
     private SpellData currentSpell;
     public float maxCastDistance = 20f;
 
-    // Dictionary to track active state spells and their instances
-    private Dictionary<string, GameObject> activeStateSpells = new Dictionary<string, GameObject>();
     public SpellData CurrentSpell => currentSpell;
 
     private void Start()
@@ -55,110 +53,7 @@ public class SpellSystem : MonoBehaviour
 
     public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        if (spell != null)
-        {
-            Debug.Log($"Casting spell: {spell.spellName}");
-            
-            switch (spell.castType)
-            {
-                case SpellCastType.Projectile:
-                case SpellCastType.Ray:
-                case SpellCastType.Area:
-                    StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
-                    break;
-                    
-                case SpellCastType.State:
-                    HandleStateSpell(spell, startPosition, direction);
-                    break;
-                    
-                case SpellCastType.Buff:
-                    HandleBuffSpell(spell, startPosition);
-                    break;
-            }
-        }
-    }
-
-    private void HandleStateSpell(SpellData spell, Vector3 position, Vector3 direction)
-    {
-        string spellKey = spell.spellName.ToLower();
-
-        // If spell is already active and can be toggled, deactivate it
-        if (activeStateSpells.ContainsKey(spellKey))
-        {
-            if (spell.canBeToggled)
-            {
-                DeactivateStateSpell(spell);
-            }
-            return;
-        }
-
-        // Activate the spell
-        if (spell.castVFXPrefab != null)
-        {
-            // Instantiate the spell effect prefab
-            GameObject spellEffect = Instantiate(spell.castVFXPrefab, position, Quaternion.LookRotation(direction));
-            
-            // Parent it to the casting position (usually wand tip)
-            spellEffect.transform.SetParent(transform);
-            
-            // Add to active spells dictionary
-            activeStateSpells.Add(spellKey, spellEffect);
-
-            // If the spell has a duration, set up automatic deactivation
-            if (spell.effectDuration > 0)
-            {
-                StartCoroutine(DeactivateAfterDuration(spell, spell.effectDuration));
-            }
-
-            // Play equip VFX if available
-            if (spell.equipVFXPrefab != null)
-            {
-                GameObject equipVFX = Instantiate(spell.equipVFXPrefab, position, Quaternion.identity);
-                Destroy(equipVFX, 2f);
-            }
-        }
-    }
-
-    private void DeactivateStateSpell(SpellData spell)
-    {
-        string spellKey = spell.spellName.ToLower();
-        if (activeStateSpells.TryGetValue(spellKey, out GameObject spellEffect))
-        {
-            // Play hit VFX if available (can be used as a deactivation effect)
-            if (spell.hitVFXPrefab != null)
-            {
-                GameObject deactivateVFX = Instantiate(spell.hitVFXPrefab, 
-                    spellEffect.transform.position, 
-                    spellEffect.transform.rotation);
-                Destroy(deactivateVFX, 2f);
-            }
-
-            // Clean up the spell effect
-            Destroy(spellEffect);
-            activeStateSpells.Remove(spellKey);
-        }
-    }
-
-    public void DeactivateAllStateSpells()
-    {
-        List<SpellData> activeSpells = new List<SpellData>();
-        foreach (var spell in availableSpells)
-        {
-            if (activeStateSpells.ContainsKey(spell.spellName.ToLower()))
-            {
-                activeSpells.Add(spell);
-            }
-        }
-
-        foreach (var spell in activeSpells)
-        {
-            DeactivateStateSpell(spell);
-        }
-    }
-    private IEnumerator DeactivateAfterDuration(SpellData spell, float duration)
-    {
-        yield return new WaitForSeconds(duration);
-        DeactivateStateSpell(spell);
+        StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
     }
 
     private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -178,14 +73,38 @@ public class SpellSystem : MonoBehaviour
                 case SpellCastType.Area:
                     yield return StartCoroutine(CastAreaSpell(castVFX, startPosition));
                     break;
+                case SpellCastType.Utility:
+                    CastUtilitySpell(spell, startPosition, direction);
+                    break;
             }
 
             Destroy(castVFX);
         }
+        else
+        {
+            Debug.LogWarning("No cast VFX prefab assigned for the spell.");
+        }
     }
 
-    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+private void CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    switch (spell.spellName)
     {
+        case "Lumos":
+            CastLumos(spell, startPosition, direction);
+            break;
+        case "Wingardium Leviosa":
+            CastWingardiumLeviosa(spell, startPosition, direction);
+            break;
+        // Add more utility spell cases as needed
+    }
+}
+
+
+
+    private IEnumerator CastProjectileSpell(GameObject castVFX,  Vector3 startPosition, Vector3 direction)
+    {
+
         float speed = 10f;
         float distanceTraveled = 0f;
 
@@ -218,11 +137,13 @@ public class SpellSystem : MonoBehaviour
 
             pathIndex++;
             yield return null;
+            
         }
     }
 
     private IEnumerator CastRaySpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
+
         if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
             // Create a new GameObject with a LineRenderer component
@@ -238,8 +159,9 @@ public class SpellSystem : MonoBehaviour
             castVFX.transform.position = hit.point;
             SpellHitEffect(hit.point, hit.normal);
 
-            yield return new WaitForSeconds(0.5f);
+            yield return null;
             Destroy(rayEffect);
+            
         }
         else
         {
@@ -275,11 +197,6 @@ public class SpellSystem : MonoBehaviour
             Destroy(hitVFX, 2f);
         }
     }
-    private void HandleBuffSpell(SpellData spell, Vector3 position)
-    {
-        // Implementation for buff-type spells
-        // This could include spells that enhance player abilities or apply effects
-    }
 
     private List<Vector3> GenerateCurvedPath(Vector3 start, Vector3 end, Vector3 control, int resolution)
     {
@@ -302,14 +219,59 @@ public class SpellSystem : MonoBehaviour
         return p;
     }
 
-
-    public SpellData GetSpellByName(string spellName)
+   public SpellData GetSpellByName(string spellName)
     {
-        foreach (var spell in availableSpells)
+        foreach (SpellData spell in availableSpells)
         {
-            if (spell.spellName.ToLower() == spellName.ToLower())
+            if (spell.spellName == spellName)
+            {
                 return spell;
+            }
         }
         return null;
+}
+
+    // UTILITY SPELLS FUNCTIONS --------------
+
+    // LUMOS
+    private void CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+    {
+        if (spell.castVFXPrefab != null)
+        {
+            GameObject lumosFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+
+            // Get a reference to the light component in the VFX prefab
+            Light lumosLight = lumosFX.GetComponentInChildren<Light>();
+            if (lumosLight != null)
+            {
+                // Animate the light intensity or other properties as needed
+                StartCoroutine(AnimateLumosLight(lumosLight));
+            }
+
+            // Destroy the VFX after a certain duration
+            Destroy(lumosFX, 10f);
+        }
+    }
+
+    private IEnumerator AnimateLumosLight(Light light)
+    {
+        float duration = 2f;
+        float startTime = Time.time;
+        float minIntensity = 1f;
+        float maxIntensity = 5f;
+
+        while (Time.time - startTime < duration)
+        {
+            float t = (Time.time - startTime) / duration;
+            light.intensity = Mathf.Lerp(minIntensity, maxIntensity, Mathf.Sin(t * Mathf.PI * 2));
+            yield return null;
+        }
+
+        light.intensity = minIntensity;
+    }
+
+    private void CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
+    {
+        // Implement the Wingardium Leviosa spell logic here
     }
 }

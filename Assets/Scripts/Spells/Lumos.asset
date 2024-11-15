@@ -20,6 +20,4 @@ MonoBehaviour:
   hitVFXPrefab: {fileID: 0}
   lineRendererPrefab: {fileID: 0}
   castType: 3
-  triggerType: 0
-  effectDuration: -1
-  canBeToggled: 1
+  triggerType: 1
