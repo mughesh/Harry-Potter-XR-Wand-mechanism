@@ -10,15 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
-  m_Name: Incendio
+  m_Name: Lumos
   m_EditorClassIdentifier: 
-  spellName: incendio
-  description: Fiery Flames
+  spellName: Lumos
+  description: light
   equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964,
+  castVFXPrefab: {fileID: 1175016409960847972, guid: 363b5587b34862742bcc40a8ac3534a4,
     type: 3}
   hitVFXPrefab: {fileID: 0}
-  lineRendererPrefab: {fileID: 6146024070296461439, guid: 9842f888f5e4ee04785b57a53ba53d18,
-    type: 3}
-  castType: 1
+  lineRendererPrefab: {fileID: 0}
+  castType: 3
   triggerType: 1

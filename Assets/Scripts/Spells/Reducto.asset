@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
   m_Name: Reducto
   m_EditorClassIdentifier: 
-  spellName: Reducto
+  spellName: reducto
   description: Blast Off
   equipVFXPrefab: {fileID: 0}
   castVFXPrefab: {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470,
@@ -21,4 +21,4 @@ MonoBehaviour:
     type: 3}
   lineRendererPrefab: {fileID: 0}
   castType: 0
-  triggerType: 0
+  triggerType: 1

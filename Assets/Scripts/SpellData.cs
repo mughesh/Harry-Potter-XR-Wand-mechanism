@@ -18,7 +18,8 @@ public enum SpellCastType
 {
     Projectile,
     Ray,
-    Area
+    Area,
+    Utility
 }
 
 public enum SpellTriggerType

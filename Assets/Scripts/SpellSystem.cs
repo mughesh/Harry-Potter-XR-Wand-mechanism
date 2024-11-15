@@ -53,15 +53,7 @@ public class SpellSystem : MonoBehaviour
 
     public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        if (spell != null)
-        {
-            Debug.Log($"Casting spell: {spell.spellName}");
-            StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
-        }
-        else
-        {
-            Debug.LogWarning("No spell selected!");
-        }
+        StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
     }
 
     private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -81,14 +73,38 @@ public class SpellSystem : MonoBehaviour
                 case SpellCastType.Area:
                     yield return StartCoroutine(CastAreaSpell(castVFX, startPosition));
                     break;
+                case SpellCastType.Utility:
+                    CastUtilitySpell(spell, startPosition, direction);
+                    break;
             }
 
             Destroy(castVFX);
         }
+        else
+        {
+            Debug.LogWarning("No cast VFX prefab assigned for the spell.");
+        }
     }
 
-    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+private void CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    switch (spell.spellName)
     {
+        case "Lumos":
+            CastLumos(spell, startPosition, direction);
+            break;
+        case "Wingardium Leviosa":
+            CastWingardiumLeviosa(spell, startPosition, direction);
+            break;
+        // Add more utility spell cases as needed
+    }
+}
+
+
+
+    private IEnumerator CastProjectileSpell(GameObject castVFX,  Vector3 startPosition, Vector3 direction)
+    {
+
         float speed = 10f;
         float distanceTraveled = 0f;
 
@@ -121,11 +137,13 @@ public class SpellSystem : MonoBehaviour
 
             pathIndex++;
             yield return null;
+            
         }
     }
 
     private IEnumerator CastRaySpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
+
         if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
             // Create a new GameObject with a LineRenderer component
@@ -141,8 +159,9 @@ public class SpellSystem : MonoBehaviour
             castVFX.transform.position = hit.point;
             SpellHitEffect(hit.point, hit.normal);
 
-            yield return new WaitForSeconds(0.5f);
+            yield return null;
             Destroy(rayEffect);
+            
         }
         else
         {
@@ -198,5 +217,61 @@ public class SpellSystem : MonoBehaviour
         float uu = u * u;
         Vector3 p = uu * p0 + 2 * u * t * p1 + tt * p2;
         return p;
+    }
+
+   public SpellData GetSpellByName(string spellName)
+    {
+        foreach (SpellData spell in availableSpells)
+        {
+            if (spell.spellName == spellName)
+            {
+                return spell;
+            }
+        }
+        return null;
+}
+
+    // UTILITY SPELLS FUNCTIONS --------------
+
+    // LUMOS
+    private void CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+    {
+        if (spell.castVFXPrefab != null)
+        {
+            GameObject lumosFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+
+            // Get a reference to the light component in the VFX prefab
+            Light lumosLight = lumosFX.GetComponentInChildren<Light>();
+            if (lumosLight != null)
+            {
+                // Animate the light intensity or other properties as needed
+                StartCoroutine(AnimateLumosLight(lumosLight));
+            }
+
+            // Destroy the VFX after a certain duration
+            Destroy(lumosFX, 10f);
+        }
+    }
+
+    private IEnumerator AnimateLumosLight(Light light)
+    {
+        float duration = 2f;
+        float startTime = Time.time;
+        float minIntensity = 1f;
+        float maxIntensity = 5f;
+
+        while (Time.time - startTime < duration)
+        {
+            float t = (Time.time - startTime) / duration;
+            light.intensity = Mathf.Lerp(minIntensity, maxIntensity, Mathf.Sin(t * Mathf.PI * 2));
+            yield return null;
+        }
+
+        light.intensity = minIntensity;
+    }
+
+    private void CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
+    {
+        // Implement the Wingardium Leviosa spell logic here
     }
 }
