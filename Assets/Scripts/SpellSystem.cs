@@ -10,6 +10,7 @@ public class SpellSystem : MonoBehaviour
     public float maxCastDistance = 20f;
 
     public SpellData CurrentSpell => currentSpell;
+    private Dictionary<GameObject, Coroutine> activeSpellCoroutines = new Dictionary<GameObject, Coroutine>();
 
     private void Start()
     {
@@ -68,13 +69,13 @@ public class SpellSystem : MonoBehaviour
                     yield return StartCoroutine(CastProjectileSpell(castVFX, startPosition, direction));
                     break;
                 case SpellCastType.Ray:
-                    yield return StartCoroutine(CastRaySpell(castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastRaySpell(spell, castVFX, startPosition, direction));
                     break;
                 case SpellCastType.Area:
-                    yield return StartCoroutine(CastAreaSpell(castVFX, startPosition));
+                    yield return StartCoroutine(CastAreaSpell(spell, startPosition));
                     break;
                 case SpellCastType.Utility:
-                    CastUtilitySpell(spell, startPosition, direction);
+                    yield return StartCoroutine(UpdatedCastUtilitySpell(spell, castVFX, startPosition, direction));
                     break;
             }
 
@@ -86,19 +87,18 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-private void CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
-{
-    switch (spell.spellName)
+    private IEnumerator UpdatedCastUtilitySpell(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
-        case "Lumos":
-            CastLumos(spell, startPosition, direction);
-            break;
-        case "Wingardium Leviosa":
-            CastWingardiumLeviosa(spell, startPosition, direction);
-            break;
-        // Add more utility spell cases as needed
+        switch (spell.spellName)
+        {
+            case "Lumos":
+                yield return StartCoroutine(UpdatedCastLumos(spell, castVFX, startPosition, direction));
+                break;
+            case "Wingardium Leviosa":
+                //yield return StartCoroutine(CastWingardiumLeviosa(spell, castVFX, startPosition, direction));
+                break;
+        }
     }
-}
 
 
 
@@ -141,37 +141,31 @@ private void CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 di
         }
     }
 
-    private IEnumerator CastRaySpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastRaySpell(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
+        GameObject rayEffect = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
+        LineRenderer lineRenderer = rayEffect.GetComponent<LineRenderer>();
 
         if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
-            // Create a new GameObject with a LineRenderer component
-            GameObject rayEffect = Instantiate(currentSpell.lineRendererPrefab, startPosition, Quaternion.identity);
-            LineRenderer lineRenderer = rayEffect.GetComponent<LineRenderer>();
-
-            // Update the LineRenderer properties
             lineRenderer.SetPosition(0, startPosition);
             lineRenderer.SetPosition(1, hit.point);
-
-            // Set other LineRenderer properties as needed (color, width, etc.)
-
+            
             castVFX.transform.position = hit.point;
             SpellHitEffect(hit.point, hit.normal);
-
-            yield return null;
-            Destroy(rayEffect);
-            
         }
         else
         {
-            castVFX.transform.position = startPosition + direction * maxCastDistance;
+            Vector3 endPoint = startPosition + direction * maxCastDistance;
+            lineRenderer.SetPosition(0, startPosition);
+            lineRenderer.SetPosition(1, endPoint);
+            castVFX.transform.position = endPoint;
         }
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f); // Short duration for visual effect
+        Destroy(rayEffect);
     }
-
-    private IEnumerator CastAreaSpell(GameObject castVFX, Vector3 startPosition)
+    private IEnumerator CastAreaSpell(SpellData spell, Vector3 startPosition)
     {
         float radius = 5f;
         float duration = 2f;
@@ -234,22 +228,27 @@ private void CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 di
     // UTILITY SPELLS FUNCTIONS --------------
 
     // LUMOS
-    private void CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+    private IEnumerator UpdatedCastLumos(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
-        if (spell.castVFXPrefab != null)
+        Light lumosLight = castVFX.GetComponentInChildren<Light>();
+        if (lumosLight != null)
         {
-            GameObject lumosFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
-
-            // Get a reference to the light component in the VFX prefab
-            Light lumosLight = lumosFX.GetComponentInChildren<Light>();
-            if (lumosLight != null)
+            float duration = 0f;
+            float maxDuration = 10f;
+            
+            while (duration < maxDuration)
             {
-                // Animate the light intensity or other properties as needed
-                StartCoroutine(AnimateLumosLight(lumosLight));
+                // Update position to follow wand tip
+                castVFX.transform.position = startPosition;
+                castVFX.transform.rotation = Quaternion.LookRotation(direction);
+                
+                // Animate light intensity
+                float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
+                lumosLight.intensity = intensity;
+                
+                duration += Time.deltaTime;
+                yield return null;
             }
-
-            // Destroy the VFX after a certain duration
-            Destroy(lumosFX, 10f);
         }
     }
 

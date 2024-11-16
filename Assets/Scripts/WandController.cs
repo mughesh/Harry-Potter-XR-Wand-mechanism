@@ -25,6 +25,8 @@ public class WandController : MonoBehaviour
     public Transform characterController;
     private RaycastHit currentRaycastHit;
     private GameObject previousHitObject = null;
+    private Coroutine activeSpellCoroutine;
+    private bool isSpellActive = false;
 
     void Start()
     {
@@ -164,6 +166,12 @@ public class WandController : MonoBehaviour
     public void OnDeactivate(DeactivateEventArgs args)
     {
         isActivated = false;
+        if (activeSpellCoroutine != null)
+        {
+            StopCoroutine(activeSpellCoroutine);
+            activeSpellCoroutine = null;
+        }
+        isSpellActive = false;
     }
 
 
@@ -204,25 +212,28 @@ void HandleWandInteraction()
                     // Cast the spell immediately
                     spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
                 }
-                else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
+                else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold && !isSpellActive)
                 {
-                    // Start casting the spell and continue until deactivated
-                    StartCoroutine(CastHeldSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward));
+                    // Start continuous spell casting
+                    isSpellActive = true;
+                    activeSpellCoroutine = StartCoroutine(ContinuousSpellCast());
                 }
+
             }
         }
     }
 }
 
-IEnumerator CastHeldSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
-{
-    while (isActivated)
+    private IEnumerator ContinuousSpellCast()
     {
-        // Cast the spell (based on its type)
-        spellSystem.CastSpell(spell, startPosition, direction);
-        yield return null;
+        while (isActivated && spellSystem.CurrentSpell != null)
+        {
+            // Update spell position and direction based on current wand tip
+            spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+            yield return null; // Wait for next frame
+        }
+        isSpellActive = false;
     }
-}
 
 void HandleInventoryItemInteraction(RaycastHit hit)
     {
