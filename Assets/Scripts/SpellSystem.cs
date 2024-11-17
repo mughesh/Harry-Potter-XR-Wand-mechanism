@@ -10,7 +10,10 @@ public class SpellSystem : MonoBehaviour
     public float maxCastDistance = 20f;
 
     public SpellData CurrentSpell => currentSpell;
-    private Dictionary<GameObject, Coroutine> activeSpellCoroutines = new Dictionary<GameObject, Coroutine>();
+    private GameObject activeSpellVFX; // Track the active spell VFX instance
+    private GameObject activeLineRenderer; // Track the active line renderer for ray spells
+    private Dictionary<string, float> spellDurations = new Dictionary<string, float>();
+    private bool isSpellActive = false;
 
     private void Start()
     {
@@ -54,55 +57,101 @@ public class SpellSystem : MonoBehaviour
 
     public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+        // If it's a hold-type spell and we already have an active instance, just update it
+        if (spell.triggerType == SpellTriggerType.Hold && isSpellActive)
+        {
+            UpdateActiveSpell(spell, startPosition, direction);
+            return;
+        }
+        else
+        {
+            // Otherwise, start a new spell cast
+            StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+        }
+
+    }
+
+    private void UpdateActiveSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+    {
+        switch (spell.castType)
+        {
+            case SpellCastType.Ray:
+                UpdateRaySpell(startPosition, direction);
+                break;
+            case SpellCastType.Utility:
+                CastUtilitySpell(spell, startPosition, direction);
+                break;
+                // Add other cases as needed
+        }
     }
 
     private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
         if (spell.castVFXPrefab != null)
         {
-            GameObject castVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+            // Clean up any existing spell VFX
+            CleanupActiveSpell();
+
+            // Create new spell instance
+            activeSpellVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+            isSpellActive = true;
 
             switch (spell.castType)
             {
                 case SpellCastType.Projectile:
-                    yield return StartCoroutine(CastProjectileSpell(castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastProjectileSpell(activeSpellVFX, startPosition, direction));
                     break;
                 case SpellCastType.Ray:
-                    yield return StartCoroutine(CastRaySpell(spell, castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastRaySpell(spell, startPosition, direction));
                     break;
                 case SpellCastType.Area:
                     yield return StartCoroutine(CastAreaSpell(spell, startPosition));
                     break;
                 case SpellCastType.Utility:
-                    yield return StartCoroutine(UpdatedCastUtilitySpell(spell, castVFX, startPosition, direction));
+                    yield return StartCoroutine(CastUtilitySpell(spell, startPosition, direction));
                     break;
             }
 
-            Destroy(castVFX);
+            // Cleanup after spell is complete
+            CleanupActiveSpell();
         }
+
         else
         {
             Debug.LogWarning("No cast VFX prefab assigned for the spell.");
         }
     }
 
-    private IEnumerator UpdatedCastUtilitySpell(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
+
+    private void CleanupActiveSpell()
+    {
+        if (activeSpellVFX != null)
+        {
+            Destroy(activeSpellVFX);
+            activeSpellVFX = null;
+        }
+        if (activeLineRenderer != null)
+        {
+            Destroy(activeLineRenderer);
+            activeLineRenderer = null;
+        }
+        isSpellActive = false;
+    }
+
+    private IEnumerator CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
         switch (spell.spellName)
         {
             case "Lumos":
-                yield return StartCoroutine(UpdatedCastLumos(spell, castVFX, startPosition, direction));
+                yield return StartCoroutine(CastLumos(spell, startPosition, direction));
                 break;
-            case "Wingardium Leviosa":
-                //yield return StartCoroutine(CastWingardiumLeviosa(spell, castVFX, startPosition, direction));
-                break;
+                // Add other utility spells
         }
     }
 
 
 
-    private IEnumerator CastProjectileSpell(GameObject castVFX,  Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
 
         float speed = 10f;
@@ -137,34 +186,66 @@ public class SpellSystem : MonoBehaviour
 
             pathIndex++;
             yield return null;
-            
+
         }
     }
 
-    private IEnumerator CastRaySpell(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        GameObject rayEffect = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
-        LineRenderer lineRenderer = rayEffect.GetComponent<LineRenderer>();
-
-        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+        // Create line renderer if it doesn't exist
+        if (activeLineRenderer == null && spell.lineRendererPrefab != null)
         {
-            lineRenderer.SetPosition(0, startPosition);
-            lineRenderer.SetPosition(1, hit.point);
-            
-            castVFX.transform.position = hit.point;
-            SpellHitEffect(hit.point, hit.normal);
+            activeLineRenderer = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
+        }
+
+        UpdateRaySpell(startPosition, direction);
+
+        if (spell.triggerType == SpellTriggerType.Press)
+        {
+            yield return new WaitForSeconds(0.5f); // Duration for press-type ray spells
         }
         else
         {
-            Vector3 endPoint = startPosition + direction * maxCastDistance;
-            lineRenderer.SetPosition(0, startPosition);
-            lineRenderer.SetPosition(1, endPoint);
-            castVFX.transform.position = endPoint;
+            // For hold-type, keep updating until spell is deactivated
+            while (isSpellActive)
+            {
+                yield return null;
+            }
         }
-
-        yield return new WaitForSeconds(0.1f); // Short duration for visual effect
-        Destroy(rayEffect);
     }
+
+    private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
+    {
+        if (activeLineRenderer != null)
+        {
+            LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+            {
+                lineRenderer.SetPosition(0, startPosition);
+                lineRenderer.SetPosition(1, hit.point);
+
+                if (activeSpellVFX != null)
+                {
+                    activeSpellVFX.transform.position = hit.point;
+                    activeSpellVFX.transform.rotation = Quaternion.LookRotation(-hit.normal);
+                }
+            }
+            else
+            {
+                Vector3 endPoint = startPosition + direction * maxCastDistance;
+                lineRenderer.SetPosition(0, startPosition);
+                lineRenderer.SetPosition(1, endPoint);
+
+                if (activeSpellVFX != null)
+                {
+                    activeSpellVFX.transform.position = endPoint;
+                    activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
+                }
+            }
+        }
+    }
+
+
     private IEnumerator CastAreaSpell(SpellData spell, Vector3 startPosition)
     {
         float radius = 5f;
@@ -213,7 +294,7 @@ public class SpellSystem : MonoBehaviour
         return p;
     }
 
-   public SpellData GetSpellByName(string spellName)
+    public SpellData GetSpellByName(string spellName)
     {
         foreach (SpellData spell in availableSpells)
         {
@@ -223,30 +304,33 @@ public class SpellSystem : MonoBehaviour
             }
         }
         return null;
-}
+    }
+
+    public void StopActiveSpell()
+    {
+        isSpellActive = false;
+        CleanupActiveSpell();
+    }
 
     // UTILITY SPELLS FUNCTIONS --------------
 
     // LUMOS
-    private IEnumerator UpdatedCastLumos(SpellData spell, GameObject castVFX, Vector3 startPosition, Vector3 direction)
+    private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        Light lumosLight = castVFX.GetComponentInChildren<Light>();
+        // Use the existing activeSpellVFX
+        Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
         if (lumosLight != null)
         {
-            float duration = 0f;
-            float maxDuration = 10f;
-            
-            while (duration < maxDuration)
+            while (isSpellActive)
             {
-                // Update position to follow wand tip
-                castVFX.transform.position = startPosition;
-                castVFX.transform.rotation = Quaternion.LookRotation(direction);
-                
+                // Update position
+                activeSpellVFX.transform.position = startPosition;
+                activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
+
                 // Animate light intensity
                 float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
                 lumosLight.intensity = intensity;
-                
-                duration += Time.deltaTime;
+
                 yield return null;
             }
         }

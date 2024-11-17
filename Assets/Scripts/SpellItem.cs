@@ -37,7 +37,6 @@ public class SpellItem : MonoBehaviour
         {
             spellSystem.SelectSpell(spellData);
             HighlightSpell(true);
-            Debug.Log("Spell selected: " + spellData.spellName);
         }
         else
         {

@@ -158,6 +158,7 @@ public class WandController : MonoBehaviour
     {
         if (!isActivated && isGrabbed)
         {
+            Debug.Log("wand activated");
             isActivated = true;
             HandleWandInteraction();
            // Debug.Log("crosshair hitting" + hit.collider.name);
@@ -166,17 +167,16 @@ public class WandController : MonoBehaviour
     public void OnDeactivate(DeactivateEventArgs args)
     {
         isActivated = false;
-        if (activeSpellCoroutine != null)
+        if (spellSystem != null)
         {
-            StopCoroutine(activeSpellCoroutine);
-            activeSpellCoroutine = null;
+            spellSystem.StopActiveSpell();
         }
-        isSpellActive = false;
     }
 
 
 void HandleWandInteraction()
 {
+    Debug.Log("Handle wand interaction");
     if (isActivated && isGrabbed)
     {
         if (currentRaycastHit.collider != null)
@@ -196,14 +196,11 @@ void HandleWandInteraction()
             {
                 HandleInteractableInteraction(currentRaycastHit);
             }
-            // If none of the above, try to cast spell
-            else
-            {
-                CastSpell();
-            }
+
         }
         else
         {
+            Debug.Log("No raycast hit detected.");
             // Cast the spell
             if (spellSystem.CurrentSpell != null)
             {
@@ -215,6 +212,7 @@ void HandleWandInteraction()
                 else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold && !isSpellActive)
                 {
                     // Start continuous spell casting
+                    Debug.Log("Starting continuous spell casting");
                     isSpellActive = true;
                     activeSpellCoroutine = StartCoroutine(ContinuousSpellCast());
                 }
@@ -228,10 +226,11 @@ void HandleWandInteraction()
     {
         while (isActivated && spellSystem.CurrentSpell != null)
         {
-            // Update spell position and direction based on current wand tip
+            // This will now update the existing spell instance instead of creating new ones
             spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
-            yield return null; // Wait for next frame
+            yield return null;
         }
+
         isSpellActive = false;
     }
 
