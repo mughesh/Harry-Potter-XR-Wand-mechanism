@@ -14,6 +14,7 @@ public class SpellSystem : MonoBehaviour
     private GameObject activeLineRenderer; // Track the active line renderer for ray spells
     private Dictionary<string, float> spellDurations = new Dictionary<string, float>();
     private bool isSpellActive = false;
+    public bool IsSpellActive => isSpellActive;
 
     private void Start()
     {
@@ -127,6 +128,7 @@ public class SpellSystem : MonoBehaviour
     {
         if (activeSpellVFX != null)
         {
+            activeSpellVFX.transform.SetParent(null);
             Destroy(activeSpellVFX);
             activeSpellVFX = null;
         }
@@ -315,43 +317,38 @@ public class SpellSystem : MonoBehaviour
     // UTILITY SPELLS FUNCTIONS --------------
 
     // LUMOS
-    private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    // Get or add a parent transform to keep the light attached to the wand
+    Transform wandTip = GameObject.FindObjectOfType<WandController>().wandTip;
+    if (wandTip == null)
     {
-        // Use the existing activeSpellVFX
+        Debug.LogError("Wand tip not found for Lumos spell!");
+        yield break;
+    }
+
+    // Parent the VFX to the wand tip
+    if (activeSpellVFX != null)
+    {
+        activeSpellVFX.transform.SetParent(wandTip, false);
+        activeSpellVFX.transform.localPosition = Vector3.zero;
+        activeSpellVFX.transform.localRotation = Quaternion.identity;
+
         Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
         if (lumosLight != null)
         {
             while (isSpellActive)
             {
-                // Update position
-                activeSpellVFX.transform.position = startPosition;
-                activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
-
-                // Animate light intensity
+                // Just animate the light intensity since position is handled by parenting
                 float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
                 lumosLight.intensity = intensity;
-
                 yield return null;
             }
         }
     }
+}
 
-    private IEnumerator AnimateLumosLight(Light light)
-    {
-        float duration = 2f;
-        float startTime = Time.time;
-        float minIntensity = 1f;
-        float maxIntensity = 5f;
 
-        while (Time.time - startTime < duration)
-        {
-            float t = (Time.time - startTime) / duration;
-            light.intensity = Mathf.Lerp(minIntensity, maxIntensity, Mathf.Sin(t * Mathf.PI * 2));
-            yield return null;
-        }
-
-        light.intensity = minIntensity;
-    }
 
     private void CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
