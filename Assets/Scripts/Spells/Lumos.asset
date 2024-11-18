@@ -15,7 +15,7 @@ MonoBehaviour:
   spellName: Lumos
   description: light
   equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 1175016409960847972, guid: 363b5587b34862742bcc40a8ac3534a4,
+  castVFXPrefab: {fileID: 8468563348735811515, guid: 7effb3ef1c1b96a42b9921232958708b,
     type: 3}
   hitVFXPrefab: {fileID: 0}
   lineRendererPrefab: {fileID: 0}

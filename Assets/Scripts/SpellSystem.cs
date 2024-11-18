@@ -331,20 +331,20 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
     if (activeSpellVFX != null)
     {
         activeSpellVFX.transform.SetParent(wandTip, false);
-        activeSpellVFX.transform.localPosition = Vector3.zero;
+        activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
         activeSpellVFX.transform.localRotation = Quaternion.identity;
 
-        Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
-        if (lumosLight != null)
-        {
-            while (isSpellActive)
-            {
-                // Just animate the light intensity since position is handled by parenting
-                float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
-                lumosLight.intensity = intensity;
-                yield return null;
-            }
-        }
+        // Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
+        // if (lumosLight != null)
+        // {
+        //     while (isSpellActive)
+        //     {
+        //         // Just animate the light intensity since position is handled by parenting
+        //         float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
+        //         lumosLight.intensity = intensity;
+        //         yield return null;
+        //     }
+        // }
     }
 }
 
