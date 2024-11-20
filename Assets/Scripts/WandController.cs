@@ -176,7 +176,7 @@ public class WandController : MonoBehaviour
 
 void HandleWandInteraction()
 {
-    Debug.Log("Handle wand interaction");
+    //Debug.Log("Handle wand interaction");
     if (isActivated && isGrabbed)
     {
         if (currentRaycastHit.collider != null)
