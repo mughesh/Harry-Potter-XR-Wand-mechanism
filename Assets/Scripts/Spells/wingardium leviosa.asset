@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4a3f7d8038a3814b8d2da9d2235e6a4, type: 3}
   m_Name: wingardium leviosa
   m_EditorClassIdentifier: 
-  spellName: wingardium leviosa
+  spellName: Wingardium Leviosa
   description: levitate
   equipVFXPrefab: {fileID: 0}
   castVFXPrefab: {fileID: 0}
   hitVFXPrefab: {fileID: 0}
-  lineRendererPrefab: {fileID: 6146024070296461439, guid: 9842f888f5e4ee04785b57a53ba53d18,
-    type: 3}
+  lineRendererPrefab: {fileID: 0}
   castType: 3
   triggerType: 1

@@ -9,15 +9,16 @@ public class WandController : MonoBehaviour
     public GameObject crosshairPrefab;
     public float maxDistance = 10f;
     public Transform hipAttachPoint;
-    public LayerMask interactableLayerMask;  // For General interactables eg. spells, interactable in scene objects
+    public LayerMask interactableLayer;  // For General interactables eg. spells, interactable in scene objects
     public LayerMask inventoryItemLayer;    // For inventory items
     public LayerMask bookLayerMask;         // For book UI
-    private LayerMask raycastLayerMask;     // combined layer masks
+    private LayerMask excludeRaycastLayerMask;     // combined layer masks
+    private LayerMask crosshairInteractableLayer;
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
     private bool isActivated = false;
     private SpellSystem spellSystem;
-     [SerializeField] private InventorySystem inventorySystem;
+    [SerializeField] private InventorySystem inventorySystem;
     private GameObject crosshairInstance;
     private BookController bookController;
     public Transform retrievePosition;
@@ -54,16 +55,19 @@ public class WandController : MonoBehaviour
             Debug.LogError("InventorySystem not found!");
         }
 
-            // Combine the layer masks but exclude the layers to ignore
-        raycastLayerMask = interactableLayerMask | inventoryItemLayer | bookLayerMask;
-        
-         // To explicitly exclude layers
+        // Combine the layer masks but exclude the layers to ignore
+        excludeRaycastLayerMask = inventoryItemLayer | bookLayerMask;
+
+        crosshairInteractableLayer = interactableLayer | excludeRaycastLayerMask;
+
+
+        // To explicitly exclude layers
         int excludeLayers = (1 << LayerMask.NameToLayer("Inventory slots")) | (1 << LayerMask.NameToLayer("Book controller"));
-        raycastLayerMask &= ~excludeLayers;
+        excludeRaycastLayerMask &= ~excludeLayers;
 
         SetupInteractions();
         CreateCrosshair();
-     
+
     }
 
     void Update()
@@ -74,7 +78,7 @@ public class WandController : MonoBehaviour
 
     void PerformRaycast()
     {
-        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance, raycastLayerMask))
+        if (Physics.Raycast(wandTip.position, wandTip.forward, out currentRaycastHit, maxDistance, crosshairInteractableLayer))
         {
             if (currentRaycastHit.collider.gameObject != previousHitObject)
             {
@@ -161,7 +165,7 @@ public class WandController : MonoBehaviour
             Debug.Log("wand activated");
             isActivated = true;
             HandleWandInteraction();
-           // Debug.Log("crosshair hitting" + hit.collider.name);
+            // Debug.Log("crosshair hitting" + hit.collider.name);
         }
     }
     public void OnDeactivate(DeactivateEventArgs args)
@@ -174,53 +178,60 @@ public class WandController : MonoBehaviour
     }
 
 
-void HandleWandInteraction()
-{
-    //Debug.Log("Handle wand interaction");
-    if (isActivated && isGrabbed)
+    void HandleWandInteraction()
     {
-        if (currentRaycastHit.collider != null)
+        //Debug.Log("Handle wand interaction");
+        if (isActivated && isGrabbed)
         {
-            // Use the stored currentRaycastHit in the interaction handling methods
-            if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+            if (currentRaycastHit.collider != null)
             {
-                HandleInventoryItemInteraction(currentRaycastHit);
-            }
-            // Check for book interaction
-            else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
-            {
-                HandleBookInteraction(currentRaycastHit);
-            }
-            // Check for other interactables (like spell selection)
-            else if (((1 << currentRaycastHit.collider.gameObject.layer) & interactableLayerMask) != 0)
-            {
-                HandleInteractableInteraction(currentRaycastHit);
-            }
+                // Use the stored currentRaycastHit in the interaction handling methods
+                if (((1 << currentRaycastHit.collider.gameObject.layer) & inventoryItemLayer) != 0)
+                {
+                    HandleInventoryItemInteraction(currentRaycastHit);
+                }
+                // Check for book interaction
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & bookLayerMask) != 0)
+                {
+                    HandleBookInteraction(currentRaycastHit);
+                    HandleInteractableInteraction(currentRaycastHit);
+                }
+                // Check for other interactables (like spell selection)
+                else if (((1 << currentRaycastHit.collider.gameObject.layer) & crosshairInteractableLayer) != 0)
+                {
+                    CastSpell();
+                }
 
-        }
-        else
-        {
-            Debug.Log("No raycast hit detected.");
-            // Cast the spell
-            if (spellSystem.CurrentSpell != null)
+            }
+            else
             {
-                if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
-                {
-                    // Cast the spell immediately
-                    spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
-                }
-                else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold && !isSpellActive)
-                {
-                    // Start continuous spell casting
-                    Debug.Log("Starting continuous spell casting");
-                    isSpellActive = true;
-                    activeSpellCoroutine = StartCoroutine(ContinuousSpellCast());
-                }
+                Debug.Log("No raycast hit detected.");
+                CastSpell();
 
             }
         }
     }
-}
+
+    void CastSpell()
+    {
+        // Cast the spell
+        if (spellSystem.CurrentSpell != null)
+        {
+            if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
+            {
+                // Cast the spell immediately
+                spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+            }
+            else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold && !isSpellActive)
+            {
+                // Start continuous spell casting
+                Debug.Log("Starting continuous spell casting");
+                isSpellActive = true;
+                activeSpellCoroutine = StartCoroutine(ContinuousSpellCast());
+            }
+
+        }
+    }
 
     private IEnumerator ContinuousSpellCast()
     {
@@ -234,7 +245,7 @@ void HandleWandInteraction()
         isSpellActive = false;
     }
 
-void HandleInventoryItemInteraction(RaycastHit hit)
+    void HandleInventoryItemInteraction(RaycastHit hit)
     {
         if (inventorySystem == null)
         {
@@ -251,7 +262,7 @@ void HandleInventoryItemInteraction(RaycastHit hit)
                 Debug.Log("wand controller - retrieval: " + inventoryItem.name);
                 //inventoryItem.SetInventoryState(false, null);                   // --------
                 inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
-                
+
             }
             else
             {
@@ -282,18 +293,6 @@ void HandleInventoryItemInteraction(RaycastHit hit)
         }
     }
 
-    void CastSpell()
-    {
-        if (spellSystem != null && spellSystem.CurrentSpell != null)
-        {
-            spellSystem.CastSpell(spellSystem.CurrentSpell,wandTip.position, wandTip.forward);
-        }
-        else
-        {
-            Debug.Log("No spell selected or spell system not found.");
-        }
-    }
-    
     void ReturnToHip()
     {
         if (hipAttachPoint != null)
