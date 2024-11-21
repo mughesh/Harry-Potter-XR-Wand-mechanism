@@ -66,33 +66,5 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b2f58676c91fb44ebb8fccf4788166e,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: -1944282934071754713}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7b2f58676c91fb44ebb8fccf4788166e, type: 3}
---- !u!1 &477276347479422191 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7b2f58676c91fb44ebb8fccf4788166e,
-    type: 3}
-  m_PrefabInstance: {fileID: 747256272041658814}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &-1944282934071754713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 477276347479422191}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b023183069df224080314a560e6e1ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  blockId: 
-  instanceId: 902ca908-75de-4fd1-b734-d3348593e571
-  version: 1
-  installationRoutineCheckpoint:
-    _installationRoutineId: 
-    _installationVariants: []
