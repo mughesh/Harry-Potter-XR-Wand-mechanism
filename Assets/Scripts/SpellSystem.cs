@@ -424,7 +424,7 @@ private void UpdateLevitationEffect(Vector3 startPosition, Vector3 direction, fl
 
         // Create a curved line effect
         Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
-        midPoint += Vector3.up * (initialDistance * 1.5f); // Bend downwards
+        midPoint += Vector3.up * (initialDistance * 0.2f); // Bend downwards
 
         // Set line renderer positions with a curve
         lineRenderer.SetPosition(0, startPosition);
