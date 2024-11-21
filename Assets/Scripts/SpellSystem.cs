@@ -15,6 +15,9 @@ public class SpellSystem : MonoBehaviour
     private Dictionary<string, float> spellDurations = new Dictionary<string, float>();
     private bool isSpellActive = false;
     public bool IsSpellActive => isSpellActive;
+    private GameObject levitatedObject;
+    private Rigidbody levitatedRigidbody;
+    private LineRenderer levitationLineRenderer;
 
     private void Start()
     {
@@ -146,6 +149,9 @@ public class SpellSystem : MonoBehaviour
         {
             case "Lumos":
                 yield return StartCoroutine(CastLumos(spell, startPosition, direction));
+                break;
+            case "Wingardium Leviosa":
+                yield return StartCoroutine(CastWingardiumLeviosa(spell, startPosition, direction));
                 break;
                 // Add other utility spells
         }
@@ -312,6 +318,7 @@ public class SpellSystem : MonoBehaviour
     {
         isSpellActive = false;
         CleanupActiveSpell();
+        ReleaseLevitatedObject();
     }
 
     // UTILITY SPELLS FUNCTIONS --------------
@@ -349,9 +356,99 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
 }
 
 
-
-    private void CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
+private IEnumerator CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    RaycastHit hit;
+    if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
     {
-        // Implement the Wingardium Leviosa spell logic here
+        Rigidbody rb = hit.collider.GetComponent<Rigidbody>();
+        if (rb != null && !rb.isKinematic)
+        {
+            // Store the initial distance and object
+            levitatedObject = hit.collider.gameObject;
+            levitatedRigidbody = rb;
+            float initialDistance = hit.distance;
+
+            // Create line renderer if it doesn't exist
+            if (activeLineRenderer == null && spell.lineRendererPrefab != null)
+            {
+                activeLineRenderer = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
+                
+                // Optional: Configure line renderer for a curved effect
+                LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+                lineRenderer.positionCount = 3; // For curved line
+            }
+
+            // Disable gravity and make object kinematic
+            levitatedRigidbody.useGravity = false;
+            levitatedRigidbody.isKinematic = true;
+
+            // While spell is active and trigger is held
+            while (isSpellActive)
+            {
+                // Get current wand position and direction
+                WandController wandController = FindObjectOfType<WandController>();
+                if (wandController != null)
+                {
+                    startPosition = wandController.wandTip.position;
+                    direction = wandController.wandTip.forward;
+
+                    // Update levitation effect
+                    UpdateLevitationEffect(startPosition, direction, initialDistance);
+                }
+
+                yield return null;
+            }
+
+            // Clean up levitation
+            ReleaseLevitatedObject();
+        }
     }
+}
+
+private void UpdateLevitationEffect(Vector3 startPosition, Vector3 direction, float initialDistance)
+{
+    if (activeLineRenderer != null && levitatedObject != null)
+    {
+        LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+        
+        // Calculate target position at the same initial distance
+        Vector3 targetPosition = startPosition + direction * initialDistance;
+
+        // Smooth movement of the object
+        levitatedObject.transform.position = Vector3.Lerp(
+            levitatedObject.transform.position, 
+            targetPosition, 
+            Time.deltaTime * 10f
+        );
+
+        // Create a curved line effect
+        Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
+        midPoint += Vector3.up * (initialDistance * 1.5f); // Bend downwards
+
+        // Set line renderer positions with a curve
+        lineRenderer.SetPosition(0, startPosition);
+        lineRenderer.SetPosition(1, midPoint);
+        lineRenderer.SetPosition(2, targetPosition);
+    }
+}
+
+    private void ReleaseLevitatedObject()
+    {
+        if (levitatedRigidbody != null)
+        {
+            // Restore gravity and kinematic state
+            levitatedRigidbody.useGravity = true;
+            levitatedRigidbody.isKinematic = false;
+
+            // Clear references
+            levitatedObject = null;
+            levitatedRigidbody = null;
+        }
+
+        // Clean up line renderer
+        CleanupActiveSpell();
+    }
+
+
 }
