@@ -18,17 +18,17 @@ public class SpellSystem : MonoBehaviour
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
     private LineRenderer levitationLineRenderer;
-    [SerializeField] private int curveResolution = 20; // Number of points in the curve
-    [SerializeField] private float curvatureAmount = 0.5f; // How much the line curves downward
-    [SerializeField] private float wobbleSpeed = 2f; // Speed of gentle wobble animation
-    [SerializeField] private float wobbleAmount = 0.1f; // Amount of wobble in the curve
+    [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
+    [SerializeField] private float curvatureAmount = 0.5f;
+
 
         // New fields for momentum calculation
     private Vector3[] previousWandPositions;
-    private int positionCount = 5; // Number of positions to track for velocity
+    private int positionCount = 5;
     private int currentPositionIndex = 0;
-    private float releaseForceMultiplier = 5f; // Adjust this to control throw force
-    private Transform currentWandTip; // Reference to the current wand tip
+    [SerializeField] private float releaseForceMultiplier = 3f; // Reduced from 5 for more controlled throws
+    [SerializeField] private float maxThrowVelocity = 7f; // Maximum velocity cap for throws
+    private Transform currentWandTip;
 
 
     private void Start()
@@ -438,12 +438,9 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
             Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
             
             // Add downward displacement - Note the negative value for downward curve
-            float downwardDisplacement = -initialDistance * curvatureAmount;
+            float downwardDisplacement = initialDistance * curvatureAmount;
             midPoint += Vector3.down * Mathf.Abs(downwardDisplacement); // Ensure downward direction
 
-            // Add subtle wobble
-            float wobble = Mathf.Sin(Time.time * wobbleSpeed) * wobbleAmount;
-            midPoint += Vector3.up * wobble;
 
             // Generate curve points
             for (int i = 0; i < curveResolution; i++)
@@ -472,34 +469,44 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
 
     private Vector3 CalculateQuadraticBezierPoint(Vector3 start, Vector3 control, Vector3 end, float t)
     {
-        float u = 1 - t;
-        float tt = t * t;
-        float uu = u * u;
-        
-        return (uu * start) + (2 * u * t * control) + (tt * end);
-    }
+        // Calculate point along a quadratic Bezier curve
+        float oneMinusT = 1f - t;
+        return
+            oneMinusT * oneMinusT * start +
+            2f * oneMinusT * t * control +
+            t * t * end;
+    }   
+    
     private Vector3 CalculateReleaseVelocity()
     {
         Vector3 velocitySum = Vector3.zero;
         int validSamples = 0;
 
-        // Calculate average velocity from position history
+        // Calculate velocity from position history
         for (int i = 1; i < positionCount; i++)
         {
             int currentIndex = (currentPositionIndex - i + positionCount) % positionCount;
             int previousIndex = (currentPositionIndex - i - 1 + positionCount) % positionCount;
             
             Vector3 frameDelta = previousWandPositions[currentIndex] - previousWandPositions[previousIndex];
-            if (frameDelta.magnitude < 1f) // Ignore extremely large deltas that might be errors
+            if (frameDelta.magnitude < 1f) // Ignore large jumps that might be errors
             {
                 velocitySum += frameDelta;
                 validSamples++;
             }
         }
 
-        // Calculate average velocity and apply multiplier
+        // Calculate and limit the release velocity
         Vector3 averageVelocity = validSamples > 0 ? velocitySum / validSamples : Vector3.zero;
-        return averageVelocity * releaseForceMultiplier / Time.deltaTime;
+        Vector3 releaseVelocity = averageVelocity * releaseForceMultiplier / Time.deltaTime;
+
+        // Cap the velocity magnitude to prevent excessive throwing force
+        if (releaseVelocity.magnitude > maxThrowVelocity)
+        {
+            releaseVelocity = releaseVelocity.normalized * maxThrowVelocity;
+        }
+
+        return releaseVelocity;
     }
 
     private void ReleaseLevitatedObject(Vector3 releaseVelocity)
