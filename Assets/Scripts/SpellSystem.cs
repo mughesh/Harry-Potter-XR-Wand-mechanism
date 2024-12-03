@@ -18,6 +18,18 @@ public class SpellSystem : MonoBehaviour
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
     private LineRenderer levitationLineRenderer;
+    [SerializeField] private int curveResolution = 20; // Number of points in the curve
+    [SerializeField] private float curvatureAmount = 0.5f; // How much the line curves downward
+    [SerializeField] private float wobbleSpeed = 2f; // Speed of gentle wobble animation
+    [SerializeField] private float wobbleAmount = 0.1f; // Amount of wobble in the curve
+
+        // New fields for momentum calculation
+    private Vector3[] previousWandPositions;
+    private int positionCount = 5; // Number of positions to track for velocity
+    private int currentPositionIndex = 0;
+    private float releaseForceMultiplier = 5f; // Adjust this to control throw force
+    private Transform currentWandTip; // Reference to the current wand tip
+
 
     private void Start()
     {
@@ -27,6 +39,8 @@ public class SpellSystem : MonoBehaviour
         //     SelectSpell(availableSpells[0]);
         // }
         //SelectSpell(availableSpells[0]);
+
+        previousWandPositions = new Vector3[positionCount];
     }
 
     public void SelectSpell(SpellData spell)
@@ -318,7 +332,7 @@ public class SpellSystem : MonoBehaviour
     {
         isSpellActive = false;
         CleanupActiveSpell();
-        ReleaseLevitatedObject();
+        //ReleaseLevitatedObject(Vector3.zero);
     }
 
     // UTILITY SPELLS FUNCTIONS --------------
@@ -356,97 +370,153 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
 }
 
 
-private IEnumerator CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
-{
-    RaycastHit hit;
-    if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
+    private IEnumerator CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        Rigidbody rb = hit.collider.GetComponent<Rigidbody>();
-        if (rb != null && !rb.isKinematic)
+        RaycastHit hit;
+        if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
         {
-            // Store the initial distance and object
-            levitatedObject = hit.collider.gameObject;
-            levitatedRigidbody = rb;
-            float initialDistance = hit.distance;
-
-            // Create line renderer if it doesn't exist
-            if (activeLineRenderer == null && spell.lineRendererPrefab != null)
+            Rigidbody rb = hit.collider.GetComponent<Rigidbody>();
+            if (rb != null && !rb.isKinematic)
             {
-                activeLineRenderer = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
-                
-                // Optional: Configure line renderer for a curved effect
-                LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
-                lineRenderer.positionCount = 3; // For curved line
-            }
+                levitatedObject = hit.collider.gameObject;
+                levitatedRigidbody = rb;
+                float initialDistance = hit.distance;
 
-            // Disable gravity and make object kinematic
-            levitatedRigidbody.useGravity = false;
-            levitatedRigidbody.isKinematic = true;
-
-            // While spell is active and trigger is held
-            while (isSpellActive)
-            {
-                // Get current wand position and direction
+                // Store reference to wand tip for tracking
                 WandController wandController = FindObjectOfType<WandController>();
-                if (wandController != null)
-                {
-                    startPosition = wandController.wandTip.position;
-                    direction = wandController.wandTip.forward;
+                currentWandTip = wandController.wandTip;
 
-                    // Update levitation effect
-                    UpdateLevitationEffect(startPosition, direction, initialDistance);
+                // Initialize position tracking array
+                for (int i = 0; i < positionCount; i++)
+                {
+                    previousWandPositions[i] = currentWandTip.position;
                 }
 
-                yield return null;
-            }
+                if (activeLineRenderer == null && spell.lineRendererPrefab != null)
+                {
+                    activeLineRenderer = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
+                    LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+                    lineRenderer.positionCount = curveResolution;
+                }
 
-            // Clean up levitation
-            ReleaseLevitatedObject();
+                levitatedRigidbody.useGravity = false;
+                levitatedRigidbody.isKinematic = true;
+
+                while (isSpellActive)
+                {
+                    // Update position history
+                    previousWandPositions[currentPositionIndex] = currentWandTip.position;
+                    currentPositionIndex = (currentPositionIndex + 1) % positionCount;
+
+                    if (wandController != null)
+                    {
+                        startPosition = wandController.wandTip.position;
+                        direction = wandController.wandTip.forward;
+                        UpdateLevitationEffect(startPosition, direction, initialDistance);
+                    }
+
+                    yield return null;
+                }
+
+                // Calculate and apply release velocity when spell ends
+                Vector3 releaseVelocity = CalculateReleaseVelocity();
+                ReleaseLevitatedObject(releaseVelocity);
+            }
         }
     }
-}
 
-private void UpdateLevitationEffect(Vector3 startPosition, Vector3 direction, float initialDistance)
-{
-    if (activeLineRenderer != null && levitatedObject != null)
+    private void UpdateLevitationEffect(Vector3 startPosition, Vector3 direction, float initialDistance)
     {
-        LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
-        
-        // Calculate target position at the same initial distance
-        Vector3 targetPosition = startPosition + direction * initialDistance;
+        if (activeLineRenderer != null && levitatedObject != null)
+        {
+            LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+            Vector3 targetPosition = levitatedObject.transform.position;
 
-        // Smooth movement of the object
-        levitatedObject.transform.position = Vector3.Lerp(
-            levitatedObject.transform.position, 
-            targetPosition, 
-            Time.deltaTime * 10f
-        );
+            lineRenderer.positionCount = curveResolution;
 
-        // Create a curved line effect
-        Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
-        midPoint += Vector3.up * (initialDistance * 0.2f); // Bend downwards
+            // Calculate the midpoint between start and target
+            Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
+            
+            // Add downward displacement - Note the negative value for downward curve
+            float downwardDisplacement = -initialDistance * curvatureAmount;
+            midPoint += Vector3.down * Mathf.Abs(downwardDisplacement); // Ensure downward direction
 
-        // Set line renderer positions with a curve
-        lineRenderer.SetPosition(0, startPosition);
-        lineRenderer.SetPosition(1, midPoint);
-        lineRenderer.SetPosition(2, targetPosition);
+            // Add subtle wobble
+            float wobble = Mathf.Sin(Time.time * wobbleSpeed) * wobbleAmount;
+            midPoint += Vector3.up * wobble;
+
+            // Generate curve points
+            for (int i = 0; i < curveResolution; i++)
+            {
+                float t = i / (float)(curveResolution - 1);
+                Vector3 point = CalculateQuadraticBezierPoint(startPosition, midPoint, targetPosition, t);
+                
+                // Add subtle variation to middle points only
+                if (i > 0 && i < curveResolution - 1)
+                {
+                    float noiseOffset = Mathf.PerlinNoise(t * 2f + Time.time * 0.5f, 0f) * 0.02f;
+                    point += Vector3.right * noiseOffset;
+                }
+                
+                lineRenderer.SetPosition(i, point);
+            }
+
+            // Smooth object movement
+            levitatedObject.transform.position = Vector3.Lerp(
+                levitatedObject.transform.position, 
+                startPosition + direction * initialDistance, 
+                Time.deltaTime * 10f
+            );
+        }
     }
-}
 
-    private void ReleaseLevitatedObject()
+    private Vector3 CalculateQuadraticBezierPoint(Vector3 start, Vector3 control, Vector3 end, float t)
+    {
+        float u = 1 - t;
+        float tt = t * t;
+        float uu = u * u;
+        
+        return (uu * start) + (2 * u * t * control) + (tt * end);
+    }
+    private Vector3 CalculateReleaseVelocity()
+    {
+        Vector3 velocitySum = Vector3.zero;
+        int validSamples = 0;
+
+        // Calculate average velocity from position history
+        for (int i = 1; i < positionCount; i++)
+        {
+            int currentIndex = (currentPositionIndex - i + positionCount) % positionCount;
+            int previousIndex = (currentPositionIndex - i - 1 + positionCount) % positionCount;
+            
+            Vector3 frameDelta = previousWandPositions[currentIndex] - previousWandPositions[previousIndex];
+            if (frameDelta.magnitude < 1f) // Ignore extremely large deltas that might be errors
+            {
+                velocitySum += frameDelta;
+                validSamples++;
+            }
+        }
+
+        // Calculate average velocity and apply multiplier
+        Vector3 averageVelocity = validSamples > 0 ? velocitySum / validSamples : Vector3.zero;
+        return averageVelocity * releaseForceMultiplier / Time.deltaTime;
+    }
+
+    private void ReleaseLevitatedObject(Vector3 releaseVelocity)
     {
         if (levitatedRigidbody != null)
         {
-            // Restore gravity and kinematic state
             levitatedRigidbody.useGravity = true;
             levitatedRigidbody.isKinematic = false;
+            
+            // Apply the release velocity
+            levitatedRigidbody.velocity = releaseVelocity;
 
             // Clear references
             levitatedObject = null;
             levitatedRigidbody = null;
         }
 
-        // Clean up line renderer
         CleanupActiveSpell();
     }
 
