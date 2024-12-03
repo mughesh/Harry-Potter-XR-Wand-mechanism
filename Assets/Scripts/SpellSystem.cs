@@ -439,7 +439,7 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
             
             // Add downward displacement - Note the negative value for downward curve
             float downwardDisplacement = initialDistance * curvatureAmount;
-            midPoint += Vector3.down * Mathf.Abs(downwardDisplacement); // Ensure downward direction
+            midPoint += Vector3.up * Mathf.Abs(downwardDisplacement); // Ensure downward direction
 
 
             // Generate curve points
