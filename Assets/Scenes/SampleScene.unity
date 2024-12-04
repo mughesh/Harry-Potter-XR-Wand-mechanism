@@ -7156,6 +7156,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7136fb7100ef0254e8fca549ca68f08c, type: 2}
   - {fileID: 11400000, guid: 55e32d43ddba0d346b5ca88b03080b8d, type: 2}
   maxCastDistance: 20
+  curveResolution: 20
+  curvatureAmount: 0.3
+  releaseForceMultiplier: 5
+  maxThrowVelocity: 7
 --- !u!114 &1690288870
 MonoBehaviour:
   m_ObjectHideFlags: 0
