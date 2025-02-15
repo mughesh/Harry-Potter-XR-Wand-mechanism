@@ -11,6 +11,8 @@ public class SpellData : ScriptableObject
     public GameObject lineRendererPrefab;
     public SpellCastType castType;
     public SpellTriggerType triggerType;
+    public float levitationBendStrength = 0.2f;
+    public float levitationSmoothSpeed = 10f;
     
 }
 
