@@ -21,4 +21,6 @@ MonoBehaviour:
     type: 3}
   lineRendererPrefab: {fileID: 0}
   castType: 0
-  triggerType: 1
+  triggerType: 0
+  levitationBendStrength: 0.2
+  levitationSmoothSpeed: 10
