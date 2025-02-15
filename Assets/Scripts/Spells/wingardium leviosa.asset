@@ -22,6 +22,5 @@ MonoBehaviour:
     type: 3}
   castType: 3
   triggerType: 1
-  leviosaProperties:
-    maxLevitationDistance: 10
-    objectMovementSmoothness: 5
+  levitationBendStrength: 0.2
+  levitationSmoothSpeed: 10
