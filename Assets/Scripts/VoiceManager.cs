@@ -87,6 +87,9 @@ public class VoiceManager : MonoBehaviour
         if (intentsNode == null || intentsNode.Count == 0)
         {
             Debug.Log("No intent found in response");
+            Debug.Log($"Full Response: {response.ToString()}");
+            Debug.Log($"Response Text: {response["_text"].Value}");
+            Debug.Log("Voice to speech :" + response["voice_to_text"].Value);
             return;
         }
 

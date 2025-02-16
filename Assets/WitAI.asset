@@ -46,12 +46,28 @@ MonoBehaviour:
         - insandio
         - insendio
         - sandio
+      - keyword: lumos
+        synonyms:
+        - luma
+        - lumas
+        - lumos
+        - lumous
+        - lumus
       - keyword: reducto
         synonyms:
         - product
         - raedacto
         - reducto
         - ruducto
+      - keyword: wingardium Leviosa
+        synonyms:
+        - bingardian liviosa
+        - bingardium la viosa
+        - bingardium liveosa
+        - laviosa
+        - leviosa
+        - pingardian leviosa
+        - wingardium Leviosa
     traits: []
     versionTags: []
     voices:
