@@ -15,7 +15,7 @@ MonoBehaviour:
   spellName: Incendio
   description: Fiery Flames
   equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 6861772040425079919, guid: d44867eb353d8db449ca043c95e83964,
+  castVFXPrefab: {fileID: 1634767862067424, guid: 007c57e2df8e9b144b99f471b84f3d56,
     type: 3}
   hitVFXPrefab: {fileID: 0}
   lineRendererPrefab: {fileID: 6146024070296461439, guid: 24345345bae9a8e4aadd37af938e9dbc,
