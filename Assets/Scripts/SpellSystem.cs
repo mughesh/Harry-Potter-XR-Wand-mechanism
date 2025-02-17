@@ -139,7 +139,6 @@ public class SpellSystem : MonoBehaviour
                     break;
                 case SpellCastType.Utility:
                     yield return StartCoroutine(CastUtilitySpell(spell, startPosition, direction));
-                                    Debug.Log("Utility spell");
                     break;
             }
 
@@ -156,6 +155,7 @@ public class SpellSystem : MonoBehaviour
 
     private void CleanupActiveSpell()
     {
+        Debug.Log("Cleaning up active spell");
         if (activeSpellVFX != null)
         {
             // Detach from parent before destroying
@@ -171,8 +171,8 @@ public class SpellSystem : MonoBehaviour
         }
 
         // Reset levitation-specific state
-        levitatedObject = null;
-        levitatedRigidbody = null;
+        //levitatedObject = null;
+        //levitatedRigidbody = null;
         isSpellActive = false;
     }
 
@@ -570,8 +570,10 @@ public class SpellSystem : MonoBehaviour
 
     private void ReleaseLevitatedObject(Vector3 releaseVelocity)
     {
+       
         if (levitatedRigidbody != null)
         {
+             Debug.Log("Releasing levitated object");
             levitatedRigidbody.useGravity = true;
             levitatedRigidbody.isKinematic = false;
             

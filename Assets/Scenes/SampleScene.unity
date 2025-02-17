@@ -7975,8 +7975,8 @@ MonoBehaviour:
   projectileSpeed: 25
   curveResolution: 20
   curvatureAmount: 0.1
-  releaseForceMultiplier: 5
-  maxThrowVelocity: 7
+  releaseForceMultiplier: 7
+  maxThrowVelocity: 10
 --- !u!114 &1690288870
 MonoBehaviour:
   m_ObjectHideFlags: 0
