@@ -18,17 +18,25 @@ public class SpellSystem : MonoBehaviour
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
     private LineRenderer levitationLineRenderer;
+    [Header("Projectile Path Controls")]
+    [SerializeField] private float basePathHeight = 2f; // Base height of the curve
+    [SerializeField][Range(0.1f, 1f)] private float distanceHeightRatio = 0.3f; // How much distance affects height
+    [SerializeField][Range(0.1f, 1f)] private float minCurveHeight = 0.2f; // Minimum curve height for close targets
+    [SerializeField] private float projectileSpeed = 10f; // Configurable projectile speed
+
     [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
     [SerializeField] private float curvatureAmount = 0.5f;
 
 
-        // New fields for momentum calculation
+    // New fields for momentum calculation
     private Vector3[] previousWandPositions;
     private int positionCount = 5;
     private int currentPositionIndex = 0;
     [SerializeField] private float releaseForceMultiplier = 3f; // Reduced from 5 for more controlled throws
     [SerializeField] private float maxThrowVelocity = 7f; // Maximum velocity cap for throws
     private Transform currentWandTip;
+
+    private bool isProjectileInFlight = false;
 
 
     private void Start()
@@ -75,18 +83,21 @@ public class SpellSystem : MonoBehaviour
 
     public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
+        // For press-type spells, prevent multiple casts while projectile is in flight
+        if (spell.triggerType == SpellTriggerType.Press)
+        {
+            if (isProjectileInFlight) return;
+            isProjectileInFlight = true;
+        }
+
         // If it's a hold-type spell and we already have an active instance, just update it
         if (spell.triggerType == SpellTriggerType.Hold && isSpellActive)
         {
             UpdateActiveSpell(spell, startPosition, direction);
             return;
         }
-        else
-        {
-            // Otherwise, start a new spell cast
-            StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
-        }
 
+        StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
     }
 
     private void UpdateActiveSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -112,6 +123,7 @@ public class SpellSystem : MonoBehaviour
 
             // Create new spell instance
             activeSpellVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+            Debug.Log("instantiating cast vfx");
             isSpellActive = true;
 
             switch (spell.castType)
@@ -127,6 +139,7 @@ public class SpellSystem : MonoBehaviour
                     break;
                 case SpellCastType.Utility:
                     yield return StartCoroutine(CastUtilitySpell(spell, startPosition, direction));
+                                    Debug.Log("Utility spell");
                     break;
             }
 
@@ -145,15 +158,21 @@ public class SpellSystem : MonoBehaviour
     {
         if (activeSpellVFX != null)
         {
+            // Detach from parent before destroying
             activeSpellVFX.transform.SetParent(null);
             Destroy(activeSpellVFX);
             activeSpellVFX = null;
         }
+
         if (activeLineRenderer != null)
         {
             Destroy(activeLineRenderer);
             activeLineRenderer = null;
         }
+
+        // Reset levitation-specific state
+        levitatedObject = null;
+        levitatedRigidbody = null;
         isSpellActive = false;
     }
 
@@ -175,40 +194,80 @@ public class SpellSystem : MonoBehaviour
 
     private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
-
-        float speed = 10f;
-        float distanceTraveled = 0f;
-
-        // Use the same raycast as the crosshair
-        RaycastHit hit;
-        Vector3 targetPosition;
-        if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
+        try
         {
-            targetPosition = hit.point;
-        }
-        else
-        {
-            targetPosition = startPosition + direction * maxCastDistance;
-        }
+            float distanceTraveled = 0f;
 
-        Vector3 controlPoint = startPosition + Vector3.up * 2f + direction * 5f + Random.insideUnitSphere * 2f;
-        List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
+            // Use the same raycast as the crosshair
+            RaycastHit hit;
+            Vector3 targetPosition;
+            float targetDistance;
 
-        int pathIndex = 0;
-        while (pathIndex < path.Count)
-        {
-            castVFX.transform.position = path[pathIndex];
-            castVFX.transform.forward = (pathIndex < path.Count - 1) ? (path[pathIndex + 1] - path[pathIndex]).normalized : direction;
-
-            if (Vector3.Distance(castVFX.transform.position, targetPosition) < 0.1f)
+            if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
             {
-                SpellHitEffect(targetPosition, -direction);
-                yield break;
+                targetPosition = hit.point;
+                targetDistance = hit.distance;
+            }
+            else
+            {
+                targetPosition = startPosition + direction * maxCastDistance;
+                targetDistance = maxCastDistance;
             }
 
-            pathIndex++;
-            yield return null;
+            // Calculate adaptive curve height based on distance
+            float adaptiveHeight = Mathf.Max(
+                minCurveHeight,
+                basePathHeight * (targetDistance * distanceHeightRatio)
+            );
 
+            // Calculate control point with adaptive height
+            Vector3 midPoint = (startPosition + targetPosition) / 2f;
+            Vector3 controlPoint = midPoint + Vector3.up * adaptiveHeight;
+
+            // Add slight randomness to control point for natural feel
+            controlPoint += Random.insideUnitSphere * 0.5f;
+
+            List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
+
+            int pathIndex = 0;
+            bool hitTarget = false;
+
+            while (pathIndex < path.Count && !hitTarget)
+            {
+                castVFX.transform.position = path[pathIndex];
+
+                // Update rotation to face travel direction
+                if (pathIndex < path.Count - 1)
+                {
+                    Vector3 nextPosition = path[pathIndex + 1];
+                    Vector3 moveDirection = (nextPosition - castVFX.transform.position).normalized;
+                    castVFX.transform.forward = moveDirection;
+                }
+
+                // Check for collision along the path
+                if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
+                {
+                    SpellHitEffect(hit.point, -hit.normal);
+                    hitTarget = true;
+                }
+
+                pathIndex++;
+
+                // Add time-based movement for consistent speed
+                yield return new WaitForSeconds(1f / (projectileSpeed * path.Count));
+            }
+
+            if (!hitTarget)
+            {
+                // Handle case where projectile reaches end without hitting
+                SpellHitEffect(targetPosition, -direction);
+            }
+
+        }
+        finally
+        {
+            isProjectileInFlight = false;
+            //CleanupActiveSpell();
         }
     }
 
@@ -338,36 +397,36 @@ public class SpellSystem : MonoBehaviour
     // UTILITY SPELLS FUNCTIONS --------------
 
     // LUMOS
-private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
-{
-    // Get or add a parent transform to keep the light attached to the wand
-    Transform wandTip = GameObject.FindObjectOfType<WandController>().wandTip;
-    if (wandTip == null)
+    private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        Debug.LogError("Wand tip not found for Lumos spell!");
-        yield break;
-    }
+        // Get or add a parent transform to keep the light attached to the wand
+        Transform wandTip = GameObject.FindObjectOfType<WandController>().wandTip;
+        if (wandTip == null)
+        {
+            Debug.LogError("Wand tip not found for Lumos spell!");
+            yield break;
+        }
 
-    // Parent the VFX to the wand tip
-    if (activeSpellVFX != null)
-    {
-        activeSpellVFX.transform.SetParent(wandTip, false);
-        activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
-        activeSpellVFX.transform.localRotation = Quaternion.identity;
+        // Parent the VFX to the wand tip
+        if (activeSpellVFX != null)
+        {
+            activeSpellVFX.transform.SetParent(wandTip, false);
+            activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
+            activeSpellVFX.transform.localRotation = Quaternion.identity;
 
-        // Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
-        // if (lumosLight != null)
-        // {
-        //     while (isSpellActive)
-        //     {
-        //         // Just animate the light intensity since position is handled by parenting
-        //         float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
-        //         lumosLight.intensity = intensity;
-        //         yield return null;
-        //     }
-        // }
+            // Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
+            // if (lumosLight != null)
+            // {
+            //     while (isSpellActive)
+            //     {
+            //         // Just animate the light intensity since position is handled by parenting
+            //         float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
+            //         lumosLight.intensity = intensity;
+            //         yield return null;
+            //     }
+            // }
+        }
     }
-}
 
 
     private IEnumerator CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -526,6 +585,5 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
 
         CleanupActiveSpell();
     }
-
 
 }

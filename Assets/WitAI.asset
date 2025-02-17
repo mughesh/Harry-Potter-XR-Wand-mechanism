@@ -38,7 +38,7 @@ MonoBehaviour:
       - name: spell_name
         id: 914175823560625
       keywords:
-      - keyword: incendio
+      - keyword: Incendio
         synonyms:
         - in cendio
         - in san diego
@@ -46,20 +46,20 @@ MonoBehaviour:
         - insandio
         - insendio
         - sandio
-      - keyword: lumos
+      - keyword: Lumos
         synonyms:
         - luma
         - lumas
         - lumos
         - lumous
         - lumus
-      - keyword: reducto
+      - keyword: Reducto
         synonyms:
         - product
         - raedacto
         - reducto
         - ruducto
-      - keyword: wingardium Leviosa
+      - keyword: Wingardium Leviosa
         synonyms:
         - bingardian liviosa
         - bingardium la viosa

@@ -28,6 +28,7 @@ public class WandController : MonoBehaviour
     private GameObject previousHitObject = null;
     private Coroutine activeSpellCoroutine;
     private bool isSpellActive = false;
+    private bool isCastingSpell = false;  
 
     void Start()
     {
@@ -171,10 +172,15 @@ public class WandController : MonoBehaviour
     public void OnDeactivate(DeactivateEventArgs args)
     {
         isActivated = false;
-        if (spellSystem != null)
+        // Only stop the spell if it's a hold-type spell
+        if (spellSystem != null && spellSystem.CurrentSpell != null)
         {
-            spellSystem.StopActiveSpell();
+            if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
+            {
+                spellSystem.StopActiveSpell();
+            }
         }
+        isCastingSpell = false;  // Reset the casting flag
     }
 
 
@@ -214,22 +220,21 @@ public class WandController : MonoBehaviour
 
     void CastSpell()
     {
-        // Cast the spell
         if (spellSystem.CurrentSpell != null)
         {
             if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Press)
             {
-                // Cast the spell immediately
-                spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+                if (!isCastingSpell)  // Only cast if we're not already casting
+                {
+                    isCastingSpell = true;
+                    spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+                }
             }
             else if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold && !isSpellActive)
             {
-                // Start continuous spell casting
-                Debug.Log("Starting continuous spell casting");
                 isSpellActive = true;
                 activeSpellCoroutine = StartCoroutine(ContinuousSpellCast());
             }
-
         }
     }
 
@@ -237,11 +242,12 @@ public class WandController : MonoBehaviour
     {
         while (isActivated && spellSystem.CurrentSpell != null)
         {
-            // This will now update the existing spell instance instead of creating new ones
-            spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+            if (spellSystem.CurrentSpell.triggerType == SpellTriggerType.Hold)
+            {
+                spellSystem.CastSpell(spellSystem.CurrentSpell, wandTip.position, wandTip.forward);
+            }
             yield return null;
         }
-
         isSpellActive = false;
     }
 
