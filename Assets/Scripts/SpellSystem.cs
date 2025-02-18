@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using System.Linq;
 
 public class SpellSystem : MonoBehaviour
 {
@@ -27,6 +28,12 @@ public class SpellSystem : MonoBehaviour
 [SerializeField] private float pathRandomness = 0.5f; // Controls how random the path can be
 [SerializeField] private Vector2 sideOffsetRange = new Vector2(-2f, 2f); // Range for side-to-side movement
 [SerializeField] private bool useUpwardPath = false; // Toggle for upward/sideways paths
+
+    [Header("Effect Controls")]
+    [SerializeField] private float hitEffectDuration = 2f;
+    private List<GameObject> activeHitEffects = new List<GameObject>();
+    private GameObject currentEquipEffect;
+    private Transform wandTip;
 
 
     [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
@@ -58,10 +65,24 @@ public class SpellSystem : MonoBehaviour
         //SelectSpell(availableSpells[0]);
 
         previousWandPositions = new Vector3[positionCount];
+        
+        // Cache wand tip reference
+        WandController wandController = FindObjectOfType<WandController>();
+        if (wandController != null)
+        {
+            wandTip = wandController.wandTip;
+        }
     }
 
     public void SelectSpell(SpellData spell)
     {
+        // Clean up previous spell's equip effect
+        if (currentEquipEffect != null)
+        {
+            Destroy(currentEquipEffect);
+            currentEquipEffect = null;
+        }
+
         currentSpell = spell;
         Debug.Log($"Selected spell: {currentSpell.spellName}");
         EquipSpell();
@@ -77,15 +98,27 @@ public class SpellSystem : MonoBehaviour
 
     private void EquipSpell()
     {
-        if (currentSpell != null && currentSpell.equipVFXPrefab != null)
+        if (currentSpell != null && currentSpell.equipVFXPrefab != null && wandTip != null)
         {
-            GameObject equipVFX = Instantiate(currentSpell.equipVFXPrefab, transform.position, Quaternion.identity);
-            Destroy(equipVFX, 2f);
+            // Create new equip effect parented to wand tip
+            currentEquipEffect = Instantiate(currentSpell.equipVFXPrefab, wandTip.position, wandTip.rotation);
+            currentEquipEffect.transform.SetParent(wandTip, true);
+            
+            // Reset local position/rotation if needed
+            currentEquipEffect.transform.localPosition = Vector3.zero;
+            currentEquipEffect.transform.localRotation = Quaternion.identity;
         }
     }
 
     public void ResetSpell()
     {
+        if (currentEquipEffect != null)
+        {
+            Destroy(currentEquipEffect);
+            currentEquipEffect = null;
+        }
+
+        CleanupActiveSpell();
         currentSpell = null;
         Debug.Log("Spell reset");
     }
@@ -185,6 +218,16 @@ public class SpellSystem : MonoBehaviour
         activeSpellParticles = null;
         isFadingOut = false;
         isSpellActive = false;
+                // Clean up all active hit effects
+        foreach (var hitEffect in activeHitEffects.ToList())
+        {
+            if (hitEffect != null)
+            {
+                Destroy(hitEffect);
+            }
+        }
+        activeHitEffects.Clear();
+        currentHitEffect = null;
     }
 
     private IEnumerator CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -357,24 +400,49 @@ private GameObject currentHitEffect;
 private Vector3 lastHitPoint;
 private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit effect position
 
-private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
-{
-    // Only create/move hit effect if it's significantly different from last position
-    if (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold)
+    private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
     {
-        if (currentHitEffect != null)
+        if (currentSpell.hitVFXPrefab != null && 
+            (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold))
         {
-            // Optional: Fade out old effect
-            StartCoroutine(FadeOutHitEffect(currentHitEffect));
-        }
-
-        if (currentSpell.hitVFXPrefab != null)
-        {
-            currentHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
+            GameObject newHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
+            activeHitEffects.Add(newHitEffect);
             lastHitPoint = hitPoint;
+
+            // Start coroutine to remove this specific hit effect
+            StartCoroutine(RemoveHitEffect(newHitEffect));
         }
     }
-}
+
+    private IEnumerator RemoveHitEffect(GameObject hitEffect)
+    {
+        yield return new WaitForSeconds(hitEffectDuration);
+
+        if (hitEffect != null)
+        {
+            // Fade out the effect
+            ParticleSystem[] particles = hitEffect.GetComponentsInChildren<ParticleSystem>();
+            foreach (var ps in particles)
+            {
+                var emission = ps.emission;
+                emission.enabled = false;
+            }
+
+            // Wait for particles to finish
+            float maxLifetime = 0f;
+            foreach (var ps in particles)
+            {
+                if (ps.main.startLifetime.constant > maxLifetime)
+                    maxLifetime = ps.main.startLifetime.constant;
+            }
+
+            yield return new WaitForSeconds(maxLifetime);
+
+            // Remove from active effects list and destroy
+            activeHitEffects.Remove(hitEffect);
+            Destroy(hitEffect);
+        }
+    }
 
 private IEnumerator FadeOutHitEffect(GameObject hitEffect)
 {
@@ -709,4 +777,14 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
         CleanupActiveSpell();
     }
 
+
+        private void OnDisable()
+    {
+        // Clean up everything when the component is disabled
+        CleanupActiveSpell();
+        if (currentEquipEffect != null)
+        {
+            Destroy(currentEquipEffect);
+        }
+    }
 }
