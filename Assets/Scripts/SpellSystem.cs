@@ -18,11 +18,16 @@ public class SpellSystem : MonoBehaviour
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
     private LineRenderer levitationLineRenderer;
+    
     [Header("Projectile Path Controls")]
     [SerializeField] private float basePathHeight = 2f; // Base height of the curve
     [SerializeField][Range(0.1f, 1f)] private float distanceHeightRatio = 0.3f; // How much distance affects height
     [SerializeField][Range(0.1f, 1f)] private float minCurveHeight = 0.2f; // Minimum curve height for close targets
     [SerializeField] private float projectileSpeed = 10f; // Configurable projectile speed
+[SerializeField] private float pathRandomness = 0.5f; // Controls how random the path can be
+[SerializeField] private Vector2 sideOffsetRange = new Vector2(-2f, 2f); // Range for side-to-side movement
+[SerializeField] private bool useUpwardPath = false; // Toggle for upward/sideways paths
+
 
     [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
     [SerializeField] private float curvatureAmount = 0.5f;
@@ -196,86 +201,89 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-
-
-    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+private Vector3 GenerateControlPoint(Vector3 start, Vector3 end, float distance)
+{
+    Vector3 midPoint = (start + end) / 2f;
+    Vector3 randomDirection;
+    
+    if (useUpwardPath)
     {
-        try
+        // Traditional upward arc
+        randomDirection = Vector3.up;
+    }
+    else
+    {
+        // Calculate a random perpendicular direction for side-to-side movement
+        Vector3 forward = (end - start).normalized;
+        Vector3 right = Vector3.Cross(forward, Vector3.up).normalized;
+        float sideOffset = Random.Range(sideOffsetRange.x, sideOffsetRange.y);
+        randomDirection = right * sideOffset;
+    }
+
+    // Add controlled randomness
+    Vector3 randomOffset = Random.insideUnitSphere * pathRandomness;
+    randomOffset.y = Mathf.Abs(randomOffset.y); // Keep some upward bias to prevent ground collision
+    
+    return midPoint + randomDirection * basePathHeight + randomOffset;
+}
+
+ private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
+{
+    try
+    {
+        RaycastHit hit;
+        Vector3 targetPosition;
+        float targetDistance;
+
+        if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
         {
-            float distanceTraveled = 0f;
-
-            // Use the same raycast as the crosshair
-            RaycastHit hit;
-            Vector3 targetPosition;
-            float targetDistance;
-
-            if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
-            {
-                targetPosition = hit.point;
-                targetDistance = hit.distance;
-            }
-            else
-            {
-                targetPosition = startPosition + direction * maxCastDistance;
-                targetDistance = maxCastDistance;
-            }
-
-            // Calculate adaptive curve height based on distance
-            float adaptiveHeight = Mathf.Max(
-                minCurveHeight,
-                basePathHeight * (targetDistance * distanceHeightRatio)
-            );
-
-            // Calculate control point with adaptive height
-            Vector3 midPoint = (startPosition + targetPosition) / 2f;
-            Vector3 controlPoint = midPoint + Vector3.up * adaptiveHeight;
-
-            // Add slight randomness to control point for natural feel
-            controlPoint += Random.insideUnitSphere * 0.5f;
-
-            List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
-
-            int pathIndex = 0;
-            bool hitTarget = false;
-
-            while (pathIndex < path.Count && !hitTarget)
-            {
-                castVFX.transform.position = path[pathIndex];
-
-                // Update rotation to face travel direction
-                if (pathIndex < path.Count - 1)
-                {
-                    Vector3 nextPosition = path[pathIndex + 1];
-                    Vector3 moveDirection = (nextPosition - castVFX.transform.position).normalized;
-                    castVFX.transform.forward = moveDirection;
-                }
-
-                // Check for collision along the path
-                if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
-                {
-                    SpellHitEffect(hit.point, -hit.normal);
-                    hitTarget = true;
-                }
-
-                pathIndex++;
-
-                // Add time-based movement for consistent speed
-                yield return new WaitForSeconds(1f / (projectileSpeed * path.Count));
-            }
-
-            if (!hitTarget)
-            {
-                // Handle case where projectile reaches end without hitting
-                SpellHitEffect(targetPosition, -direction);
-            }
-
+            targetPosition = hit.point;
+            targetDistance = hit.distance;
         }
-        finally
+        else
         {
-            isProjectileInFlight = false;
-            //CleanupActiveSpell();
+            targetPosition = startPosition + direction * maxCastDistance;
+            targetDistance = maxCastDistance;
+        }
+
+        Vector3 controlPoint = GenerateControlPoint(startPosition, targetPosition, targetDistance);
+        List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
+
+        int pathIndex = 0;
+        bool hitTarget = false;
+
+        while (pathIndex < path.Count && !hitTarget)
+        {
+            castVFX.transform.position = path[pathIndex];
+
+            if (pathIndex < path.Count - 1)
+            {
+                Vector3 nextPosition = path[pathIndex + 1];
+                Vector3 moveDirection = (nextPosition - castVFX.transform.position).normalized;
+                castVFX.transform.forward = moveDirection;
+            }
+
+            if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
+            {
+                SpellHitEffect(hit.point, -hit.normal);
+                hitTarget = true;
+            }
+
+            pathIndex++;
+            yield return new WaitForSeconds(1f / (projectileSpeed * path.Count));
+        }
+
+        if (!hitTarget)
+        {
+            SpellHitEffect(targetPosition, -direction);
         }
     }
+    finally
+    {
+        isProjectileInFlight = false;
+    }
+}
+
 
     private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
@@ -314,36 +322,73 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-    private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
+private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
+{
+    if (activeSpellVFX != null)
     {
-        if (activeSpellVFX != null)
-        {
-            // Update position and rotation
-            activeSpellVFX.transform.position = startPosition;
-            activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
+        activeSpellVFX.transform.position = startPosition;
+        activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
 
-            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
-            {
-                // You can add hit effects here if needed
-                // UpdateHitEffects(hit.point, hit.normal);
-            }
-        }
-
-        if (activeLineRenderer != null)
+        // Check for hit point and create hit effects
+        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
         {
-            LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
-            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
-            {
-                lineRenderer.SetPosition(0, startPosition);
-                lineRenderer.SetPosition(1, hit.point);
-            }
-            else
-            {
-                lineRenderer.SetPosition(0, startPosition);
-                lineRenderer.SetPosition(1, startPosition + direction * maxCastDistance);
-            }
+            // Create/update hit effect at the raycast hit point
+            HandleRayHitEffect(hit.point, -hit.normal);
         }
     }
+
+    if (activeLineRenderer != null)
+    {
+        LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+        {
+            lineRenderer.SetPosition(0, startPosition);
+            lineRenderer.SetPosition(1, hit.point);
+        }
+        else
+        {
+            lineRenderer.SetPosition(0, startPosition);
+            lineRenderer.SetPosition(1, startPosition + direction * maxCastDistance);
+        }
+    }
+}
+
+private GameObject currentHitEffect;
+private Vector3 lastHitPoint;
+private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit effect position
+
+private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
+{
+    // Only create/move hit effect if it's significantly different from last position
+    if (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold)
+    {
+        if (currentHitEffect != null)
+        {
+            // Optional: Fade out old effect
+            StartCoroutine(FadeOutHitEffect(currentHitEffect));
+        }
+
+        if (currentSpell.hitVFXPrefab != null)
+        {
+            currentHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
+            lastHitPoint = hitPoint;
+        }
+    }
+}
+
+private IEnumerator FadeOutHitEffect(GameObject hitEffect)
+{
+    // Optional: Add fade out logic for hit effects
+    ParticleSystem[] particles = hitEffect.GetComponentsInChildren<ParticleSystem>();
+    foreach (var ps in particles)
+    {
+        var emission = ps.emission;
+        emission.enabled = false;
+    }
+
+    yield return new WaitForSeconds(1f); // Adjust time as needed
+    Destroy(hitEffect);
+}
 
         private IEnumerator FadeOutSpell()
     {

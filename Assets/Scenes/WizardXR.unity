@@ -8054,6 +8054,7 @@ MonoBehaviour:
   projectileSpeed: 25
   curveResolution: 20
   curvatureAmount: 0.1
+  spellFadeOutDuration: 2
   releaseForceMultiplier: 7
   maxThrowVelocity: 10
 --- !u!114 &1690288870

@@ -17,7 +17,8 @@ MonoBehaviour:
   equipVFXPrefab: {fileID: 0}
   castVFXPrefab: {fileID: 1634767862067424, guid: 007c57e2df8e9b144b99f471b84f3d56,
     type: 3}
-  hitVFXPrefab: {fileID: 0}
+  hitVFXPrefab: {fileID: 2318299036020688331, guid: b8f35b2d5c4d27f43ad04883fb789ef1,
+    type: 3}
   lineRendererPrefab: {fileID: 0}
   castType: 1
   triggerType: 1

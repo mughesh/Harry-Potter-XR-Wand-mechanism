@@ -14,13 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spellName: Reducto
   description: Blast Off
-  equipVFXPrefab: {fileID: 0}
+  equipVFXPrefab: {fileID: 8468563348735811515, guid: 7effb3ef1c1b96a42b9921232958708b,
+    type: 3}
   castVFXPrefab: {fileID: 22547215689259939, guid: 2d51aa7daa36c854bbd342b883dcf470,
     type: 3}
-  hitVFXPrefab: {fileID: 5268460675038366902, guid: f5afcb7f49afad5419049090809f5cc7,
+  hitVFXPrefab: {fileID: 1337198075554910, guid: 25c7aa9ad705fe143a4d71c1c8deb7d4,
     type: 3}
   lineRendererPrefab: {fileID: 0}
   castType: 0
   triggerType: 0
   levitationBendStrength: 0.2
   levitationSmoothSpeed: 10
+  particleSpeedMultiplier: 1
+  maxParticleSpeedMultiplier: 2
+  fadeOutTime: 0.5

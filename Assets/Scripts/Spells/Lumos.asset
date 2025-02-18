@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spellName: Lumos
   description: light
-  equipVFXPrefab: {fileID: 0}
-  castVFXPrefab: {fileID: 8468563348735811515, guid: 7effb3ef1c1b96a42b9921232958708b,
+  equipVFXPrefab: {fileID: 8468563348735811515, guid: 7effb3ef1c1b96a42b9921232958708b,
+    type: 3}
+  castVFXPrefab: {fileID: 2610981899713546726, guid: 0f26daa388a415d44945c383a2dcd696,
     type: 3}
   hitVFXPrefab: {fileID: 0}
   lineRendererPrefab: {fileID: 0}
@@ -23,3 +24,6 @@ MonoBehaviour:
   triggerType: 1
   levitationBendStrength: 0.2
   levitationSmoothSpeed: 10
+  particleSpeedMultiplier: 1
+  maxParticleSpeedMultiplier: 2
+  fadeOutTime: 0.5
