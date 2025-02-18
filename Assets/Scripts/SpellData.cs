@@ -13,6 +13,12 @@ public class SpellData : ScriptableObject
     public SpellTriggerType triggerType;
     public float levitationBendStrength = 0.2f;
     public float levitationSmoothSpeed = 10f;
+
+    [Header("Flamethrower Settings")]
+    public float particleSpeedMultiplier = 1f;
+    public float maxParticleSpeedMultiplier = 2f;
+    public float fadeOutTime = 0.5f;    
+    
     
 }
 

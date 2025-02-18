@@ -27,6 +27,10 @@ public class SpellSystem : MonoBehaviour
     [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
     [SerializeField] private float curvatureAmount = 0.5f;
 
+    private ParticleSystem activeSpellParticles;
+    private bool isFadingOut = false;
+    [SerializeField] private float spellFadeOutDuration = 0.5f;
+
 
     // New fields for momentum calculation
     private Vector3[] previousWandPositions;
@@ -155,7 +159,7 @@ public class SpellSystem : MonoBehaviour
 
     private void CleanupActiveSpell()
     {
-        Debug.Log("Cleaning up active spell");
+        //Debug.Log("Cleaning up active spell");
         if (activeSpellVFX != null)
         {
             // Detach from parent before destroying
@@ -173,6 +177,8 @@ public class SpellSystem : MonoBehaviour
         // Reset levitation-specific state
         //levitatedObject = null;
         //levitatedRigidbody = null;
+        activeSpellParticles = null;
+        isFadingOut = false;
         isSpellActive = false;
     }
 
@@ -273,23 +279,36 @@ public class SpellSystem : MonoBehaviour
 
     private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
     {
-        // Create line renderer if it doesn't exist
-        if (activeLineRenderer == null && spell.lineRendererPrefab != null)
+        WandController wandController = FindObjectOfType<WandController>();
+        Transform wandTip = wandController?.wandTip;
+
+        if (wandTip == null)
         {
-            activeLineRenderer = Instantiate(spell.lineRendererPrefab, startPosition, Quaternion.identity);
+            Debug.LogError("Wand tip not found for ray spell!");
+            yield break;
         }
 
-        UpdateRaySpell(startPosition, direction);
+        // Create VFX at wand tip
+        if (activeSpellVFX == null && spell.castVFXPrefab != null)
+        {
+            activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.LookRotation(direction));
+            activeSpellParticles = activeSpellVFX.GetComponentInChildren<ParticleSystem>();
+            
+            // Don't parent to wandTip, we'll update position manually
+            // This gives us more control over the fade-out effect
+        }
 
         if (spell.triggerType == SpellTriggerType.Press)
         {
-            yield return new WaitForSeconds(0.5f); // Duration for press-type ray spells
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(FadeOutSpell());
         }
         else
         {
             // For hold-type, keep updating until spell is deactivated
-            while (isSpellActive)
+            while (isSpellActive && !isFadingOut)
             {
+                UpdateRaySpell(wandTip.position, wandTip.forward);
                 yield return null;
             }
         }
@@ -297,6 +316,19 @@ public class SpellSystem : MonoBehaviour
 
     private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
     {
+        if (activeSpellVFX != null)
+        {
+            // Update position and rotation
+            activeSpellVFX.transform.position = startPosition;
+            activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
+
+            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+            {
+                // You can add hit effects here if needed
+                // UpdateHitEffects(hit.point, hit.normal);
+            }
+        }
+
         if (activeLineRenderer != null)
         {
             LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
@@ -304,28 +336,66 @@ public class SpellSystem : MonoBehaviour
             {
                 lineRenderer.SetPosition(0, startPosition);
                 lineRenderer.SetPosition(1, hit.point);
-
-                if (activeSpellVFX != null)
-                {
-                    activeSpellVFX.transform.position = hit.point;
-                    activeSpellVFX.transform.rotation = Quaternion.LookRotation(-hit.normal);
-                }
             }
             else
             {
-                Vector3 endPoint = startPosition + direction * maxCastDistance;
                 lineRenderer.SetPosition(0, startPosition);
-                lineRenderer.SetPosition(1, endPoint);
-
-                if (activeSpellVFX != null)
-                {
-                    activeSpellVFX.transform.position = endPoint;
-                    activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
-                }
+                lineRenderer.SetPosition(1, startPosition + direction * maxCastDistance);
             }
         }
     }
 
+        private IEnumerator FadeOutSpell()
+    {
+        if (activeSpellParticles == null) yield break;
+
+        isFadingOut = true;
+        
+        // Get all particle systems in case there are children
+        ParticleSystem[] particleSystems = activeSpellVFX.GetComponentsInChildren<ParticleSystem>();
+        
+        // Stop emission but let existing particles fade out
+        foreach (var ps in particleSystems)
+        {
+            var emission = ps.emission;
+            emission.enabled = false;
+        }
+
+        // Wait for particles to die naturally
+        float startTime = Time.time;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < spellFadeOutDuration)
+        {
+            elapsedTime = Time.time - startTime;
+            
+            // Gradually reduce the particle system's start speed
+            foreach (var ps in particleSystems)
+            {
+                var main = ps.main;
+                float normalizedTime = 1 - (elapsedTime / spellFadeOutDuration);
+                main.startSpeedMultiplier = Mathf.Lerp(0f, 1f, normalizedTime);
+                
+                // Optionally fade color/alpha if your particle system uses it
+                var color = ps.colorOverLifetime;
+                if (color.enabled)
+                {
+                    // Adjust alpha multiplier if your system uses it
+                    Gradient gradient = new Gradient();
+                    gradient.SetKeys(
+                        color.color.gradient.colorKeys,
+                        new GradientAlphaKey[] { new GradientAlphaKey(normalizedTime, 0f), new GradientAlphaKey(normalizedTime, 1f) }
+                    );
+                    color.color = new ParticleSystem.MinMaxGradient(gradient);
+                }
+            }
+            
+            yield return null;
+        }
+
+        // Clean up after fade
+        CleanupActiveSpell();
+    }
 
     private IEnumerator CastAreaSpell(SpellData spell, Vector3 startPosition)
     {
@@ -389,10 +459,16 @@ public class SpellSystem : MonoBehaviour
 
     public void StopActiveSpell()
     {
+        if (isSpellActive && !isFadingOut)
+        {
+            StartCoroutine(FadeOutSpell());
+        }
         isSpellActive = false;
+
         CleanupActiveSpell();
         //ReleaseLevitatedObject(Vector3.zero);
     }
+
 
     // UTILITY SPELLS FUNCTIONS --------------
 

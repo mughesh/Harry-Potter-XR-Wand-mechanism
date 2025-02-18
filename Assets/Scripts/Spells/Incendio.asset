@@ -18,9 +18,11 @@ MonoBehaviour:
   castVFXPrefab: {fileID: 1634767862067424, guid: 007c57e2df8e9b144b99f471b84f3d56,
     type: 3}
   hitVFXPrefab: {fileID: 0}
-  lineRendererPrefab: {fileID: 6146024070296461439, guid: 24345345bae9a8e4aadd37af938e9dbc,
-    type: 3}
+  lineRendererPrefab: {fileID: 0}
   castType: 1
   triggerType: 1
   levitationBendStrength: 0.2
   levitationSmoothSpeed: 10
+  particleSpeedMultiplier: 1
+  maxParticleSpeedMultiplier: 2
+  fadeOutTime: 0.5
