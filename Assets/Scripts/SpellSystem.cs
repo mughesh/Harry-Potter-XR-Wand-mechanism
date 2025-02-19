@@ -19,21 +19,22 @@ public class SpellSystem : MonoBehaviour
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
     private LineRenderer levitationLineRenderer;
-    
+
     [Header("Projectile Path Controls")]
     [SerializeField] private float basePathHeight = 2f; // Base height of the curve
     [SerializeField][Range(0.1f, 1f)] private float distanceHeightRatio = 0.3f; // How much distance affects height
     [SerializeField][Range(0.1f, 1f)] private float minCurveHeight = 0.2f; // Minimum curve height for close targets
     [SerializeField] private float projectileSpeed = 10f; // Configurable projectile speed
-[SerializeField] private float pathRandomness = 0.5f; // Controls how random the path can be
-[SerializeField] private Vector2 sideOffsetRange = new Vector2(-2f, 2f); // Range for side-to-side movement
-[SerializeField] private bool useUpwardPath = false; // Toggle for upward/sideways paths
+    [SerializeField] private float pathRandomness = 0.5f; // Controls how random the path can be
+    [SerializeField] private Vector2 sideOffsetRange = new Vector2(-2f, 2f); // Range for side-to-side movement
+    [SerializeField] private bool useUpwardPath = false; // Toggle for upward/sideways paths
 
     [Header("Effect Controls")]
     [SerializeField] private float hitEffectDuration = 2f;
     private List<GameObject> activeHitEffects = new List<GameObject>();
     private GameObject currentEquipEffect;
     private Transform wandTip;
+    private List<(GameObject effect, float endTime)> persistentEffects = new List<(GameObject, float)>();
 
 
     [SerializeField] private int curveResolution = 20; // Controls how smooth the curve looks
@@ -65,7 +66,7 @@ public class SpellSystem : MonoBehaviour
         //SelectSpell(availableSpells[0]);
 
         previousWandPositions = new Vector3[positionCount];
-        
+
         // Cache wand tip reference
         WandController wandController = FindObjectOfType<WandController>();
         if (wandController != null)
@@ -103,7 +104,7 @@ public class SpellSystem : MonoBehaviour
             // Create new equip effect parented to wand tip
             currentEquipEffect = Instantiate(currentSpell.equipVFXPrefab, wandTip.position, wandTip.rotation);
             currentEquipEffect.transform.SetParent(wandTip, true);
-            
+
             // Reset local position/rotation if needed
             currentEquipEffect.transform.localPosition = Vector3.zero;
             currentEquipEffect.transform.localRotation = Quaternion.identity;
@@ -197,13 +198,10 @@ public class SpellSystem : MonoBehaviour
 
     private void CleanupActiveSpell()
     {
-        //Debug.Log("Cleaning up active spell");
         if (activeSpellVFX != null)
         {
-            // Detach from parent before destroying
-            activeSpellVFX.transform.SetParent(null);
-            Destroy(activeSpellVFX);
-            activeSpellVFX = null;
+            // Start fade out instead of immediate destruction
+            StartCoroutine(FadeOutSpell());
         }
 
         if (activeLineRenderer != null)
@@ -212,22 +210,37 @@ public class SpellSystem : MonoBehaviour
             activeLineRenderer = null;
         }
 
-        // Reset levitation-specific state
-        //levitatedObject = null;
-        //levitatedRigidbody = null;
+        // Don't immediately destroy hit effects, let them fade naturally
+        isSpellActive = false;
+    }
+
+    public void ForceCleanupAllEffects()
+    {
+        // Clean up all persistent effects immediately
+        foreach (var (effect, _) in persistentEffects)
+        {
+            if (effect != null)
+            {
+                Destroy(effect);
+            }
+        }
+        persistentEffects.Clear();
+
+        // Clean up active spell effects
+        if (activeSpellVFX != null)
+        {
+            Destroy(activeSpellVFX);
+            activeSpellVFX = null;
+        }
+        if (activeLineRenderer != null)
+        {
+            Destroy(activeLineRenderer);
+            activeLineRenderer = null;
+        }
+
         activeSpellParticles = null;
         isFadingOut = false;
         isSpellActive = false;
-                // Clean up all active hit effects
-        foreach (var hitEffect in activeHitEffects.ToList())
-        {
-            if (hitEffect != null)
-            {
-                Destroy(hitEffect);
-            }
-        }
-        activeHitEffects.Clear();
-        currentHitEffect = null;
     }
 
     private IEnumerator CastUtilitySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -244,88 +257,88 @@ public class SpellSystem : MonoBehaviour
         }
     }
 
-private Vector3 GenerateControlPoint(Vector3 start, Vector3 end, float distance)
-{
-    Vector3 midPoint = (start + end) / 2f;
-    Vector3 randomDirection;
-    
-    if (useUpwardPath)
+    private Vector3 GenerateControlPoint(Vector3 start, Vector3 end, float distance)
     {
-        // Traditional upward arc
-        randomDirection = Vector3.up;
-    }
-    else
-    {
-        // Calculate a random perpendicular direction for side-to-side movement
-        Vector3 forward = (end - start).normalized;
-        Vector3 right = Vector3.Cross(forward, Vector3.up).normalized;
-        float sideOffset = Random.Range(sideOffsetRange.x, sideOffsetRange.y);
-        randomDirection = right * sideOffset;
-    }
+        Vector3 midPoint = (start + end) / 2f;
+        Vector3 randomDirection;
 
-    // Add controlled randomness
-    Vector3 randomOffset = Random.insideUnitSphere * pathRandomness;
-    randomOffset.y = Mathf.Abs(randomOffset.y); // Keep some upward bias to prevent ground collision
-    
-    return midPoint + randomDirection * basePathHeight + randomOffset;
-}
-
- private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
-{
-    try
-    {
-        RaycastHit hit;
-        Vector3 targetPosition;
-        float targetDistance;
-
-        if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
+        if (useUpwardPath)
         {
-            targetPosition = hit.point;
-            targetDistance = hit.distance;
+            // Traditional upward arc
+            randomDirection = Vector3.up;
         }
         else
         {
-            targetPosition = startPosition + direction * maxCastDistance;
-            targetDistance = maxCastDistance;
+            // Calculate a random perpendicular direction for side-to-side movement
+            Vector3 forward = (end - start).normalized;
+            Vector3 right = Vector3.Cross(forward, Vector3.up).normalized;
+            float sideOffset = Random.Range(sideOffsetRange.x, sideOffsetRange.y);
+            randomDirection = right * sideOffset;
         }
 
-        Vector3 controlPoint = GenerateControlPoint(startPosition, targetPosition, targetDistance);
-        List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
+        // Add controlled randomness
+        Vector3 randomOffset = Random.insideUnitSphere * pathRandomness;
+        randomOffset.y = Mathf.Abs(randomOffset.y); // Keep some upward bias to prevent ground collision
 
-        int pathIndex = 0;
-        bool hitTarget = false;
-
-        while (pathIndex < path.Count && !hitTarget)
-        {
-            castVFX.transform.position = path[pathIndex];
-
-            if (pathIndex < path.Count - 1)
-            {
-                Vector3 nextPosition = path[pathIndex + 1];
-                Vector3 moveDirection = (nextPosition - castVFX.transform.position).normalized;
-                castVFX.transform.forward = moveDirection;
-            }
-
-            if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
-            {
-                SpellHitEffect(hit.point, -hit.normal);
-                hitTarget = true;
-            }
-
-            pathIndex++;
-            yield return new WaitForSeconds(1f / (projectileSpeed * path.Count));
-        }
-
-        if (!hitTarget)
-        {
-            SpellHitEffect(targetPosition, -direction);
-        }
+        return midPoint + randomDirection * basePathHeight + randomOffset;
     }
-    finally
+
+    private IEnumerator CastProjectileSpell(GameObject castVFX, Vector3 startPosition, Vector3 direction)
     {
-        isProjectileInFlight = false;
+        try
+        {
+            RaycastHit hit;
+            Vector3 targetPosition;
+            float targetDistance;
+
+            if (Physics.Raycast(startPosition, direction, out hit, maxCastDistance))
+            {
+                targetPosition = hit.point;
+                targetDistance = hit.distance;
+            }
+            else
+            {
+                targetPosition = startPosition + direction * maxCastDistance;
+                targetDistance = maxCastDistance;
+            }
+
+            Vector3 controlPoint = GenerateControlPoint(startPosition, targetPosition, targetDistance);
+            List<Vector3> path = GenerateCurvedPath(startPosition, targetPosition, controlPoint, 50);
+
+            int pathIndex = 0;
+            bool hitTarget = false;
+
+            while (pathIndex < path.Count && !hitTarget)
+            {
+                castVFX.transform.position = path[pathIndex];
+
+                if (pathIndex < path.Count - 1)
+                {
+                    Vector3 nextPosition = path[pathIndex + 1];
+                    Vector3 moveDirection = (nextPosition - castVFX.transform.position).normalized;
+                    castVFX.transform.forward = moveDirection;
+                }
+
+                if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
+                {
+                    SpellHitEffect(hit.point, -hit.normal);
+                    hitTarget = true;
+                }
+
+                pathIndex++;
+                yield return new WaitForSeconds(1f / (projectileSpeed * path.Count));
+            }
+
+            if (!hitTarget)
+            {
+                SpellHitEffect(targetPosition, -direction);
+            }
+        }
+        finally
+        {
+            isProjectileInFlight = false;
+        }
     }
-}
 
 
     private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
@@ -344,7 +357,7 @@ private Vector3 GenerateControlPoint(Vector3 start, Vector3 end, float distance)
         {
             activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.LookRotation(direction));
             activeSpellParticles = activeSpellVFX.GetComponentInChildren<ParticleSystem>();
-            
+
             // Don't parent to wandTip, we'll update position manually
             // This gives us more control over the fade-out effect
         }
@@ -365,70 +378,73 @@ private Vector3 GenerateControlPoint(Vector3 start, Vector3 end, float distance)
         }
     }
 
-private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
-{
-    if (activeSpellVFX != null)
+    private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
     {
-        activeSpellVFX.transform.position = startPosition;
-        activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
-
-        // Check for hit point and create hit effects
-        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+        if (activeSpellVFX != null)
         {
-            // Create/update hit effect at the raycast hit point
-            HandleRayHitEffect(hit.point, -hit.normal);
+            activeSpellVFX.transform.position = startPosition;
+            activeSpellVFX.transform.rotation = Quaternion.LookRotation(direction);
+
+            // Check for hit point and create hit effects
+            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+            {
+                // Create/update hit effect at the raycast hit point
+                HandleRayHitEffect(hit.point, -hit.normal);
+            }
+        }
+
+        if (activeLineRenderer != null)
+        {
+            LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
+            if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
+            {
+                lineRenderer.SetPosition(0, startPosition);
+                lineRenderer.SetPosition(1, hit.point);
+            }
+            else
+            {
+                lineRenderer.SetPosition(0, startPosition);
+                lineRenderer.SetPosition(1, startPosition + direction * maxCastDistance);
+            }
         }
     }
 
-    if (activeLineRenderer != null)
-    {
-        LineRenderer lineRenderer = activeLineRenderer.GetComponent<LineRenderer>();
-        if (Physics.Raycast(startPosition, direction, out RaycastHit hit, maxCastDistance))
-        {
-            lineRenderer.SetPosition(0, startPosition);
-            lineRenderer.SetPosition(1, hit.point);
-        }
-        else
-        {
-            lineRenderer.SetPosition(0, startPosition);
-            lineRenderer.SetPosition(1, startPosition + direction * maxCastDistance);
-        }
-    }
-}
-
-private GameObject currentHitEffect;
-private Vector3 lastHitPoint;
-private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit effect position
+    private GameObject currentHitEffect;
+    private Vector3 lastHitPoint;
+    private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit effect position
 
     private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
     {
-        if (currentSpell.hitVFXPrefab != null && 
+        if (currentSpell.hitVFXPrefab != null &&
             (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold))
         {
             GameObject newHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
-            activeHitEffects.Add(newHitEffect);
+            float endTime = Time.time + hitEffectDuration;
+            persistentEffects.Add((newHitEffect, endTime));
             lastHitPoint = hitPoint;
 
             // Start coroutine to remove this specific hit effect
-            StartCoroutine(RemoveHitEffect(newHitEffect));
+            StartCoroutine(RemoveHitEffectAfterDuration(newHitEffect, hitEffectDuration));
         }
     }
 
-    private IEnumerator RemoveHitEffect(GameObject hitEffect)
+    private IEnumerator RemoveHitEffectAfterDuration(GameObject hitEffect, float duration)
     {
-        yield return new WaitForSeconds(hitEffectDuration);
+        yield return new WaitForSeconds(duration);
 
         if (hitEffect != null)
         {
-            // Fade out the effect
+            // Get all particle systems
             ParticleSystem[] particles = hitEffect.GetComponentsInChildren<ParticleSystem>();
+
+            // Stop emission but let existing particles fade
             foreach (var ps in particles)
             {
                 var emission = ps.emission;
                 emission.enabled = false;
             }
 
-            // Wait for particles to finish
+            // Find the longest particle lifetime
             float maxLifetime = 0f;
             foreach (var ps in particles)
             {
@@ -436,79 +452,89 @@ private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit
                     maxLifetime = ps.main.startLifetime.constant;
             }
 
+            // Wait for particles to finish
             yield return new WaitForSeconds(maxLifetime);
 
-            // Remove from active effects list and destroy
-            activeHitEffects.Remove(hitEffect);
+            // Remove from persistent effects and destroy
+            persistentEffects.RemoveAll(x => x.effect == hitEffect);
             Destroy(hitEffect);
         }
     }
 
-private IEnumerator FadeOutHitEffect(GameObject hitEffect)
-{
-    // Optional: Add fade out logic for hit effects
-    ParticleSystem[] particles = hitEffect.GetComponentsInChildren<ParticleSystem>();
-    foreach (var ps in particles)
+
+    private IEnumerator FadeOutHitEffect(GameObject hitEffect)
     {
-        var emission = ps.emission;
-        emission.enabled = false;
-    }
-
-    yield return new WaitForSeconds(1f); // Adjust time as needed
-    Destroy(hitEffect);
-}
-
-        private IEnumerator FadeOutSpell()
-    {
-        if (activeSpellParticles == null) yield break;
-
-        isFadingOut = true;
-        
-        // Get all particle systems in case there are children
-        ParticleSystem[] particleSystems = activeSpellVFX.GetComponentsInChildren<ParticleSystem>();
-        
-        // Stop emission but let existing particles fade out
-        foreach (var ps in particleSystems)
+        // Optional: Add fade out logic for hit effects
+        ParticleSystem[] particles = hitEffect.GetComponentsInChildren<ParticleSystem>();
+        foreach (var ps in particles)
         {
             var emission = ps.emission;
             emission.enabled = false;
         }
 
-        // Wait for particles to die naturally
-        float startTime = Time.time;
-        float elapsedTime = 0f;
-
-        while (elapsedTime < spellFadeOutDuration)
-        {
-            elapsedTime = Time.time - startTime;
-            
-            // Gradually reduce the particle system's start speed
-            foreach (var ps in particleSystems)
-            {
-                var main = ps.main;
-                float normalizedTime = 1 - (elapsedTime / spellFadeOutDuration);
-                main.startSpeedMultiplier = Mathf.Lerp(0f, 1f, normalizedTime);
-                
-                // Optionally fade color/alpha if your particle system uses it
-                var color = ps.colorOverLifetime;
-                if (color.enabled)
-                {
-                    // Adjust alpha multiplier if your system uses it
-                    Gradient gradient = new Gradient();
-                    gradient.SetKeys(
-                        color.color.gradient.colorKeys,
-                        new GradientAlphaKey[] { new GradientAlphaKey(normalizedTime, 0f), new GradientAlphaKey(normalizedTime, 1f) }
-                    );
-                    color.color = new ParticleSystem.MinMaxGradient(gradient);
-                }
-            }
-            
-            yield return null;
-        }
-
-        // Clean up after fade
-        CleanupActiveSpell();
+        yield return new WaitForSeconds(1f); // Adjust time as needed
+        Destroy(hitEffect);
     }
+
+private IEnumerator FadeOutSpell()
+{
+    if (activeSpellVFX == null) yield break;
+
+    isFadingOut = true;
+    float fadeOutTime = 0.5f; // Shorter fade-out time
+    
+    // Get all particle systems in the effect
+    ParticleSystem[] particleSystems = activeSpellVFX.GetComponentsInChildren<ParticleSystem>();
+    
+    // Store original rates and lifetimes
+    Dictionary<ParticleSystem, float> originalEmissionRates = new Dictionary<ParticleSystem, float>();
+    Dictionary<ParticleSystem, ParticleSystem.MinMaxCurve> originalLifetimes = new Dictionary<ParticleSystem, ParticleSystem.MinMaxCurve>();
+    
+    foreach (var ps in particleSystems)
+    {
+        // Store original values
+        var emission = ps.emission;
+        originalEmissionRates[ps] = emission.rateOverTime.constant;
+        originalLifetimes[ps] = ps.main.startLifetime;
+        
+        // Stop new particle emission
+        emission.enabled = false;
+    }
+
+    float elapsedTime = 0f;
+    while (elapsedTime < fadeOutTime)
+    {
+        elapsedTime += Time.deltaTime;
+        float t = elapsedTime / fadeOutTime;
+
+        foreach (var ps in particleSystems)
+        {
+            // Gradually reduce particle lifetime
+            var main = ps.main;
+            float originalLifetime = originalLifetimes[ps].constant;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(
+                Mathf.Lerp(originalLifetime, 0.1f, t)
+            );
+
+            // Optionally reduce speed
+            main.startSpeedMultiplier = Mathf.Lerp(1f, 0.2f, t);
+        }
+        
+        yield return null;
+    }
+
+    // Final cleanup
+    yield return new WaitForSeconds(0.1f); // Short wait for last particles
+    
+    if (activeSpellVFX != null)
+    {
+        Destroy(activeSpellVFX);
+        activeSpellVFX = null;
+    }
+    
+    activeSpellParticles = null;
+    isFadingOut = false;
+}
 
     private IEnumerator CastAreaSpell(SpellData spell, Vector3 startPosition)
     {
@@ -574,11 +600,15 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
     {
         if (isSpellActive && !isFadingOut)
         {
-            StartCoroutine(FadeOutSpell());
+            if (activeSpellVFX != null)
+            {
+                // For flame thrower effect
+                StartCoroutine(FadeOutSpell());
+            }
         }
         isSpellActive = false;
 
-        CleanupActiveSpell();
+        //CleanupActiveSpell();
         //ReleaseLevitatedObject(Vector3.zero);
     }
 
@@ -684,7 +714,7 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
 
             // Calculate the midpoint between start and target
             Vector3 midPoint = Vector3.Lerp(startPosition, targetPosition, 0.5f);
-            
+
             // Add downward displacement - Note the negative value for downward curve
             float downwardDisplacement = initialDistance * curvatureAmount;
             midPoint += Vector3.up * Mathf.Abs(downwardDisplacement); // Ensure downward direction
@@ -695,21 +725,21 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
             {
                 float t = i / (float)(curveResolution - 1);
                 Vector3 point = CalculateQuadraticBezierPoint(startPosition, midPoint, targetPosition, t);
-                
+
                 // Add subtle variation to middle points only
                 if (i > 0 && i < curveResolution - 1)
                 {
                     float noiseOffset = Mathf.PerlinNoise(t * 2f + Time.time * 0.5f, 0f) * 0.02f;
                     point += Vector3.right * noiseOffset;
                 }
-                
+
                 lineRenderer.SetPosition(i, point);
             }
 
             // Smooth object movement
             levitatedObject.transform.position = Vector3.Lerp(
-                levitatedObject.transform.position, 
-                startPosition + direction * initialDistance, 
+                levitatedObject.transform.position,
+                startPosition + direction * initialDistance,
                 Time.deltaTime * 10f
             );
         }
@@ -723,8 +753,8 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
             oneMinusT * oneMinusT * start +
             2f * oneMinusT * t * control +
             t * t * end;
-    }   
-    
+    }
+
     private Vector3 CalculateReleaseVelocity()
     {
         Vector3 velocitySum = Vector3.zero;
@@ -735,7 +765,7 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
         {
             int currentIndex = (currentPositionIndex - i + positionCount) % positionCount;
             int previousIndex = (currentPositionIndex - i - 1 + positionCount) % positionCount;
-            
+
             Vector3 frameDelta = previousWandPositions[currentIndex] - previousWandPositions[previousIndex];
             if (frameDelta.magnitude < 1f) // Ignore large jumps that might be errors
             {
@@ -759,13 +789,13 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
 
     private void ReleaseLevitatedObject(Vector3 releaseVelocity)
     {
-       
+
         if (levitatedRigidbody != null)
         {
-             Debug.Log("Releasing levitated object");
+            Debug.Log("Releasing levitated object");
             levitatedRigidbody.useGravity = true;
             levitatedRigidbody.isKinematic = false;
-            
+
             // Apply the release velocity
             levitatedRigidbody.velocity = releaseVelocity;
 
@@ -778,7 +808,7 @@ private IEnumerator FadeOutHitEffect(GameObject hitEffect)
     }
 
 
-        private void OnDisable()
+    private void OnDisable()
     {
         // Clean up everything when the component is disabled
         CleanupActiveSpell();
