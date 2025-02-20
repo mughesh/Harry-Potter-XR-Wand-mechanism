@@ -24,3 +24,6 @@ MonoBehaviour:
   triggerType: 1
   levitationBendStrength: 0.2
   levitationSmoothSpeed: 10
+  particleSpeedMultiplier: 1
+  maxParticleSpeedMultiplier: 2
+  fadeOutTime: 0

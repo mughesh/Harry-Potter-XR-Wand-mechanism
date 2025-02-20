@@ -156,6 +156,8 @@ public class WandController : MonoBehaviour
     public void OnRelease(SelectExitEventArgs args)
     {
         isGrabbed = false;
+        //spellSystem.ResetSpell();
+        spellSystem.CleanupActiveSpell();
         ReturnToHip();
     }
 

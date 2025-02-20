@@ -17,7 +17,7 @@ public class SpellData : ScriptableObject
     [Header("Flamethrower Settings")]
     public float particleSpeedMultiplier = 1f;
     public float maxParticleSpeedMultiplier = 2f;
-    public float fadeOutTime = 0.5f;    
+    public float fadeOutTime = 0.01f;    
     
     
 }

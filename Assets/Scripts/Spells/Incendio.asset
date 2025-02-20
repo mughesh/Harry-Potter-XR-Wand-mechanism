@@ -26,4 +26,4 @@ MonoBehaviour:
   levitationSmoothSpeed: 10
   particleSpeedMultiplier: 1
   maxParticleSpeedMultiplier: 2
-  fadeOutTime: 0.5
+  fadeOutTime: 2.5

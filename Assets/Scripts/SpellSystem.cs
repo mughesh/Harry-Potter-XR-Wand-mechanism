@@ -18,7 +18,6 @@ public class SpellSystem : MonoBehaviour
     public bool IsSpellActive => isSpellActive;
     private GameObject levitatedObject;
     private Rigidbody levitatedRigidbody;
-    private LineRenderer levitationLineRenderer;
 
     [Header("Projectile Path Controls")]
     [SerializeField] private float basePathHeight = 2f; // Base height of the curve
@@ -31,7 +30,7 @@ public class SpellSystem : MonoBehaviour
 
     [Header("Effect Controls")]
     [SerializeField] private float hitEffectDuration = 2f;
-    private List<GameObject> activeHitEffects = new List<GameObject>();
+
     private GameObject currentEquipEffect;
     private Transform wandTip;
     private List<(GameObject effect, float endTime)> persistentEffects = new List<(GameObject, float)>();
@@ -42,7 +41,6 @@ public class SpellSystem : MonoBehaviour
 
     private ParticleSystem activeSpellParticles;
     private bool isFadingOut = false;
-    [SerializeField] private float spellFadeOutDuration = 0.5f;
 
 
     // New fields for momentum calculation
@@ -106,7 +104,7 @@ public class SpellSystem : MonoBehaviour
             currentEquipEffect.transform.SetParent(wandTip, true);
 
             // Reset local position/rotation if needed
-            currentEquipEffect.transform.localPosition = Vector3.zero;
+            currentEquipEffect.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
             currentEquipEffect.transform.localRotation = Quaternion.identity;
         }
     }
@@ -124,79 +122,104 @@ public class SpellSystem : MonoBehaviour
         Debug.Log("Spell reset");
     }
 
-    public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+public void CastSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    // For press-type spells, prevent multiple casts while projectile is in flight
+    if (spell.triggerType == SpellTriggerType.Press)
     {
-        // For press-type spells, prevent multiple casts while projectile is in flight
-        if (spell.triggerType == SpellTriggerType.Press)
-        {
-            if (isProjectileInFlight) return;
-            isProjectileInFlight = true;
-        }
-
-        // If it's a hold-type spell and we already have an active instance, just update it
-        if (spell.triggerType == SpellTriggerType.Hold && isSpellActive)
-        {
-            UpdateActiveSpell(spell, startPosition, direction);
-            return;
-        }
-
-        StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+        if (isProjectileInFlight) return;
+        isProjectileInFlight = true;
     }
 
-    private void UpdateActiveSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+    // Special handling for Lumos to prevent multiple instantiations
+    if (spell.spellName == "Lumos" && activeSpellVFX != null)
     {
+        // Just update the existing effect if needed
+        UpdateActiveSpell(spell, startPosition, direction);
+        return;
+    }
+
+    // If it's a hold-type spell and we already have an active instance, just update it
+    if (spell.triggerType == SpellTriggerType.Hold && isSpellActive)
+    {
+        UpdateActiveSpell(spell, startPosition, direction);
+        return;
+    }
+
+    StartCoroutine(CastSpellCoroutine(spell, startPosition, direction));
+}
+
+private void UpdateActiveSpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    switch (spell.castType)
+    {
+        case SpellCastType.Ray:
+            UpdateRaySpell(startPosition, direction);
+            break;
+        case SpellCastType.Utility:
+            if (spell.spellName != "Lumos") // Skip update for Lumos
+            {
+                CastUtilitySpell(spell, startPosition, direction);
+            }
+            break;
+    }
+}
+
+private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    if (spell.castVFXPrefab != null)
+    {
+        // Don't recreate Lumos effect if it exists
+        if (spell.spellName == "Lumos" && activeSpellVFX != null)
+        {
+            yield break;
+        }
+
+        // Clean up any existing spell VFX except for Lumos
+        if (spell.spellName != "Lumos")
+        {
+            CleanupActiveSpell();
+        }
+
+        // Only create new VFX if needed
+        if (activeSpellVFX == null)
+        {
+            activeSpellVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
+            Debug.Log($"Creating new effect for spell: {spell.spellName}");
+        }
+        
+        isSpellActive = true;
+
         switch (spell.castType)
         {
+            case SpellCastType.Projectile:
+                yield return StartCoroutine(CastProjectileSpell(activeSpellVFX, startPosition, direction));
+                break;
             case SpellCastType.Ray:
-                UpdateRaySpell(startPosition, direction);
+                yield return StartCoroutine(CastRaySpell(spell, startPosition, direction));
+                break;
+            case SpellCastType.Area:
+                yield return StartCoroutine(CastAreaSpell(spell, startPosition));
                 break;
             case SpellCastType.Utility:
-                CastUtilitySpell(spell, startPosition, direction);
+                yield return StartCoroutine(CastUtilitySpell(spell, startPosition, direction));
                 break;
-                // Add other cases as needed
+        }
+
+        // Only cleanup if it's not Lumos (Lumos handles its own cleanup)
+        if (spell.spellName != "Lumos")
+        {
+            CleanupActiveSpell();
         }
     }
-
-    private IEnumerator CastSpellCoroutine(SpellData spell, Vector3 startPosition, Vector3 direction)
+    else
     {
-        if (spell.castVFXPrefab != null)
-        {
-            // Clean up any existing spell VFX
-            CleanupActiveSpell();
-
-            // Create new spell instance
-            activeSpellVFX = Instantiate(spell.castVFXPrefab, startPosition, Quaternion.LookRotation(direction));
-            Debug.Log("instantiating cast vfx");
-            isSpellActive = true;
-
-            switch (spell.castType)
-            {
-                case SpellCastType.Projectile:
-                    yield return StartCoroutine(CastProjectileSpell(activeSpellVFX, startPosition, direction));
-                    break;
-                case SpellCastType.Ray:
-                    yield return StartCoroutine(CastRaySpell(spell, startPosition, direction));
-                    break;
-                case SpellCastType.Area:
-                    yield return StartCoroutine(CastAreaSpell(spell, startPosition));
-                    break;
-                case SpellCastType.Utility:
-                    yield return StartCoroutine(CastUtilitySpell(spell, startPosition, direction));
-                    break;
-            }
-
-            // Cleanup after spell is complete
-            CleanupActiveSpell();
-        }
-
-        else
-        {
-            Debug.LogWarning("No cast VFX prefab assigned for the spell.");
-        }
+        Debug.LogWarning("No cast VFX prefab assigned for the spell.");
     }
+}
 
 
-    private void CleanupActiveSpell()
+    public void CleanupActiveSpell()
     {
         if (activeSpellVFX != null)
         {
@@ -481,7 +504,7 @@ private IEnumerator FadeOutSpell()
     if (activeSpellVFX == null) yield break;
 
     isFadingOut = true;
-    float fadeOutTime = 0.5f; // Shorter fade-out time
+    float fadeOutTime = currentSpell.fadeOutTime; // Shorter fade-out time
     
     // Get all particle systems in the effect
     ParticleSystem[] particleSystems = activeSpellVFX.GetComponentsInChildren<ParticleSystem>();
@@ -596,29 +619,33 @@ private IEnumerator FadeOutSpell()
         return null;
     }
 
-    public void StopActiveSpell()
+public void StopActiveSpell()
+{
+    if (isSpellActive && !isFadingOut)
     {
-        if (isSpellActive && !isFadingOut)
+        // Special handling for Lumos
+        if (currentSpell != null && currentSpell.spellName == "Lumos")
         {
-            if (activeSpellVFX != null)
-            {
-                // For flame thrower effect
-                StartCoroutine(FadeOutSpell());
-            }
+            StartCoroutine(FadeOutSpell());
         }
-        isSpellActive = false;
-
-        //CleanupActiveSpell();
-        //ReleaseLevitatedObject(Vector3.zero);
+        else
+        {
+            StartCoroutine(FadeOutSpell());
+        }
     }
+    isSpellActive = false;
+}
 
 
     // UTILITY SPELLS FUNCTIONS --------------
 
     // LUMOS
-    private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    // Only create VFX if it doesn't exist
+    if (activeSpellVFX == null)
     {
-        // Get or add a parent transform to keep the light attached to the wand
+        Debug.Log("Creating new Lumos effect");
         Transform wandTip = GameObject.FindObjectOfType<WandController>().wandTip;
         if (wandTip == null)
         {
@@ -626,26 +653,34 @@ private IEnumerator FadeOutSpell()
             yield break;
         }
 
-        // Parent the VFX to the wand tip
-        if (activeSpellVFX != null)
+        // Create and setup the VFX
+        if (spell.castVFXPrefab != null)
         {
+            activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.identity);
+            Debug.Log("Lumos effect created");
             activeSpellVFX.transform.SetParent(wandTip, false);
             activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
             activeSpellVFX.transform.localRotation = Quaternion.identity;
-
-            // Light lumosLight = activeSpellVFX.GetComponentInChildren<Light>();
-            // if (lumosLight != null)
-            // {
-            //     while (isSpellActive)
-            //     {
-            //         // Just animate the light intensity since position is handled by parenting
-            //         float intensity = Mathf.Lerp(1f, 5f, Mathf.Sin(Time.time * 2f));
-            //         lumosLight.intensity = intensity;
-            //         yield return null;
-            //     }
-            // }
         }
     }
+
+    // Keep the effect active while the spell is active
+    while (isSpellActive)
+    {
+        
+        activeSpellVFX.transform.SetParent(wandTip, false);
+        activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
+        activeSpellVFX.transform.localRotation = Quaternion.identity;
+        yield return null;
+    }
+
+    // When spell ends, start fade out
+    if (activeSpellVFX != null)
+    {
+        StartCoroutine(FadeOutSpell());
+    }
+}
+
 
 
     private IEnumerator CastWingardiumLeviosa(SpellData spell, Vector3 startPosition, Vector3 direction)
