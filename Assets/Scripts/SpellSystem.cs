@@ -104,7 +104,7 @@ public class SpellSystem : MonoBehaviour
             currentEquipEffect.transform.SetParent(wandTip, true);
 
             // Reset local position/rotation if needed
-            currentEquipEffect.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
+            currentEquipEffect.transform.localPosition = Vector3.zero + Vector3.forward * 0f;
             currentEquipEffect.transform.localRotation = Quaternion.identity;
         }
     }
@@ -659,7 +659,7 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
             activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.identity);
             Debug.Log("Lumos effect created");
             activeSpellVFX.transform.SetParent(wandTip, false);
-            activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
+            activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.0f;
             activeSpellVFX.transform.localRotation = Quaternion.identity;
         }
     }
@@ -669,7 +669,7 @@ private IEnumerator CastLumos(SpellData spell, Vector3 startPosition, Vector3 di
     {
         
         activeSpellVFX.transform.SetParent(wandTip, false);
-        activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.05f;
+        activeSpellVFX.transform.localPosition = Vector3.zero + Vector3.forward * 0.0f;
         activeSpellVFX.transform.localRotation = Quaternion.identity;
         yield return null;
     }

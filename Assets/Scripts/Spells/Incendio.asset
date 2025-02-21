@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spellName: Incendio
   description: Fiery Flames
-  equipVFXPrefab: {fileID: 0}
+  equipVFXPrefab: {fileID: 8400461689057889504, guid: 594262cc284e5b14c8de06dd3eb94447,
+    type: 3}
   castVFXPrefab: {fileID: 1634767862067424, guid: 007c57e2df8e9b144b99f471b84f3d56,
     type: 3}
   hitVFXPrefab: {fileID: 2318299036020688331, guid: b8f35b2d5c4d27f43ad04883fb789ef1,
@@ -26,4 +27,4 @@ MonoBehaviour:
   levitationSmoothSpeed: 10
   particleSpeedMultiplier: 1
   maxParticleSpeedMultiplier: 2
-  fadeOutTime: 2.5
+  fadeOutTime: 1

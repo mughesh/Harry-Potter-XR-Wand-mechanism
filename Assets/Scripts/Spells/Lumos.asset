@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spellName: Lumos
   description: light
-  equipVFXPrefab: {fileID: 8468563348735811515, guid: 7effb3ef1c1b96a42b9921232958708b,
+  equipVFXPrefab: {fileID: 8400461689057889504, guid: 5d1e72ded15ad334985f1927676b300b,
     type: 3}
   castVFXPrefab: {fileID: 2610981899713546726, guid: 0f26daa388a415d44945c383a2dcd696,
     type: 3}
