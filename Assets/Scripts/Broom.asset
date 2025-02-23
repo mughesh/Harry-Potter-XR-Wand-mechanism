@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4bad67efecb5513408676dfadfa8a2f9, type: 3}
-  m_Name: Artifact
+  m_Name: Broom
   m_EditorClassIdentifier: 
-  itemName: Artifact
-  description: Test artifact
-  worldPrefab: {fileID: 5456881618169781782, guid: 90cb68682af3b9e498966f93e36a233f,
+  itemName: Flying Broom
+  description: Flying broom stick
+  worldPrefab: {fileID: 937100886458406775, guid: 468a5f4956f5a0443b6408af6ba6e838,
     type: 3}
