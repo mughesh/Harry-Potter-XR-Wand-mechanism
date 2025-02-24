@@ -261,10 +261,12 @@ public class WandController : MonoBehaviour
             return;
         }
 
-        InventoryItem inventoryItem = hit.collider.GetComponent<InventoryItem>();
-        //Debug.Log("raycast hit : " + hit.collider.name);
+        InventoryItem inventoryItem = hit.collider.GetComponentInParent<InventoryItem>();
+        Debug.Log("raycast hit : " + hit.collider.name);
+        Debug.Log("inventory item : " + inventoryItem);
         if (inventoryItem != null)
         {
+            Debug.Log("Inventory item found: " + inventoryItem.name);
             if (inventoryItem.IsInSlot)
             {
                 Debug.Log("wand controller - retrieval: " + inventoryItem.name);
@@ -272,11 +274,11 @@ public class WandController : MonoBehaviour
                 inventorySystem.RetrieveItemViaWand(inventoryItem, transform);
 
             }
-            else
+            else if (!inventoryItem.IsInSlot)
             {
                 inventorySystem.AddItemViaWand(inventoryItem);
                 //inventoryItem.SetInventoryState(true, transform);       // --------
-                //Debug.Log("Inventory item added: " + inventoryItem.name);
+                Debug.Log("Inventory item added: " + inventoryItem.name);
             }
         }
     }

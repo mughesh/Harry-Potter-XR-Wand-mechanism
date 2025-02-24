@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8713853261589814345}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: attachTransform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24,13 +24,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684098684744792635}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.8870109, z: -0.46174863, w: 0}
-  m_LocalPosition: {x: -0.017, y: -0.004, z: 0.386}
+  m_LocalRotation: {x: 0.4717835, y: 0.77839375, z: -0.34753877, w: -0.22525601}
+  m_LocalPosition: {x: -0.098, y: 0.004, z: 0.328}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 910242337191007770}
-  m_LocalEulerAnglesHint: {x: 55, y: 180, z: 0}
+  m_LocalEulerAnglesHint: {x: 19.178, y: 225.929, z: 70.629}
 --- !u!1 &2995377802732045245
 GameObject:
   m_ObjectHideFlags: 0
@@ -42,7 +42,8 @@ GameObject:
   - component: {fileID: 910242337191007770}
   - component: {fileID: 1963166527330950079}
   - component: {fileID: 3060450317333814858}
-  m_Layer: 0
+  - component: {fileID: 486505066751120845}
+  m_Layer: 7
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -245,6 +246,21 @@ MonoBehaviour:
   m_StartingSingleGrabTransformers: []
   m_StartingMultipleGrabTransformers: []
   m_AddDefaultGrabTransformers: 1
+--- !u!114 &486505066751120845
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2995377802732045245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0827e3212a515542a3adc06618ad03c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemData: {fileID: 11400000, guid: 9863b799d9ea73841a602ec79fd547d2, type: 2}
+  scaleAnimationDuration: 0.3
+  inventoryScalePercentage: 10
 --- !u!1 &3365461095165870338
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,7 +273,7 @@ GameObject:
   - component: {fileID: 1364448676059936729}
   - component: {fileID: 308320651898227326}
   - component: {fileID: 4377305075351618743}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -272,13 +288,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3365461095165870338}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalRotation: {x: -0.000000029802322, y: -0.13917303, z: -0.000000044703484,
+    w: 0.9902681}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 910242337191007770}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1364448676059936729
 MeshFilter:
   m_ObjectHideFlags: 0
