@@ -13357,9 +13357,9 @@ MonoBehaviour:
   flyToggleAction: {fileID: 9100360696920853951, guid: c348712bda248c246b8c49b3db54643f,
     type: 3}
   normalMoveSpeed: 2.5
-  flyingMoveSpeed: 5
+  flyingMoveSpeed: 4
   minFlyingAngle: 30
-  wobblingAmount: 0.15
+  wobblingAmount: 0.007
   wobblingSpeed: 2
 --- !u!4 &8966115748729153511
 Transform:
