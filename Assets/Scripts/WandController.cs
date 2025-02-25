@@ -262,8 +262,10 @@ public class WandController : MonoBehaviour
         }
 
         InventoryItem inventoryItem = hit.collider.GetComponentInParent<InventoryItem>();
+        InventoryItem rootObject = inventoryItem.GetComponentInParent<InventoryItem>();
         Debug.Log("raycast hit : " + hit.collider.name);
         Debug.Log("inventory item : " + inventoryItem);
+        Debug.Log("root object : " + rootObject);
         if (inventoryItem != null)
         {
             Debug.Log("Inventory item found: " + inventoryItem.name);

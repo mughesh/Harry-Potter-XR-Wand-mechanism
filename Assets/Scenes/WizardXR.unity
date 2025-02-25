@@ -3870,7 +3870,7 @@ MonoBehaviour:
   m_EnableStrafe: 1
   m_EnableFly: 0
   m_UseGravity: 1
-  m_GravityApplicationMode: 0
+  m_GravityApplicationMode: 1
   m_ForwardSource: {fileID: 0}
   m_LeftHandMoveAction:
     m_UseReference: 1
@@ -5743,8 +5743,6 @@ GameObject:
   - component: {fileID: 1044161796}
   - component: {fileID: 1044161800}
   - component: {fileID: 1044161799}
-  - component: {fileID: 1044161798}
-  - component: {fileID: 1044161797}
   m_Layer: 8
   m_Name: ArrowRight (1)
   m_TagString: Untagged
@@ -5767,141 +5765,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1435386939}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!65 &1044161797
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1044161795}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10.000001, y: 1.02, z: 10.000001}
-  m_Center: {x: 0.0000019073486, y: 0.38, z: 0}
---- !u!114 &1044161798
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1044161795}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a35f6cfbfba9b548aaa00d52cfe8a50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_InteractionManager: {fileID: 0}
-  m_Colliders: []
-  m_InteractionLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_InteractionLayers:
-    m_Bits: 1
-  m_DistanceCalculationMode: 1
-  m_SelectMode: 0
-  m_FocusMode: 1
-  m_CustomReticle: {fileID: 0}
-  m_AllowGazeInteraction: 0
-  m_AllowGazeSelect: 0
-  m_OverrideGazeTimeToSelect: 0
-  m_GazeTimeToSelect: 0.5
-  m_OverrideTimeToAutoDeselectGaze: 0
-  m_TimeToAutoDeselectGaze: 3
-  m_AllowGazeAssistance: 0
-  m_FirstHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_HoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_HoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FirstSelectEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastSelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_SelectEntered:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 80541659}
-        m_TargetAssemblyTypeName: BookController, Assembly-CSharp
-        m_MethodName: OnArrowSelected
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 1
-        m_CallState: 2
-  m_SelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FirstFocusEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastFocusExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FocusEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FocusExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Activated:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Deactivated:
-    m_PersistentCalls:
-      m_Calls: []
-  m_StartingHoverFilters: []
-  m_StartingSelectFilters: []
-  m_StartingInteractionStrengthFilters: []
-  m_OnFirstHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnLastHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectCanceled:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnActivate:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnDeactivate:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!23 &1044161799
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8023,8 +7886,6 @@ GameObject:
   - component: {fileID: 1423529249}
   - component: {fileID: 1423529253}
   - component: {fileID: 1423529252}
-  - component: {fileID: 1423529251}
-  - component: {fileID: 1423529250}
   m_Layer: 8
   m_Name: ArrowLeft (1)
   m_TagString: Untagged
@@ -8047,141 +7908,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1652807977}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &1423529250
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1423529248}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 10.000001, y: 1.02, z: 10.000001}
-  m_Center: {x: 0, y: 0.38, z: 0}
---- !u!114 &1423529251
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1423529248}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a35f6cfbfba9b548aaa00d52cfe8a50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_InteractionManager: {fileID: 0}
-  m_Colliders: []
-  m_InteractionLayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_InteractionLayers:
-    m_Bits: 1
-  m_DistanceCalculationMode: 1
-  m_SelectMode: 0
-  m_FocusMode: 1
-  m_CustomReticle: {fileID: 0}
-  m_AllowGazeInteraction: 0
-  m_AllowGazeSelect: 0
-  m_OverrideGazeTimeToSelect: 0
-  m_GazeTimeToSelect: 0.5
-  m_OverrideTimeToAutoDeselectGaze: 0
-  m_TimeToAutoDeselectGaze: 3
-  m_AllowGazeAssistance: 0
-  m_FirstHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_HoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_HoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FirstSelectEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastSelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_SelectEntered:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 80541659}
-        m_TargetAssemblyTypeName: BookController, Assembly-CSharp
-        m_MethodName: OnArrowSelected
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-  m_SelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FirstFocusEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_LastFocusExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FocusEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_FocusExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Activated:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Deactivated:
-    m_PersistentCalls:
-      m_Calls: []
-  m_StartingHoverFilters: []
-  m_StartingSelectFilters: []
-  m_StartingInteractionStrengthFilters: []
-  m_OnFirstHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnLastHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnHoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnHoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnSelectCanceled:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnActivate:
-    m_PersistentCalls:
-      m_Calls: []
-  m_OnDeactivate:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!23 &1423529252
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -8817,6 +8543,12 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 84
   m_CollisionDetection: 0
+--- !u!4 &1458797896 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8028049056878776758, guid: 468a5f4956f5a0443b6408af6ba6e838,
+    type: 3}
+  m_PrefabInstance: {fileID: 8554191795165073234}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1466248755 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4944149151361580529, guid: 468a5f4956f5a0443b6408af6ba6e838,
@@ -10660,6 +10392,37 @@ Transform:
   - {fileID: 837009103}
   m_Father: {fileID: 4497495045121832851}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1807013837
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1807013838}
+  m_Layer: 7
+  m_Name: ForwardAxis
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1807013838
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1807013837}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.06162845, y: -0.70441604, z: -0.06162845, w: 0.70441604}
+  m_LocalPosition: {x: -0.486, y: 0.127, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1458797896}
+  m_LocalEulerAnglesHint: {x: -10, y: -90, z: 0}
 --- !u!1 &1807573360
 GameObject:
   m_ObjectHideFlags: 0
@@ -13514,8 +13277,16 @@ PrefabInstance:
     - {fileID: 657034000845134923, guid: 468a5f4956f5a0443b6408af6ba6e838, type: 3}
     - {fileID: 8992301127419732049, guid: 468a5f4956f5a0443b6408af6ba6e838, type: 3}
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8028049056878776758, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1807013838}
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 937100886458406775, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8554191795165073238}
     - targetCorrespondingSourceObject: {fileID: 4944149151361580529, guid: 468a5f4956f5a0443b6408af6ba6e838,
         type: 3}
       insertIndex: -1
@@ -13537,6 +13308,59 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1169350784}
   m_SourcePrefab: {fileID: 100100000, guid: 468a5f4956f5a0443b6408af6ba6e838, type: 3}
+--- !u!1 &8554191795165073235 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 937100886458406775, guid: 468a5f4956f5a0443b6408af6ba6e838,
+    type: 3}
+  m_PrefabInstance: {fileID: 8554191795165073234}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8554191795165073236 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 845074571133523921, guid: 468a5f4956f5a0443b6408af6ba6e838,
+    type: 3}
+  m_PrefabInstance: {fileID: 8554191795165073234}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8554191795165073235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0827e3212a515542a3adc06618ad03c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8554191795165073237 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3227525597349816178, guid: 468a5f4956f5a0443b6408af6ba6e838,
+    type: 3}
+  m_PrefabInstance: {fileID: 8554191795165073234}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8554191795165073235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ad34abafad169848a38072baa96cdb2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8554191795165073238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8554191795165073235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7fca3621cee0034c97b4a558ab34e6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  broomGrabInteractable: {fileID: 8554191795165073237}
+  broomForwardReference: {fileID: 1807013838}
+  broomInventoryItem: {fileID: 8554191795165073236}
+  moveProvider: {fileID: 598836274}
+  flyToggleAction: {fileID: 9100360696920853951, guid: c348712bda248c246b8c49b3db54643f,
+    type: 3}
+  normalMoveSpeed: 2.5
+  flyingMoveSpeed: 5
+  minFlyingAngle: 30
+  wobblingAmount: 0.15
+  wobblingSpeed: 2
 --- !u!4 &8966115748729153511
 Transform:
   m_ObjectHideFlags: 0
