@@ -13,6 +13,7 @@ public class InventoryItem : MonoBehaviour
     private Coroutine scaleCoroutine;
     private Vector3 targetScale;
     private XRGrabInteractable grabInteractable;
+    private BookController bookController;
     
     [SerializeField] private float scaleAnimationDuration = 0.3f;
     [SerializeField] private float inventoryScalePercentage = 10f;
@@ -28,6 +29,12 @@ public class InventoryItem : MonoBehaviour
         {
             Debug.LogError("InventorySystem not found!");
             return;
+        }
+
+        bookController = FindObjectOfType<BookController>();
+        if (bookController == null)
+        {
+            Debug.LogWarning("BookController not found! Book grab state check will be disabled.");
         }
 
         rb = GetComponent<Rigidbody>();
@@ -59,9 +66,7 @@ public class InventoryItem : MonoBehaviour
         if (IsInSlot)
         {   
             Debug.Log("Grabbed item in slot: " + name);
-            //inventorySystem.RetrieveItemViaHand(this);
             StartScaleAnimation(originalScale);
-            //SetPhysicsState(false);
         }
     }
 
@@ -69,7 +74,7 @@ public class InventoryItem : MonoBehaviour
     {
         isGrabbed = false;
 
-        if (isInBookCollider)
+        if (isInBookCollider && IsBookActive())
         {
             if (!IsInSlot)
             {
@@ -91,17 +96,35 @@ public class InventoryItem : MonoBehaviour
                 transform.localScale = originalScale;
                 SetPhysicsState(true);
             }
-
         }
+    }
+
+    // Check if the book is active (being held/grabbed)
+    private bool IsBookActive()
+    {
+        if (bookController == null) return true; // If no book controller found, default to true
+        
+        // Check if the book is currently being grabbed
+        var bookGrabInteractable = bookController.GetComponent<XRGrabInteractable>();
+        if (bookGrabInteractable != null)
+        {
+            return bookGrabInteractable.isSelected;
+        }
+        
+        return true; // Default to true if we can't determine
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("BookCollider") && isGrabbed && !IsInSlot)
         {
-            isInBookCollider = true;
-            Vector3 inventoryScale = originalScale * (inventoryScalePercentage / 100f);
-            StartScaleAnimation(inventoryScale);
+            // Only scale if the book is being held
+            if (IsBookActive())
+            {
+                isInBookCollider = true;
+                Vector3 inventoryScale = originalScale * (inventoryScalePercentage / 100f);
+                StartScaleAnimation(inventoryScale);
+            }
         }
     }
 
@@ -109,10 +132,14 @@ public class InventoryItem : MonoBehaviour
     {
         if (other.CompareTag("BookCollider") && isGrabbed && !IsInSlot)
         {
-            isInBookCollider = true;
-            Vector3 inventoryScale = originalScale * (inventoryScalePercentage / 100f);
-            // No need to start scale animation here, just maintain the scale
-            transform.localScale = inventoryScale;
+            // Only scale if the book is being held
+            if (IsBookActive())
+            {
+                isInBookCollider = true;
+                Vector3 inventoryScale = originalScale * (inventoryScalePercentage / 100f);
+                // No need to start scale animation here, just maintain the scale
+                transform.localScale = inventoryScale;
+            }
         }
     }
 
@@ -158,12 +185,24 @@ public class InventoryItem : MonoBehaviour
         scaleCoroutine = null;
     }
 
-    private void SetPhysicsState(bool inInventory)
+    private void SetPhysicsState(bool usePhysics)
     {
         if (rb != null)
         {
-            rb.isKinematic = !inInventory;
-            rb.useGravity = inInventory;
+            rb.isKinematic = !usePhysics;
+            rb.useGravity = usePhysics;
+        }
+        
+        // Also handle any colliders on this object and child objects
+        Collider[] colliders = GetComponentsInChildren<Collider>();
+        foreach (var collider in colliders)
+        {
+            // Enable/disable collision detection based on physics state
+            // You might want to keep triggers enabled for interaction
+            if (!collider.isTrigger)
+            {
+                collider.enabled = usePhysics || IsInSlot;
+            }
         }
     }
 
@@ -185,17 +224,4 @@ public class InventoryItem : MonoBehaviour
             SetPhysicsState(true);
         }
     }
-
-    // Method for wand-based interaction
-    // public void OnWandSelect()
-    // {
-    //     if (IsInSlot)
-    //     {
-    //         inventorySystem.RetrieveItemViaWand(this, null);
-    //     }
-    //     else if (isInBookCollider)
-    //     {
-    //         inventorySystem.AddItemViaWand(this);
-    //     }
-    // }
 }
