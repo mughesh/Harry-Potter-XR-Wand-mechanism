@@ -4046,7 +4046,7 @@ CharacterController:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 128
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
@@ -12244,6 +12244,26 @@ PrefabInstance:
       propertyPath: m_Name
       value: Sword
       objectReference: {fileID: 0}
+    - target: {fileID: 3060450317333814858, guid: 2fddc68bf0590fb4a915be94f944f0f9,
+        type: 3}
+      propertyPath: m_SmoothScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3060450317333814858, guid: 2fddc68bf0590fb4a915be94f944f0f9,
+        type: 3}
+      propertyPath: m_MovementType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3060450317333814858, guid: 2fddc68bf0590fb4a915be94f944f0f9,
+        type: 3}
+      propertyPath: m_SmoothPosition
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3060450317333814858, guid: 2fddc68bf0590fb4a915be94f944f0f9,
+        type: 3}
+      propertyPath: m_SmoothRotation
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3365461095165870338, guid: 2fddc68bf0590fb4a915be94f944f0f9,
         type: 3}
       propertyPath: m_Name
@@ -13373,6 +13393,26 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Broom
+      objectReference: {fileID: 0}
+    - target: {fileID: 3227525597349816178, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      propertyPath: m_SmoothScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3227525597349816178, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      propertyPath: m_MovementType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3227525597349816178, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      propertyPath: m_SmoothPosition
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3227525597349816178, guid: 468a5f4956f5a0443b6408af6ba6e838,
+        type: 3}
+      propertyPath: m_SmoothRotation
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5674261737779402099, guid: 468a5f4956f5a0443b6408af6ba6e838,
         type: 3}
