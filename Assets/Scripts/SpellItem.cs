@@ -7,6 +7,8 @@ public class SpellItem : MonoBehaviour
     private SpellSystem spellSystem;
     private Renderer spellRenderer;
     private XRSimpleInteractable interactable;
+    private Color highlightColor = Color.white;
+    private float highlightIntensity = 1.5f;
 
     void Start()
     {
@@ -35,6 +37,13 @@ public class SpellItem : MonoBehaviour
     {
         if (spellSystem != null)
         {
+            // Deselect all other spells first
+            SpellItem[] allSpells = FindObjectsOfType<SpellItem>();
+            foreach (SpellItem spell in allSpells)
+            {
+                spell.HighlightSpell(false);
+            }
+
             spellSystem.SelectSpell(spellData);
             HighlightSpell(true);
         }
@@ -51,11 +60,12 @@ public class SpellItem : MonoBehaviour
             if (highlight)
             {
                 mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", Color.white);
+                mat.SetColor("_EmissionColor", highlightColor * highlightIntensity);
             }
             else
             {
                 mat.DisableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", Color.black);
             }
         }
     }
