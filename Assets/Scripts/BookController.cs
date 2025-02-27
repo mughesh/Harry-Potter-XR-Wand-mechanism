@@ -153,7 +153,11 @@ public class BookController : MonoBehaviour
 
     public void OnGrab(SelectEnterEventArgs args)
     {
-
+            // Play book equip sound
+        if (AudioManager.Instance != null && AudioManager.Instance.equipBook != null)
+        {
+            AudioManager.Instance.PlaySoundFollowingTransform(AudioManager.Instance.equipBook, transform);
+        }
 
     }
 

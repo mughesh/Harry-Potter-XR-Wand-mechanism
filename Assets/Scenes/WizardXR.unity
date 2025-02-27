@@ -2047,6 +2047,158 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.05, y: 0.03, z: 0.05}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &266435117
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 266435119}
+  - component: {fileID: 266435118}
+  m_Layer: 0
+  m_Name: Audio Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &266435118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266435117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb499d27a50f93745b1cd24d7974c9fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spellEquip:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  incendioCast:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  incendioHit:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  reductoCast:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  reductoHit:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  leviosaActive:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  lumos:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  equipBook:
+    name: Book_equip
+    clip: {fileID: 8300000, guid: bf1db633c5203cb4d87b2adf2e942795, type: 3}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  equipWand:
+    name: wand_equip
+    clip: {fileID: 8300000, guid: fd133f198d6f07445a5e1c4fa3555d41, type: 3}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  pageTurn:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  broomFlying:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+  itemCollision:
+    name: 
+    clip: {fileID: 0}
+    volume: 1
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
+--- !u!4 &266435119
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 266435117}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.33091426, y: 1.1007966, z: 2.8442857}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &269665074
 GameObject:
   m_ObjectHideFlags: 0
@@ -13381,6 +13533,7 @@ SceneRoots:
   - {fileID: 80541658}
   - {fileID: 276158327}
   - {fileID: 1690288868}
+  - {fileID: 266435119}
   - {fileID: 1317539653}
   - {fileID: 793140556}
   - {fileID: 1642785215}

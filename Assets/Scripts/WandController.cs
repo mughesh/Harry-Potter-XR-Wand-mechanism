@@ -151,6 +151,11 @@ public class WandController : MonoBehaviour
     public void OnGrab(SelectEnterEventArgs args)
     {
         isGrabbed = true;
+            // Play wand equip sound
+        if (AudioManager.Instance != null && AudioManager.Instance.equipWand != null)
+        {
+            AudioManager.Instance.PlaySoundFollowingTransform(AudioManager.Instance.equipWand, transform);
+        }
     }
 
     public void OnRelease(SelectExitEventArgs args)
