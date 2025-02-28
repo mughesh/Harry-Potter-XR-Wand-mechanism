@@ -3,12 +3,17 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "New Spell", menuName = "Spell Data")]
 public class SpellData : ScriptableObject
 {
+    [Header("Basic Information")]
     public string spellName;
     public string description;
+
+    [Header("Visual Effects")]
     public GameObject equipVFXPrefab;
     public GameObject castVFXPrefab;
     public GameObject hitVFXPrefab;
-    public GameObject lineRendererPrefab;
+    public GameObject lineRendererPrefab;    
+    
+    [Header("Spell Properties")]
     public SpellCastType castType;
     public SpellTriggerType triggerType;
     public float levitationBendStrength = 0.2f;
@@ -19,6 +24,14 @@ public class SpellData : ScriptableObject
     public float maxParticleSpeedMultiplier = 2f;
     public float fadeOutTime = 0.01f;    
     
+    [Header("Audio")]
+    public AudioClip castSoundClip;
+    public AudioClip hitSoundClip;
+    public bool loopCastSound = false;
+    [Range(0f, 1f)]
+    public float castVolume = 1f;
+    [Range(0f, 1f)]
+    public float hitVolume = 1f;
     
 }
 

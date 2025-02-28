@@ -2077,8 +2077,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spellEquip:
-    name: 
-    clip: {fileID: 0}
+    name: Spell_equip
+    clip: {fileID: 8300000, guid: 37c9c4cc7bd83ff4d8b2979fbadd23f6, type: 3}
     volume: 1
     pitch: 1
     spatialBlend: 1
@@ -2086,8 +2086,8 @@ MonoBehaviour:
     maxDistance: 25
     loop: 0
   incendioCast:
-    name: 
-    clip: {fileID: 0}
+    name: Incendio_cast
+    clip: {fileID: 8300000, guid: e2750a47c6075d843bdcb0f2f80843f4, type: 3}
     volume: 1
     pitch: 1
     spatialBlend: 1
@@ -2113,7 +2113,7 @@ MonoBehaviour:
     maxDistance: 25
     loop: 0
   reductoHit:
-    name: 
+    name: reducto_hit
     clip: {fileID: 0}
     volume: 1
     pitch: 1
@@ -2122,14 +2122,14 @@ MonoBehaviour:
     maxDistance: 25
     loop: 0
   leviosaActive:
-    name: 
-    clip: {fileID: 0}
+    name: Leviosa
+    clip: {fileID: 8300000, guid: 74ef766dbdd6f1641a328dc3933c6b60, type: 3}
     volume: 1
     pitch: 1
     spatialBlend: 1
     minDistance: 1
     maxDistance: 25
-    loop: 0
+    loop: 1
   lumos:
     name: 
     clip: {fileID: 0}
@@ -2138,11 +2138,11 @@ MonoBehaviour:
     spatialBlend: 1
     minDistance: 1
     maxDistance: 25
-    loop: 0
+    loop: 1
   equipBook:
     name: Book_equip
     clip: {fileID: 8300000, guid: bf1db633c5203cb4d87b2adf2e942795, type: 3}
-    volume: 1
+    volume: 0.5
     pitch: 1
     spatialBlend: 1
     minDistance: 1
@@ -2151,7 +2151,7 @@ MonoBehaviour:
   equipWand:
     name: wand_equip
     clip: {fileID: 8300000, guid: fd133f198d6f07445a5e1c4fa3555d41, type: 3}
-    volume: 1
+    volume: 0.5
     pitch: 1
     spatialBlend: 1
     minDistance: 1
@@ -3676,7 +3676,7 @@ MonoBehaviour:
   m_Camera: {fileID: 1069153723}
   m_OriginBaseGameObject: {fileID: 622039164}
   m_CameraFloorOffsetObject: {fileID: 525735344}
-  m_RequestedTrackingOriginMode: 0
+  m_RequestedTrackingOriginMode: 1
   m_CameraYOffset: 1.1176
 --- !u!4 &622039167
 Transform:
@@ -6552,7 +6552,7 @@ Transform:
   m_GameObject: {fileID: 1202649631}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.955, y: 0.388, z: 2.1291523}
+  m_LocalPosition: {x: 1.955, y: 0.388, z: 4.089}
   m_LocalScale: {x: 0.42, y: 0.42, z: 0.42}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -8843,6 +8843,37 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1542815214}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1621535447
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1621535448}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1621535448
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1621535447}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.33091426, y: 1.1007966, z: 2.8442857}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1642785210
 GameObject:
   m_ObjectHideFlags: 0
@@ -11198,7 +11229,7 @@ Transform:
   m_GameObject: {fileID: 5441936216812190990}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.98497057, y: 0.019802459, z: 2.8812795}
+  m_LocalPosition: {x: 1.716, y: 0.019802459, z: 3.336}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -12035,7 +12066,6 @@ GameObject:
   - component: {fileID: 2340476540064574486}
   - component: {fileID: 2653815542421335640}
   - component: {fileID: 5441936216812190992}
-  - component: {fileID: 5441936216812190991}
   m_Layer: 13
   m_Name: Crate01
   m_TagString: Untagged
@@ -12043,33 +12073,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!54 &5441936216812190991
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5441936216812190990}
-  serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 0
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!65 &5441936216812190992
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13549,3 +13552,4 @@ SceneRoots:
   - {fileID: 5274233111800978176}
   - {fileID: 470647929681980260}
   - {fileID: 2554587557066125738}
+  - {fileID: 1621535448}

@@ -54,6 +54,7 @@ public class SpellSystem : MonoBehaviour
     private bool isProjectileInFlight = false;
     [SerializeField] private SpellEquipSplineManager splineManager;
     private bool isEquipAnimating = false;
+    private Dictionary<string, AudioSource> activeSpellSounds = new Dictionary<string, AudioSource>();
 
     private void Start()
     {
@@ -266,6 +267,11 @@ public class SpellSystem : MonoBehaviour
             activeLineRenderer = null;
         }
 
+        // Stop any active spell sounds
+    if (currentSpell != null)
+    {
+        StopSpellSound(currentSpell);
+    }
         // Don't immediately destroy hit effects, let them fade naturally
         isSpellActive = false;
     }
@@ -304,9 +310,11 @@ public class SpellSystem : MonoBehaviour
         switch (spell.spellName)
         {
             case "Lumos":
+                PlaySpellCastSound(spell, startPosition);
                 yield return StartCoroutine(CastLumos(spell, startPosition, direction));
                 break;
             case "Wingardium Leviosa":
+                PlaySpellCastSound(spell, startPosition);
                 yield return StartCoroutine(CastWingardiumLeviosa(spell, startPosition, direction));
                 break;
                 // Add other utility spells
@@ -343,6 +351,7 @@ public class SpellSystem : MonoBehaviour
     {
         try
         {
+            PlaySpellCastSound(currentSpell, startPosition);
             RaycastHit hit;
             Vector3 targetPosition;
             float targetDistance;
@@ -377,6 +386,7 @@ public class SpellSystem : MonoBehaviour
 
                 if (Physics.Raycast(castVFX.transform.position, castVFX.transform.forward, out hit, 0.5f))
                 {
+                    PlaySpellHitSound(currentSpell, hit.point);
                     SpellHitEffect(hit.point, -hit.normal);
                     hitTarget = true;
                 }
@@ -665,6 +675,11 @@ public class SpellSystem : MonoBehaviour
             {
                 StartCoroutine(FadeOutSpell());
             }
+                    // Stop any active spell sounds
+            if (currentSpell != null)
+            {
+                StopSpellSound(currentSpell);
+            }
         }
         isSpellActive = false;
     }
@@ -885,4 +900,142 @@ public class SpellSystem : MonoBehaviour
             Destroy(currentEquipEffect);
         }
     }
+
+
+// Audio stuffs
+
+private void PlaySpellCastSound(SpellData spell, Vector3 position)
+{
+    if (spell == null) return;
+    
+    // Check if we have a sound configured in the AudioManager for this specific spell
+    AudioManager.SoundEffect soundToPlay = null;
+    bool useSpellDataSound = false;
+    
+    // Try to get predefined sound effect from AudioManager
+    switch (spell.spellName.ToLower())
+    {
+        case "incendio":
+            soundToPlay = AudioManager.Instance.incendioCast;
+            Debug.Log("Incendio sound");
+            break;
+        case "reducto":
+            soundToPlay = AudioManager.Instance.reductoCast;
+            break;
+        case "wingardium leviosa":
+            soundToPlay = AudioManager.Instance.leviosaActive;
+            break;
+        case "lumos":
+            soundToPlay = AudioManager.Instance.lumos;
+            break;
+        default:
+            // If no specific sound is defined, use the clip from the SpellData
+            useSpellDataSound = true;
+            break;
+    }
+
+    // If we're using the custom sound from SpellData
+    if (useSpellDataSound && spell.castSoundClip != null)
+    {
+        // Create a temporary SoundEffect with the clip's data
+        AudioManager.SoundEffect customSound = new AudioManager.SoundEffect
+        {
+            name = spell.spellName + "_Cast",
+            clip = spell.castSoundClip,
+            volume = spell.castVolume,
+            loop = spell.loopCastSound,
+            spatialBlend = 1f // 3D sound
+        };
+        
+        soundToPlay = customSound;
+    }
+    
+    // If we still don't have a sound, use the default spell equip sound
+    if (soundToPlay == null || soundToPlay.clip == null)
+    {
+        soundToPlay = AudioManager.Instance.spellEquip;
+    }
+    
+    // Play the sound and track it if it's looping
+    if (soundToPlay != null && soundToPlay.clip != null)
+    {
+        AudioSource source = AudioManager.Instance.PlaySoundAtPosition(soundToPlay, position);
+        
+        // If this is a looping sound, store it so we can stop it later
+        if (soundToPlay.loop)
+        {
+            string key = spell.spellName + "_Cast";
+            
+            // Stop any existing sound with this key
+            if (activeSpellSounds.ContainsKey(key) && activeSpellSounds[key] != null)
+            {
+                activeSpellSounds[key].Stop();
+            }
+            
+            activeSpellSounds[key] = source;
+        }
+    }
 }
+
+
+private void PlaySpellHitSound(SpellData spell, Vector3 hitPosition)
+{
+    if (spell == null) return;
+    
+    // Check if we have a sound configured in the AudioManager for this specific spell
+    AudioManager.SoundEffect soundToPlay = null;
+    bool useSpellDataSound = false;
+    
+    // Try to get predefined sound effect from AudioManager
+    switch (spell.spellName.ToLower())
+    {
+        case "incendio":
+            soundToPlay = AudioManager.Instance.incendioHit;
+            break;
+        case "reducto":
+            soundToPlay = AudioManager.Instance.reductoHit;
+            break;
+        default:
+            // If no specific sound is defined, use the clip from the SpellData
+            useSpellDataSound = true;
+            break;
+    }
+
+    // If we're using the custom sound from SpellData
+    if (useSpellDataSound && spell.hitSoundClip != null)
+    {
+        // Create a temporary SoundEffect with the clip's data
+        AudioManager.SoundEffect customSound = new AudioManager.SoundEffect
+        {
+            name = spell.spellName + "_Hit",
+            clip = spell.hitSoundClip,
+            volume = spell.hitVolume,
+            loop = false, // Hit sounds shouldn't loop
+            spatialBlend = 1f // 3D sound
+        };
+        
+        soundToPlay = customSound;
+    }
+    
+    // Play the sound if available
+    if (soundToPlay != null && soundToPlay.clip != null)
+    {
+        AudioManager.Instance.PlaySoundAtPosition(soundToPlay, hitPosition);
+    }
+}
+
+// Stop any looping spell sounds
+private void StopSpellSound(SpellData spell)
+{
+    if (spell == null) return;
+    
+    string key = spell.spellName + "_Cast";
+    if (activeSpellSounds.ContainsKey(key) && activeSpellSounds[key] != null)
+    {
+        activeSpellSounds[key].Stop();
+        activeSpellSounds.Remove(key);
+    }
+}
+
+}
+

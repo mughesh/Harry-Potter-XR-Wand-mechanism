@@ -28,3 +28,8 @@ MonoBehaviour:
   particleSpeedMultiplier: 1
   maxParticleSpeedMultiplier: 2
   fadeOutTime: 1
+  castSoundClip: {fileID: 8300000, guid: e2750a47c6075d843bdcb0f2f80843f4, type: 3}
+  hitSoundClip: {fileID: 0}
+  loopCastSound: 1
+  castVolume: 1
+  hitVolume: 1
