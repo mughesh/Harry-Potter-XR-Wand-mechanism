@@ -173,10 +173,15 @@ public class BookController : MonoBehaviour
         currentSegment = index;
         currentPage = 0;
         UpdateBookDisplay();
+        if (AudioManager.Instance != null && AudioManager.Instance.pageTurn != null)
+        {
+            AudioManager.Instance.PlaySoundFollowingTransform(AudioManager.Instance.pageTurn, transform);
+        }
     }
 
     public void OnArrowSelected(bool isNextPage)
     {
+        
         if (isNextPage)
         {
             NextPage();
@@ -186,6 +191,11 @@ public class BookController : MonoBehaviour
         {
             PreviousPage();
             //Debug.Log("Previous page");
+        }
+        
+        if (AudioManager.Instance != null && AudioManager.Instance.pageTurn != null)
+        {
+            AudioManager.Instance.PlaySoundFollowingTransform(AudioManager.Instance.pageTurn, transform);
         }
     }
 

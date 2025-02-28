@@ -116,7 +116,12 @@ public class SpellSystem : MonoBehaviour
 
         // Start the spline animation
         if (splineManager != null)
-        {
+        {   
+            AudioSource equipAudio = wandTip.GetComponent<AudioSource>();
+            if (equipAudio != null)
+            {
+                equipAudio.Play();
+            }
             StartCoroutine(HandleSplineEquipEffect());
         }
         else
