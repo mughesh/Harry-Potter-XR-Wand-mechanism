@@ -27,6 +27,7 @@ public class BroomFlyController : MonoBehaviour
     private bool isGrabbed = false;
     private Transform xrOriginTransform;
     private Coroutine wobblingCoroutine;
+    private AudioSource flyingSoundSource;
     
     private void Start()
     {
@@ -173,6 +174,13 @@ public class BroomFlyController : MonoBehaviour
         isFlying = true;
         Debug.Log("Broom flying enabled!");
         
+        // Play flying sound
+        if (flyingSoundSource == null)
+            flyingSoundSource = GetComponent<AudioSource>();
+            
+        if (flyingSoundSource != null && !flyingSoundSource.isPlaying)
+            flyingSoundSource.Play();
+        
         // Start wobbling effect
         if (wobblingCoroutine != null)
             StopCoroutine(wobblingCoroutine);
@@ -193,6 +201,10 @@ public class BroomFlyController : MonoBehaviour
         
         isFlying = false;
         Debug.Log("Broom flying disabled!");
+        
+        // Stop playing flying sound
+        if (flyingSoundSource != null && flyingSoundSource.isPlaying)
+            flyingSoundSource.Stop();
         
         // Stop wobbling effect
         if (wobblingCoroutine != null)
