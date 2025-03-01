@@ -11,6 +11,7 @@ public class InventorySystem : MonoBehaviour
     public GameObject retrievePosition;
     private Dictionary<Transform, InventoryItem> slotItemMap = new Dictionary<Transform, InventoryItem>();
     private int currentSlotIndex = 0;
+    [SerializeField] private GameObject book;
 
     public Transform GetAvailableSlot()
     {
@@ -41,6 +42,7 @@ public class InventorySystem : MonoBehaviour
         if (slot != null)
         {
             StartCoroutine(SmoothAddItem(item, slot));
+            AudioManager.Instance.PlaySoundAtPosition(AudioManager.Instance.inventorySound, book.transform.position);
         }
     }
 
@@ -50,6 +52,8 @@ public class InventorySystem : MonoBehaviour
         if (slot != null)
         {
             StartCoroutine(SmoothAddItem(item, slot));
+            AudioManager.Instance.PlaySoundAtPosition(AudioManager.Instance.inventorySound, book.transform.position);
+
         }
         else
         {
@@ -93,9 +97,11 @@ public class InventorySystem : MonoBehaviour
         if (item.CurrentSlot != null)
         {
             Debug.Log("Retrieving item via hand: " + item.name);
+            AudioManager.Instance.PlaySoundAtPosition(AudioManager.Instance.inventorySound,book.transform.position);
             slotItemMap.Remove(item.CurrentSlot);
             item.transform.SetParent(null);
             item.SetInventoryState(false, null);
+
         }
     }
 
@@ -106,6 +112,8 @@ public class InventorySystem : MonoBehaviour
             Debug.Log("Retrieving item via wand: " + item.name);
             Transform slot = item.CurrentSlot;
             slotItemMap.Remove(slot);
+            AudioManager.Instance.PlaySoundAtPosition(AudioManager.Instance.inventorySound, book.transform.position);
+
             
             if (wandTransform != null)
             {   

@@ -51,6 +51,7 @@ public class AudioManager : MonoBehaviour
     public SoundEffect pageTurn;
     public SoundEffect broomFlying;
     public SoundEffect itemCollision;
+    public SoundEffect inventorySound;
 
     // Pool of audio sources for 3D sounds
     private List<AudioSource> audioSourcePool = new List<AudioSource>();

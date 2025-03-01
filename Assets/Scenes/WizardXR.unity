@@ -2142,7 +2142,7 @@ MonoBehaviour:
   equipBook:
     name: Book_equip
     clip: {fileID: 8300000, guid: d7923994873ad014faa1b351c0ba9732, type: 3}
-    volume: 0.5
+    volume: 0.25
     pitch: 1
     spatialBlend: 1
     minDistance: 1
@@ -2151,7 +2151,7 @@ MonoBehaviour:
   equipWand:
     name: wand_equip
     clip: {fileID: 8300000, guid: dd7d1684144fc214790de41ef300e46b, type: 3}
-    volume: 0.5
+    volume: 0.25
     pitch: 1
     spatialBlend: 1
     minDistance: 1
@@ -2160,7 +2160,7 @@ MonoBehaviour:
   pageTurn:
     name: PageTurn
     clip: {fileID: 8300000, guid: ffa50cef9149d4549a98ff6533cf1b44, type: 3}
-    volume: 0.51
+    volume: 0.25
     pitch: 1
     spatialBlend: 1
     minDistance: 1
@@ -2184,6 +2184,15 @@ MonoBehaviour:
     minDistance: 1
     maxDistance: 25
     loop: 0
+  inventorySound:
+    name: InventorySound
+    clip: {fileID: 8300000, guid: 9b7f500f52cf8d54d98a54fdc9ad3702, type: 3}
+    volume: 0.25
+    pitch: 1
+    spatialBlend: 1
+    minDistance: 1
+    maxDistance: 25
+    loop: 0
 --- !u!4 &266435119
 Transform:
   m_ObjectHideFlags: 0
@@ -2193,7 +2202,7 @@ Transform:
   m_GameObject: {fileID: 266435117}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.33091426, y: 1.1007966, z: 2.8442857}
+  m_LocalPosition: {x: -0.556, y: 1.1007966, z: 2.8442857}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -10044,6 +10053,7 @@ MonoBehaviour:
   moveDuration: 0.5
   retrievalOffset: 0.3
   retrievePosition: {fileID: 605250656}
+  book: {fileID: 2112840750}
 --- !u!1 &1713900417
 GameObject:
   m_ObjectHideFlags: 0
@@ -13490,7 +13500,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: b304030530b7f054faf411470ef59dcd, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 62a5a46e466299c47beeb8e53364b7f9, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
