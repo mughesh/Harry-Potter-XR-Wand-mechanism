@@ -16,7 +16,7 @@ public class WandController : MonoBehaviour
     private LayerMask crosshairInteractableLayer;
     private XRGrabInteractable grabInteractable;
     private bool isGrabbed = false;
-    private bool isActivated = false;
+    public bool isActivated = false;
     private SpellSystem spellSystem;
     [SerializeField] private InventorySystem inventorySystem;
     private GameObject crosshairInstance;

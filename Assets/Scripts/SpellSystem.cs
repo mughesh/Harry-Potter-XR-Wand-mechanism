@@ -50,11 +50,14 @@ public class SpellSystem : MonoBehaviour
     [SerializeField] private float releaseForceMultiplier = 3f; // Reduced from 5 for more controlled throws
     [SerializeField] private float maxThrowVelocity = 7f; // Maximum velocity cap for throws
     private Transform currentWandTip;
-
     private bool isProjectileInFlight = false;
     [SerializeField] private SpellEquipSplineManager splineManager;
     private bool isEquipAnimating = false;
     private Dictionary<string, AudioSource> activeSpellSounds = new Dictionary<string, AudioSource>();
+    private AudioSource currentRayAudioSource;
+    private AudioSource currentHitAudioSource;
+    private float audioFadeInTime = 0.5f;
+    private float audioFadeOutTime = 0.5f;
 
     private void Start()
     {
@@ -277,6 +280,11 @@ public class SpellSystem : MonoBehaviour
     {
         StopSpellSound(currentSpell);
     }
+
+        if (currentRayAudioSource != null)
+    {
+        StartCoroutine(FadeOutSound());
+    }
         // Don't immediately destroy hit effects, let them fade naturally
         isSpellActive = false;
     }
@@ -412,42 +420,44 @@ public class SpellSystem : MonoBehaviour
     }
 
 
-    private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+private IEnumerator CastRaySpell(SpellData spell, Vector3 startPosition, Vector3 direction)
+{
+    WandController wandController = FindObjectOfType<WandController>();
+    Transform wandTip = wandController?.wandTip;
+
+    if (wandTip == null)
     {
-        WandController wandController = FindObjectOfType<WandController>();
-        Transform wandTip = wandController?.wandTip;
+        Debug.LogError("Wand tip not found for ray spell!");
+        yield break;
+    }
 
-        if (wandTip == null)
-        {
-            Debug.LogError("Wand tip not found for ray spell!");
-            yield break;
-        }
+    // Create VFX at wand tip
+    if (activeSpellVFX == null && spell.castVFXPrefab != null)
+    {
+        activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.LookRotation(direction));
+        activeSpellParticles = activeSpellVFX.GetComponentInChildren<ParticleSystem>();
+    }
 
-        // Create VFX at wand tip
-        if (activeSpellVFX == null && spell.castVFXPrefab != null)
-        {
-            activeSpellVFX = Instantiate(spell.castVFXPrefab, wandTip.position, Quaternion.LookRotation(direction));
-            activeSpellParticles = activeSpellVFX.GetComponentInChildren<ParticleSystem>();
+    // Play ray spell sound with fade-in
+    PlayRaySpellSound(spell, wandTip.position, true);
 
-            // Don't parent to wandTip, we'll update position manually
-            // This gives us more control over the fade-out effect
-        }
-
-        if (spell.triggerType == SpellTriggerType.Press)
+    if (spell.triggerType == SpellTriggerType.Press)
+    {
+        yield return new WaitForSeconds(0.5f);
+        StartCoroutine(FadeOutSpell());
+        StartCoroutine(FadeOutSound());
+    }
+    else
+    {
+        // For hold-type, keep updating until spell is deactivated
+        while (isSpellActive && !isFadingOut)
         {
-            yield return new WaitForSeconds(0.5f);
-            StartCoroutine(FadeOutSpell());
-        }
-        else
-        {
-            // For hold-type, keep updating until spell is deactivated
-            while (isSpellActive && !isFadingOut)
-            {
-                UpdateRaySpell(wandTip.position, wandTip.forward);
-                yield return null;
-            }
+            UpdateRaySpell(wandTip.position, wandTip.forward);
+            yield return null;
         }
     }
+}
+
 
     private void UpdateRaySpell(Vector3 startPosition, Vector3 direction)
     {
@@ -484,20 +494,30 @@ public class SpellSystem : MonoBehaviour
     private Vector3 lastHitPoint;
     private float hitEffectUpdateThreshold = 0.1f; // Minimum distance to update hit effect position
 
-    private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
+private void HandleRayHitEffect(Vector3 hitPoint, Vector3 normal)
+{
+    if (currentSpell.hitVFXPrefab != null &&
+        (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold))
     {
-        if (currentSpell.hitVFXPrefab != null &&
-            (currentHitEffect == null || Vector3.Distance(hitPoint, lastHitPoint) > hitEffectUpdateThreshold))
-        {
-            GameObject newHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
-            float endTime = Time.time + hitEffectDuration;
-            persistentEffects.Add((newHitEffect, endTime));
-            lastHitPoint = hitPoint;
+        GameObject newHitEffect = Instantiate(currentSpell.hitVFXPrefab, hitPoint, Quaternion.LookRotation(normal));
+        float endTime = Time.time + hitEffectDuration;
+        persistentEffects.Add((newHitEffect, endTime));
+        lastHitPoint = hitPoint;
 
-            // Start coroutine to remove this specific hit effect
-            StartCoroutine(RemoveHitEffectAfterDuration(newHitEffect, hitEffectDuration));
+        // Manage hit sound - only play for the latest hit effect
+        if (currentHitAudioSource != null)
+        {
+            Destroy(currentHitAudioSource.gameObject);
+            currentHitAudioSource = null;
         }
+        
+        // Create new hit sound
+        PlayHitSoundAtEffect(newHitEffect, hitPoint);
+
+        // Start coroutine to remove this specific hit effect
+        StartCoroutine(RemoveHitEffectAfterDuration(newHitEffect, hitEffectDuration));
     }
+}
 
     private IEnumerator RemoveHitEffectAfterDuration(GameObject hitEffect, float duration)
     {
@@ -684,6 +704,13 @@ public class SpellSystem : MonoBehaviour
             if (currentSpell != null)
             {
                 StopSpellSound(currentSpell);
+            }
+                    StartCoroutine(FadeOutSpell());
+        
+        // Fade out ray spell sound
+            if (currentRayAudioSource != null)
+            {
+                StartCoroutine(FadeOutSound());
             }
         }
         isSpellActive = false;
@@ -1029,6 +1056,77 @@ private void PlaySpellHitSound(SpellData spell, Vector3 hitPosition)
     }
 }
 
+private void PlayRaySpellSound(SpellData spell, Vector3 position, bool fadeIn)
+{
+    if (spell == null) return;
+    
+    // Check for existing sound and stop it if needed
+    if (currentRayAudioSource != null)
+    {
+        StopCoroutine(FadeOutSound());
+        Destroy(currentRayAudioSource.gameObject);
+        currentRayAudioSource = null;
+    }
+    
+    // Get appropriate sound effect
+    AudioManager.SoundEffect soundToPlay = null;
+    
+    switch (spell.spellName.ToLower())
+    {
+        case "incendio":
+            soundToPlay = AudioManager.Instance.incendioCast;
+            break;
+        case "reducto":
+            soundToPlay = AudioManager.Instance.reductoCast;
+            break;
+        case "wingardium leviosa":
+            soundToPlay = AudioManager.Instance.leviosaActive;
+            break;
+        case "lumos":
+            soundToPlay = AudioManager.Instance.lumos;
+            break;
+        default:
+            break;
+    }
+    
+    // If we have a sound to play
+    if (soundToPlay != null && soundToPlay.clip != null)
+    {
+        // Create a new audio source for the ray spell
+        GameObject audioObject = new GameObject("RaySpellAudio");
+        currentRayAudioSource = audioObject.AddComponent<AudioSource>();
+        
+        // Configure the audio source
+        currentRayAudioSource.clip = soundToPlay.clip;
+        currentRayAudioSource.spatialBlend = soundToPlay.spatialBlend;
+        currentRayAudioSource.minDistance = soundToPlay.minDistance;
+        currentRayAudioSource.maxDistance = soundToPlay.maxDistance;
+        currentRayAudioSource.loop = true;
+        currentRayAudioSource.pitch = soundToPlay.pitch;
+        
+        // Start with volume at 0 for fade-in
+        if (fadeIn)
+        {
+            currentRayAudioSource.volume = 0f;
+            StartCoroutine(FadeInSound(soundToPlay.volume));
+        }
+        else
+        {
+            currentRayAudioSource.volume = soundToPlay.volume;
+        }
+        
+        currentRayAudioSource.transform.position = position;
+        currentRayAudioSource.Play();
+        
+        // Parent to activeSpellVFX if available
+        if (activeSpellVFX != null)
+        {
+            currentRayAudioSource.transform.SetParent(activeSpellVFX.transform);
+            currentRayAudioSource.transform.localPosition = Vector3.zero;
+        }
+    }
+}
+
 // Stop any looping spell sounds
 private void StopSpellSound(SpellData spell)
 {
@@ -1041,6 +1139,98 @@ private void StopSpellSound(SpellData spell)
         activeSpellSounds.Remove(key);
     }
 }
+private void PlayHitSoundAtEffect(GameObject hitEffect, Vector3 position)
+{
+    if (currentSpell == null) return;
+    
+    AudioManager.SoundEffect soundToPlay = null;
+    
+    // Try to get predefined sound effect
+    switch (currentSpell.spellName.ToLower())
+    {
+        case "incendio":
+            soundToPlay = AudioManager.Instance.incendioHit;
+            break;
+        case "reducto":
+            soundToPlay = AudioManager.Instance.reductoHit;
+            break;
+        default:
+            break;
+    }
+    
+    // If we have a sound to play
+    if (soundToPlay != null && soundToPlay.clip != null)
+    {
+        // Create a new audio source for the hit effect
+        GameObject audioObject = new GameObject("HitSoundEffect");
+        audioObject.transform.SetParent(hitEffect.transform);
+        audioObject.transform.localPosition = Vector3.zero;
+        
+        currentHitAudioSource = audioObject.AddComponent<AudioSource>();
+        
+        // Configure the audio source
+        currentHitAudioSource.clip = soundToPlay.clip;
+        currentHitAudioSource.spatialBlend = soundToPlay.spatialBlend;
+        currentHitAudioSource.minDistance = soundToPlay.minDistance;
+        currentHitAudioSource.maxDistance = soundToPlay.maxDistance;
+        currentHitAudioSource.loop = false;
+        currentHitAudioSource.volume = soundToPlay.volume;
+        currentHitAudioSource.pitch = soundToPlay.pitch;
+        
+        currentHitAudioSource.Play();
+    }
+}
+
+
+private IEnumerator FadeInSound(float targetVolume)
+{
+    if (currentRayAudioSource == null) yield break;
+    
+    float elapsedTime = 0f;
+    
+    while (elapsedTime < audioFadeInTime)
+    {
+        elapsedTime += Time.deltaTime;
+        float t = elapsedTime / audioFadeInTime;
+        
+        // Smooth fade-in curve
+        float volumeMultiplier = Mathf.SmoothStep(0f, 1f, t);
+        currentRayAudioSource.volume = targetVolume * volumeMultiplier;
+        
+        yield return null;
+    }
+    
+    currentRayAudioSource.volume = targetVolume;
+}
+
+// Fade out sound effect
+private IEnumerator FadeOutSound()
+{
+    if (currentRayAudioSource == null) yield break;
+    
+    float startVolume = currentRayAudioSource.volume;
+    float elapsedTime = 0f;
+    
+    while (elapsedTime < audioFadeOutTime)
+    {
+        elapsedTime += Time.deltaTime;
+        float t = elapsedTime / audioFadeOutTime;
+        
+        // Smooth fade-out curve
+        float volumeMultiplier = Mathf.SmoothStep(1f, 0f, t);
+        currentRayAudioSource.volume = startVolume * volumeMultiplier;
+        
+        yield return null;
+    }
+    
+    if (currentRayAudioSource != null)
+    {
+        currentRayAudioSource.Stop();
+        Destroy(currentRayAudioSource.gameObject);
+        currentRayAudioSource = null;
+    }
+}
+
 
 }
 

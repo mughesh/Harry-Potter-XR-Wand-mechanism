@@ -2095,8 +2095,8 @@ MonoBehaviour:
     maxDistance: 25
     loop: 0
   incendioHit:
-    name: 
-    clip: {fileID: 0}
+    name: Incendio_hit
+    clip: {fileID: 8300000, guid: f65de700425c2ae4a8a8f8bba22fb836, type: 3}
     volume: 1
     pitch: 1
     spatialBlend: 1
@@ -2338,6 +2338,7 @@ MonoBehaviour:
   bookLayerMask:
     serializedVersion: 2
     m_Bits: 2368
+  isActivated: 0
   inventorySystem: {fileID: 1690288870}
   retrievePosition: {fileID: 605250657}
   retrievalDistance: 1.5
